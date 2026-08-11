@@ -1,0 +1,429 @@
+{
+  "version": "C1.1-02",
+  "release": "C1.1",
+  "title": "凸性黄金校准集",
+  "capturedAt": "2026-07-29T11:30:00+08:00",
+  "source": {
+    "threadId": "019f4ba0-33ff-7980-b8b2-7c21e17dbef7",
+    "threadTitle": "凸性",
+    "mode": "periodic_static",
+    "boundary": "本数据是任务判断的静态校准截面，不是一键同步、实时行情或自动荐币。后续模型必须在不读取任务结论的情况下独立复现分类。"
+  },
+  "cohorts": {
+    "core_positive": {
+      "label": "普通建仓正例",
+      "definition": "证据、产品、价值捕获、交易性和风险已明显降险，同时仍保留未充分定价的非线性空间。",
+      "modelRequirement": "模型应优先识别，不能只把最早、最小市值项目排在前面。"
+    },
+    "extreme_boundary": {
+      "label": "极限试仓边界",
+      "definition": "剩余凸性很高，但安全、流动性或执行风险仍大；只有最大亏损可由仓位直接封顶时才允许进入。",
+      "modelRequirement": "模型必须同时给出归零假设、交易路径和短失效窗口，不能默认所有早期项目都属于这一类。"
+    },
+    "observe_only": {
+      "label": "只观察边界",
+      "definition": "存在硬痕迹或叙事凸性，但缺少可投资载体、价值捕获、交易性、安全或时点确认。",
+      "modelRequirement": "模型应保留线索但禁止产生仓位动作，缺口不能被热度或项目方表述覆盖。"
+    },
+    "rejected": {
+      "label": "明确排除反例",
+      "definition": "小市值、强事件或价格上涨看似有吸引力，但安全、价值捕获、可控亏损或赔率已经破坏。",
+      "modelRequirement": "模型应明确排除并记录主因，不能为了填充数量降低门槛。"
+    }
+  },
+  "cases": [
+    {
+      "id": "gold-aero-20260729",
+      "priority": 1,
+      "project": "Aerodrome",
+      "asset": "AERO",
+      "cohort": "core_positive",
+      "action": "普通建仓",
+      "maturity": "L2",
+      "risk": "R3",
+      "remainingConvexity": "中高",
+      "score": 75,
+      "primaryConvexity": "产品扩张、收入分配与供应回购燃烧",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "完整代码、最终审计、公开审计赛和正式上线存在清晰时间表。",
+        "全部协议收入计划流向sAERO参与者，Momentum Fund具备回购并燃烧AERO的机制。",
+        "事件前价格尚未明显抢跑，但审计和迁移复杂度仍需扣分。"
+      ],
+      "whyIncluded": "事件临近、价值捕获较直接、价格反应有限，且风险可以通过分阶段建仓控制。",
+      "whyNotHigher": "仍存在审计、延期、迁移复杂度和基础稀释风险。",
+      "ignition": "代码如期公开、审计无高危、正式上线日期确认。",
+      "invalidation": "发现高危漏洞、继续推迟至第四季度以后或收入未实际归属sAERO。",
+      "modelLesson": "降险后的中盘项目可以比微型早期项目拥有更高的风险调整后凸性。",
+      "sourceLinks": [
+        { "label": "官方时间表", "url": "https://aero.xyz/articles/aero-is-on-the-horizon/" },
+        { "label": "经济模型", "url": "https://aero.xyz/articles/aero-economic-case/" }
+      ]
+    },
+    {
+      "id": "gold-uni-20260729",
+      "priority": 2,
+      "project": "Uniswap",
+      "asset": "UNI",
+      "cohort": "core_positive",
+      "action": "普通建仓",
+      "maturity": "L4",
+      "risk": "R2",
+      "remainingConvexity": "中",
+      "score": 80,
+      "primaryConvexity": "已验证收入、UNI燃烧与v4费用扩容",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "v2和v3费用已经形成可核验UNI燃烧，不再只是治理承诺。",
+        "v4费用扩张仍在治理流程，保留事件化增量。",
+        "体量较大降低赔率，但风险与价值捕获的可验证性明显优于多数早期项目。"
+      ],
+      "whyIncluded": "收入和燃烧已经验证，v4扩容提供后续非线性，适合普通建仓而非极限试仓。",
+      "whyNotHigher": "体量、治理不确定性和LP迁移风险限制剩余赔率。",
+      "ignition": "v4进入链上投票并通过，燃烧继续创月度新高。",
+      "invalidation": "v4费用长期被否决，或收费导致核心流动性持续迁出。",
+      "modelLesson": "成熟度高不等于没有凸性，已验证现金流上叠加新事件可以形成更可靠的普通建仓机会。",
+      "sourceLinks": [
+        { "label": "治理原文", "url": "https://gov.uniswap.org/t/temp-check-activate-v4-protocol-fees/26162/17" }
+      ]
+    },
+    {
+      "id": "gold-dgb-20260729",
+      "priority": 3,
+      "project": "DigiByte / DigiDollar",
+      "asset": "DGB",
+      "cohort": "core_positive",
+      "action": "回撤后普通小仓",
+      "maturity": "L4",
+      "risk": "R3",
+      "remainingConvexity": "中高但衰减",
+      "score": 66,
+      "primaryConvexity": "DigiDollar采用增长与DGB抵押锁仓",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "DigiDollar已于7月17日在主网激活，不再属于等待矿工信号的事件线索。",
+        "官方仪表盘出现锁仓、供应和活跃仓位等真实早期采用数据。",
+        "价格七日已有明显上涨，因此只能等待回撤或采用数据继续突破。"
+      ],
+      "whyIncluded": "产品采用会直接锁定DGB流通供给，已有数据验证且受益资产清晰。",
+      "whyNotHigher": "第一阶段价格已经反应，稳定币、预言机和采用规模仍存在风险。",
+      "ignition": "DigiDollar供应和活跃仓位继续突破，并出现真实商户或钱包接入。",
+      "invalidation": "连续四周采用停止增长、预言机进入紧急状态或价格上涨但采用停滞。",
+      "modelLesson": "事件兑现后要转向采用数据，并根据价格反应下调剩余凸性，不能继续按早期胚胎处理。",
+      "sourceLinks": [
+        { "label": "官方发布记录", "url": "https://github.com/DigiByte-Core/digibyte/releases/tag/v9.26.5" },
+        { "label": "官方数据", "url": "https://digibyte.io/ddstats" }
+      ]
+    },
+    {
+      "id": "gold-qubic-20260729",
+      "priority": 4,
+      "project": "Qubic",
+      "asset": "QUBIC",
+      "cohort": "extreme_boundary",
+      "action": "极限试仓",
+      "maturity": "L2",
+      "risk": "R4",
+      "remainingConvexity": "高",
+      "score": 63,
+      "primaryConvexity": "外包计算技术落地、供应减半与小市值",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "Outsourced Computations首批代码进入主网，但生产能力仍需要后续实现与公开测试确认。",
+        "减半和潜在执行费、合约IPO、预言机消耗形成供应与使用双重路径。",
+        "安全整改、开发者使用和交易深度仍未充分验证。"
+      ],
+      "whyIncluded": "技术和供应事件接近，价格未明显抢跑，存在较高非线性。",
+      "whyNotHigher": "风险不能依赖止损控制，只能以极小仓位按归零计算。",
+      "ignition": "公开Mock出现可验证调用、正式生产上线、减半正常生效。",
+      "invalidation": "生产推迟出八月、安全整改长期未完成或公开测试无法稳定运行。",
+      "modelLesson": "高剩余凸性与高风险可以并存，但必须降低动作等级并直接封顶最大亏损。",
+      "sourceLinks": [
+        { "label": "官方进度", "url": "https://qubic.org/blog-detail/qubic-all-hands-recap-july-23-2026" },
+        { "label": "核心代码PR", "url": "https://github.com/qubic/core/pull/948" }
+      ]
+    },
+    {
+      "id": "gold-cowl-20260729",
+      "priority": 5,
+      "project": "Cowl Protocol",
+      "asset": "COWL",
+      "cohort": "extreme_boundary",
+      "action": "极限试仓",
+      "maturity": "L2",
+      "risk": "R5",
+      "remainingConvexity": "极高但脆弱",
+      "score": 38,
+      "primaryConvexity": "审计事件与微型流动性",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "项目具有代码和审计索引，但没有新增外部审计完成证据。",
+        "市值、流动性和成交都处于极小规模，滑点和退出风险很高。",
+        "只允许购买代币，不允许向未经充分验证的协议存款。"
+      ],
+      "whyIncluded": "满足极限试仓案例需要学习的微型盘、事件和赔率边界。",
+      "whyNotHigher": "没有外部审计，市场深度刚过最低门槛，任何仓位都必须按归零处理。",
+      "ignition": "外部审计完成、真实安全测试通过、市场深度持续提高。",
+      "invalidation": "流动性跌破行动门槛、卖出路径失效或出现合约安全问题。",
+      "modelLesson": "微型市值不是加分项；只有亏损预算、卖出路径和安全边界同时明确，才允许极限试仓。",
+      "sourceLinks": [
+        { "label": "审计索引", "url": "https://github.com/Cowl-Protocol/cli/blob/main/audits/README.md" },
+        { "label": "市场入口", "url": "https://dexscreener.com/robinhood/0x8134c95a19d158d41ee8fd7f8b48e5602f8b44a2" }
+      ]
+    },
+    {
+      "id": "gold-loot-20260729",
+      "priority": 6,
+      "project": "LootPad",
+      "asset": "LOOT",
+      "cohort": "observe_only",
+      "action": "只观察",
+      "maturity": "L1",
+      "risk": "R5",
+      "remainingConvexity": "高但不可交易",
+      "score": null,
+      "primaryConvexity": "平台费用分配与早期生态扩散",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "平台交易费分配机制与公开合约提供了价值捕获硬痕迹。",
+        "市值和流动性极低，24小时实际成交接近零。",
+        "机制设计尚未转化为独立可交易性。"
+      ],
+      "whyIncluded": "它是有机制但缺交易性的标准观察样本。",
+      "whyNotHigher": "成交接近零，无法证明可执行买卖和退出。",
+      "ignition": "真实交易、质押分配和独立用户持续增长，流动性超过行动门槛。",
+      "invalidation": "费用分配未执行、市场持续无成交或合约权限出现异常。",
+      "modelLesson": "好的代币机制不能替代流动性和真实使用，模型必须停在只观察。",
+      "sourceLinks": [
+        { "label": "代币机制", "url": "https://lootpad.tech/tokenomics" },
+        { "label": "合约", "url": "https://lootpad.tech/contracts" }
+      ]
+    },
+    {
+      "id": "gold-paraloom-20260729",
+      "priority": 7,
+      "project": "Paraloom",
+      "asset": "PARALOOM",
+      "cohort": "observe_only",
+      "action": "只观察",
+      "maturity": "L2",
+      "risk": "R5",
+      "remainingConvexity": "高",
+      "score": null,
+      "primaryConvexity": "新型网络叙事与早期代码交付",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "存在真实代码、开发网和安全修复记录，不是纯叙事。",
+        "无链上质押快照时链下质押门曾错误放行，暴露系统成熟度问题。",
+        "链上安全门未受影响，但离可建仓状态仍远。"
+      ],
+      "whyIncluded": "它能校准模型是否会因为新叙事、代码和小社区而忽略产品安全问题。",
+      "whyNotHigher": "安全与一致性问题尚未经过外部审计和对抗性验证。",
+      "ignition": "外部审计、对抗性测试、主网稳定运行与真实费用闭环。",
+      "invalidation": "同类一致性问题继续出现、修复无法复现或团队停止披露。",
+      "modelLesson": "代码进展不能覆盖安全反证，单一严重反证可以把极限试仓降为只观察。",
+      "sourceLinks": [
+        { "label": "修复与安全记录", "url": "https://github.com/paraloom-labs/paraloom-core/commit/e0f66ef134bf3dd16274829114d7b08197c0e0cb" }
+      ]
+    },
+    {
+      "id": "gold-hashi-20260724",
+      "priority": 8,
+      "project": "Hashi",
+      "asset": "无直接代币",
+      "cohort": "observe_only",
+      "action": "只观察",
+      "maturity": "L2",
+      "risk": "R4",
+      "remainingConvexity": "叙事高、当前不可交易",
+      "score": 44,
+      "primaryConvexity": "原生BTC可编程抵押与产品采用",
+      "sourceTurnId": "019fa803-f8d9-72b3-a345-167bbd3175e9",
+      "sourceDate": "2026-07-24",
+      "facts": [
+        "Sui Foundation上线公共测试网并披露钱包、托管、借贷和审计合作方。",
+        "SDK同步更新，具备测试网与代码硬痕迹。",
+        "没有Hashi代币，SUI仅通过Gas、TVL和生态需求间接受益。"
+      ],
+      "whyIncluded": "叙事与产品事实较强，但投资载体映射不足，是资产归属边界正例。",
+      "whyNotHigher": "没有直接受益代币，合作名单也可能停留在Logo层。",
+      "ignition": "测试网BTC存款、真实借贷集成、审计完成和明确主网上线日期。",
+      "invalidation": "30天没有测试数据、合约活动或主网时间表。",
+      "modelLesson": "发现好项目不等于发现可投资资产；没有直接价值捕获时必须保持零仓位。",
+      "sourceLinks": [
+        { "label": "官方公告", "url": "https://blog.sui.io/hashi-testnet-is-live-bringing-native-bitcoin-finance-one-step-closer-to-global-adoption/" },
+        { "label": "SDK", "url": "https://github.com/MystenLabs/hashi-ts-sdk" }
+      ]
+    },
+    {
+      "id": "gold-agenc-20260724",
+      "priority": 9,
+      "project": "AgenC",
+      "asset": "AgenC",
+      "cohort": "observe_only",
+      "action": "只观察",
+      "maturity": "产品L3 / 代币L0",
+      "risk": "R5",
+      "remainingConvexity": "产品中等、代币很低",
+      "score": 36,
+      "primaryConvexity": "AI代理原生经济行为与真实结算",
+      "sourceTurnId": "019fa803-f8d9-72b3-a345-167bbd3175e9",
+      "sourceDate": "2026-07-24",
+      "facts": [
+        "主网程序、托管任务、结算和第三方代理参与构成真实产品痕迹。",
+        "协议费用以SOL进入treasury，没有证据回流、销毁或赋权给AgenC代币。",
+        "项目公开事故复盘和修复，但真实外部付费规模仍小。"
+      ],
+      "whyIncluded": "产品真实但代币价值捕获不成立，是项目与资产错配的标准样本。",
+      "whyNotHigher": "代币权利、外部需求和审计均不足。",
+      "ignition": "非团队付费结算持续增长，并明确把费用、治理或质押需求绑定到代币。",
+      "invalidation": "21天仍无代币捕获说明或独立外部交易数据。",
+      "modelLesson": "产品L3不能自动抬高代币L0，项目成熟度与受益资产成熟度必须分开。",
+      "sourceLinks": [
+        { "label": "代码库", "url": "https://github.com/tetsuo-ai/AgenC" },
+        { "label": "事故复盘", "url": "https://github.com/tetsuo-ai/AgenC/blob/main/docs/x-article-reward-hacking.md" }
+      ]
+    },
+    {
+      "id": "gold-jto-20260729",
+      "priority": 10,
+      "project": "Jito",
+      "asset": "JTO",
+      "cohort": "observe_only",
+      "action": "保留原评级，不进今日重点",
+      "maturity": "L4",
+      "risk": "R3",
+      "remainingConvexity": "待新证据",
+      "score": null,
+      "primaryConvexity": "潜在收入与回购",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "项目已有较成熟产品与收入基础。",
+        "当前没有新的可核验JTX收入或回购仪表盘。",
+        "没有新增决策价值时，不应机械重复进入今日输出。"
+      ],
+      "whyIncluded": "用于校准模型的去重和新增信息门槛。",
+      "whyNotHigher": "缺少新的收入、回购或点火证据。",
+      "ignition": "出现可核验的收入、回购或代币价值捕获仪表盘。",
+      "invalidation": "长期没有价值捕获落地或收入无法传导到代币。",
+      "modelLesson": "高质量项目也不应每天重复输出；今日重点必须包含新增决策价值。",
+      "sourceLinks": []
+    },
+    {
+      "id": "gold-glmr-20260729",
+      "priority": 11,
+      "project": "Moonbeam",
+      "asset": "GLMR",
+      "cohort": "rejected",
+      "action": "排除",
+      "maturity": "L3",
+      "risk": "R4",
+      "remainingConvexity": "低",
+      "score": null,
+      "primaryConvexity": "强制迁移事件",
+      "sourceTurnId": "019fabe2-96ad-7053-a3ca-0952326b5ffa",
+      "sourceDate": "2026-07-29",
+      "facts": [
+        "迁移Base具有明确日期和运营影响。",
+        "新AI协议缺少产品时间表与清晰价值捕获。",
+        "换链和小市值本身不能构成凸性。"
+      ],
+      "whyIncluded": "作为强事件但无价值捕获的反例。",
+      "whyNotHigher": "事件主要是被动迁移，不创造清晰经济增量。",
+      "ignition": "只有新协议交付、真实采用和GLMR价值捕获同时出现才重新评估。",
+      "invalidation": "迁移完成后仍无产品、用户或代币权利增量。",
+      "modelLesson": "明确日期和强新闻不等于凸性，必须验证经济增量和受益资产。",
+      "sourceLinks": [
+        { "label": "官方迁移说明", "url": "https://moonbeam.foundation/news/moonbeam-strategic-update-moonbeam-network-relaunches-on-base/" }
+      ]
+    },
+    {
+      "id": "gold-stx-20260724",
+      "priority": 12,
+      "project": "Stacks",
+      "asset": "STX",
+      "cohort": "rejected",
+      "action": "排除",
+      "maturity": "L3",
+      "risk": "R5",
+      "remainingConvexity": "被风险破坏",
+      "score": null,
+      "primaryConvexity": "PoX升级与比特币质押",
+      "sourceTurnId": "019fa803-f8d9-72b3-a345-167bbd3175e9",
+      "sourceDate": "2026-07-24",
+      "facts": [
+        "PoX-5公共测试网上线并存在主网目标时间。",
+        "交易所风险标签、治理争议和潜在流动性收缩同时出现。",
+        "可控亏损结构被破坏，事件临近不能覆盖交易与治理风险。"
+      ],
+      "whyIncluded": "作为催化剂成立但风险结构失效的反例。",
+      "whyNotHigher": "风险不是普通波动，而是可能影响交易与退出的结构性问题。",
+      "ignition": "风险标签解除、治理争议解决并完成主网验证后再评估。",
+      "invalidation": "交易支持继续恶化或升级未带来真实采用。",
+      "modelLesson": "点火条件不能覆盖最大亏损不可控，风险门槛具有否决权。",
+      "sourceLinks": [
+        { "label": "Stacks公告", "url": "https://www.stacks.co/blog/the-public-pox-5-testnet-is-live-test-bitcoin-staking-before-mainnet" }
+      ]
+    },
+    {
+      "id": "gold-robiance-20260724",
+      "priority": 13,
+      "project": "Robiance",
+      "asset": "未确认",
+      "cohort": "rejected",
+      "action": "排除",
+      "maturity": "L2",
+      "risk": "R5",
+      "remainingConvexity": "无可控结构",
+      "score": null,
+      "primaryConvexity": "新产品上线与微型市场",
+      "sourceTurnId": "019fa803-f8d9-72b3-a345-167bbd3175e9",
+      "sourceDate": "2026-07-24",
+      "facts": [
+        "项目披露开发钱包失窃并损失部分供应。",
+        "订单簿链下撮合，提款依赖运营商签名凭证。",
+        "资产安全与退出权均不满足最大亏损可控。"
+      ],
+      "whyIncluded": "作为产品已上线但托管和退出结构不可接受的安全反例。",
+      "whyNotHigher": "中心化提款和钱包安全事件直接否决行动资格。",
+      "ignition": "完成独立审计、去除单点提款权限并验证真实卖出路径后才可重审。",
+      "invalidation": "任何新的权限、提款或钱包安全事件。",
+      "modelLesson": "产品发布不能抵消退出权与安全结构缺陷，安全硬门槛优先于评分。",
+      "sourceLinks": []
+    },
+    {
+      "id": "gold-akedo-20260729",
+      "priority": 14,
+      "project": "AKEDO",
+      "asset": "AKEDO",
+      "cohort": "rejected",
+      "action": "转入反身性管理，不作为早期凸性",
+      "maturity": "L5",
+      "risk": "R4",
+      "remainingConvexity": "已显著衰减",
+      "score": null,
+      "primaryConvexity": "价格、流动性与叙事反身性",
+      "sourceTurnId": "019fa803-f8d9-72b3-a345-167bbd3175e9",
+      "sourceDate": "2026-07-24",
+      "facts": [
+        "短期价格、成交额和换手已显著放大。",
+        "市场反应从小圈层线索进入高换手反身性阶段。",
+        "继续按未兑现早期凸性处理会系统性追涨。"
+      ],
+      "whyIncluded": "作为曾经有早期凸性但赔率已衰减的阶段迁移反例。",
+      "whyNotHigher": "价格和流动性已经大幅反应，剩余赔率不再属于早期错配。",
+      "ignition": "不再适用早期点火，后续只按趋势和反身性管理。",
+      "invalidation": "价格上涨而产品、采用与价值捕获没有同步增长。",
+      "modelLesson": "L5必须退出早期候选排序，不能用历史正确继续证明当前仍有凸性。",
+      "sourceLinks": []
+    }
+  ]
+}

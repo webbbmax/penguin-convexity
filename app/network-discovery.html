@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>常用链自动发现｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body>
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="candidate-pool.html" aria-label="企鹅投研凸性系统">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性机会中心 · 链上发现</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性系统页面">
+          <a href="candidate-pool.html">候选库</a>
+          <a href="project-master-pool.html">项目队列</a>
+          <a class="active" href="network-discovery.html">链上发现</a>
+          <a href="data-dictionary.html">数据与运行</a>
+          <a href="rules-replay.html">规则与回放</a>
+          <a href="real-case-calibration.html">真实校准</a>
+        </nav>
+        <div class="topbar-status">
+          <span id="discoveryStatus">正在读取发现队列</span>
+          <time id="discoveryGeneratedAt">--</time>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero discovery-hero">
+        <div>
+          <span class="eyebrow">COMMON NETWORK DISCOVERY · V2</span>
+          <h1>常用链自动发现</h1>
+          <p>从常用主网发现新合约，先核验交易池、卖出记录和滑点，再排队核验项目主体与凸性来源。技术预检通过不等于投资结论。</p>
+        </div>
+        <aside class="notice-panel">
+          <strong>推广只算线索</strong>
+          <p>DexScreener 资料和推广曝光具有高利益冲突，只负责发现；Robinhood Blockscout 只证明链上合约存在，不证明项目归属。</p>
+        </aside>
+      </section>
+
+      <section class="status-grid discovery-summary" aria-label="发现队列状态">
+        <article><span>队列合约</span><strong id="discoveryTotal">--</strong><small>按网络与合约去重</small></article>
+        <article><span>技术预检通过</span><strong id="discoveryPassed">--</strong><small>仍需项目身份复核</small></article>
+        <article><span>身份待核验</span><strong id="discoveryPending">--</strong><small>不得进入行动池</small></article>
+        <article><span>影子库升格</span><strong id="discoveryPromoted">--</strong><small>仍然保持只观察</small></article>
+        <article><span>已在候选库</span><strong id="discoveryExisting">--</strong><small>仅更新发现痕迹</small></article>
+        <article><span>Robinhood Chain</span><strong id="discoveryRobinhood">--</strong><small>已列为常用发现网络</small></article>
+      </section>
+
+      <section class="candidate-boundary discovery-boundary">
+        <strong>使用边界</strong>
+        <p id="discoveryBoundary"></p>
+        <button id="refreshDiscoveries" class="primary-action" type="button">一键更新全部数据</button>
+      </section>
+      <div id="discoveryMessage" class="refresh-message hidden" role="status"></div>
+
+      <section class="section-block discovery-queue-section">
+        <header class="section-heading discovery-heading">
+          <div>
+            <span>DISCOVERY QUEUE</span>
+            <h2>新合约排队复核</h2>
+            <p>默认按技术预检、发现排序分和市场深度排列；发现排序分不是投资评分。</p>
+          </div>
+          <div class="candidate-controls">
+            <label>
+              <span>网络</span>
+              <select id="discoveryNetworkFilter"><option value="all">全部常用链</option></select>
+            </label>
+            <label>
+              <span>队列状态</span>
+              <select id="discoveryStatusFilter">
+                <option value="all">全部状态</option>
+                <option value="preflight_pass">技术预检通过</option>
+                <option value="identity_pending">身份待核验</option>
+                <option value="promoted">已升格影子库</option>
+                <option value="existing_asset">已在候选库</option>
+                <option value="rejected">预检阻断</option>
+              </select>
+            </label>
+            <label>
+              <span>搜索</span>
+              <input id="discoverySearch" type="search" placeholder="名称、符号、合约" />
+            </label>
+          </div>
+        </header>
+
+        <div class="candidate-workspace discovery-workspace">
+          <aside class="candidate-sidebar">
+            <div class="case-sidebar-head">
+              <strong>发现记录</strong>
+              <span id="discoveryVisibleCount">--</span>
+            </div>
+            <div id="discoveryList" class="candidate-list discovery-list"></div>
+          </aside>
+          <article id="discoveryDetail" class="candidate-detail discovery-detail" aria-live="polite"></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性机会中心</span>
+      <strong>自动发现层与正式候选库隔离，未经项目身份与价值捕获复核不得升格</strong>
+    </footer>
+
+    <script src="network-discovery-snapshot.js"></script>
+    <script src="network-discovery.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

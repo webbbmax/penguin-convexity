@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "c2.1-final-screenshot-manifest-v1",
+  "product": "企鹅投研-凸性",
+  "release": "C2.1",
+  "generatedAt": "2026-08-10T13:19:29.984Z",
+  "status": "accepted",
+  "reportManifest": "reports/c2.1-final-acceptance/screenshots/manifest.json",
+  "reportManifestSha256": "98c4a023524cb7f74a5920b8e9fb93ead132ebf1d66e3a149fc7ccfc758486c8",
+  "directory": "reports/c2.1-final-acceptance/screenshots",
+  "screenshots": 12,
+  "realDataScreenshots": 7,
+  "browserMemoryFixtureScreenshots": 5,
+  "desktopViewports": [
+    "1180x760",
+    "1440x900"
+  ],
+  "horizontalOverflowFailures": 0,
+  "visuallyInspected": 12,
+  "productDataMutated": false,
+  "fixtureBoundary": "夹具只存在于验收浏览器内存，用于覆盖五状态、真实零结果、分页返回和短窗口边界；不写数据库或正式快照。",
+  "scenarios": [
+    "真实首页有项目",
+    "真实零结果边界",
+    "五状态混合",
+    "仅代码证据筛选",
+    "数据受限详情",
+    "多条件筛选零结果",
+    "分页进入详情后返回",
+    "发布第1天边界",
+    "14—90天凸性线索边界",
+    "GitHub-only责任边界",
+    "1440x900桌面窗口",
+    "同项目同一轮重要变化分组"
+  ]
+}

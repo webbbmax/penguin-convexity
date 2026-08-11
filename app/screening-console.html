@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>凸性筛选台｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="convexity-screening-console-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">筛</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06 · 筛选台</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="gold-calibration.html">黄金校准</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="scan-center.html">扫描中心</a>
+          <a href="manual-review.html">人工复核</a>
+          <a class="active" href="screening-console.html">筛选台</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <div hidden><span id="candidateStatus"></span><time id="candidateGeneratedAt"></time></div>
+      <section class="hero candidate-hero">
+        <div>
+          <span class="eyebrow">CONVEXITY SCREENING CONSOLE · C1.1</span>
+          <h1>凸性筛选台</h1>
+          <p>调整硬门槛、运行候选刷新并检查逐项通过原因。这里属于凸性工作台，筛选结果会进入机会中心，但后台控制不会出现在大众页面。</p>
+        </div>
+        <aside class="notice-panel">
+          <strong>允许极限池为空</strong>
+          <p>极限试仓是高权重搜索方向，不是每日必须凑出的结果。找不到同时通过硬门槛的项目时，宁可只保留资格待核验。</p>
+        </aside>
+      </section>
+
+      <section class="status-grid candidate-summary" aria-label="候选库状态">
+        <article><span>任务项目</span><strong id="candidateTotal">--</strong><small>含当前与历史状态</small></article>
+        <article><span>普通建仓候选</span><strong id="ordinaryCount">--</strong><small>证据与交易性较完整</small></article>
+        <article><span>极限资格待核验</span><strong id="extremeReviewCount">--</strong><small>搜索优先但行动受限</small></article>
+        <article><span>叙事胚胎与观察</span><strong id="embryoCount">--</strong><small>等待点火或价值承接</small></article>
+        <article><span>可执行极限试仓</span><strong id="actionableExtremeCount">--</strong><small>允许为零</small></article>
+      </section>
+
+      <section class="priority-policy">
+        <article>
+          <span>搜索权重</span>
+          <strong>优先发现尾部</strong>
+          <p id="discoveryPolicy"></p>
+        </article>
+        <article>
+          <span>行动权重</span>
+          <strong>硬门槛拥有否决权</strong>
+          <p id="decisionPolicy"></p>
+        </article>
+        <article>
+          <span>输出纪律</span>
+          <strong>不为数量降低标准</strong>
+          <p id="quotaPolicy"></p>
+        </article>
+      </section>
+
+      <section class="candidate-boundary">
+        <strong>数据边界</strong>
+        <p id="candidateBoundary"></p>
+      </section>
+
+      <section class="discovery-networks">
+        <header>
+          <div>
+            <span>DISCOVERY NETWORKS</span>
+            <h2>常用发现网络</h2>
+          </div>
+          <p>仅主网进入候选发现；测试网单独登记但不进入投资筛选。<a href="network-discovery.html">打开自动发现队列</a></p>
+        </header>
+        <div id="discoveryNetworkList" class="discovery-network-list"></div>
+      </section>
+
+      <section class="section-block gate-screening-section">
+        <header class="section-heading gate-screening-heading">
+          <div>
+            <span>HARD GATE SCREENING</span>
+            <h2>硬门槛筛选台</h2>
+            <p>调节筛选视图，不改写项目原始投研和行动结论。已失效或风险阻断项目始终不能成为通过结果。</p>
+          </div>
+          <div class="gate-screening-actions">
+            <label>
+              <span>筛选方案</span>
+              <select id="gatePreset"></select>
+            </label>
+            <button id="gateReset" class="secondary-action" type="button">恢复默认</button>
+            <button id="gateApply" class="primary-action" type="button">保存并筛选</button>
+          </div>
+        </header>
+
+        <div id="gateMessage" class="refresh-message hidden" role="status"></div>
+        <div class="gate-screening-summary" aria-label="硬门槛筛选结果">
+          <article><span>进入结果</span><strong id="gateIncludedCount">--</strong><small>包含允许保留的待核验项</small></article>
+          <article><span>完整通过</span><strong id="gateExactPassCount">--</strong><small>全部启用门槛均有数据并通过</small></article>
+          <article><span>待核验</span><strong id="gatePendingCount">--</strong><small>是否保留由未知数据选项决定</small></article>
+          <article><span>被排除</span><strong id="gateExcludedCount">--</strong><small>至少一项失败或未知被排除</small></article>
+        </div>
+
+        <div class="gate-screening-body">
+          <aside class="gate-preset-note">
+            <span>当前方案</span>
+            <strong id="gatePresetName">--</strong>
+            <p id="gatePresetDescription"></p>
+            <label class="switch-control">
+              <input id="gateShowOnlyPassing" type="checkbox" />
+              <span>项目列表只显示进入结果的项目</span>
+            </label>
+          </aside>
+
+          <form id="gateScreeningForm" class="gate-screening-form">
+            <fieldset class="gate-market-fieldset">
+              <legend>
+                <span>市场数值门槛</span>
+                <label class="switch-control">
+                  <input id="gateMarketEnabled" type="checkbox" />
+                  <span>启用</span>
+                </label>
+              </legend>
+              <label>
+                <span>最低流动性（美元）</span>
+                <input id="gateMinLiquidity" type="number" min="0" max="1000000000000" step="1000" />
+              </label>
+              <label>
+                <span>最低24小时成交（美元）</span>
+                <input id="gateMinVolume" type="number" min="0" max="1000000000000" step="1000" />
+              </label>
+              <label>
+                <span>最高退出滑点（%）</span>
+                <input id="gateMaxSlippage" type="number" min="0" max="100" step="0.1" />
+              </label>
+              <label>
+                <span>最低错配分</span>
+                <input id="gateMinScore" type="number" min="0" max="100" step="1" />
+              </label>
+            </fieldset>
+
+            <fieldset class="gate-option-fieldset">
+              <legend>项目条件</legend>
+              <div class="gate-maturity-control">
+                <span>允许成熟度</span>
+                <div>
+                  <label><input type="checkbox" name="gateMaturity" value="L0" />L0</label>
+                  <label><input type="checkbox" name="gateMaturity" value="L1" />L1</label>
+                  <label><input type="checkbox" name="gateMaturity" value="L2" />L2</label>
+                  <label><input type="checkbox" name="gateMaturity" value="L3" />L3</label>
+                  <label><input type="checkbox" name="gateMaturity" value="L4" />L4</label>
+                  <label><input type="checkbox" name="gateMaturity" value="L5" />L5</label>
+                </div>
+              </div>
+              <label>
+                <span>最高风险</span>
+                <select id="gateMaxRisk">
+                  <option value="low">仅低风险</option>
+                  <option value="medium">中风险及以下</option>
+                  <option value="high">高风险及以下</option>
+                  <option value="any">不限制（仍排除阻断）</option>
+                </select>
+              </label>
+              <label>
+                <span>最低价值捕获</span>
+                <select id="gateMinValueCapture">
+                  <option value="A">仅 A</option>
+                  <option value="B">B 及以上</option>
+                  <option value="C">C 及以上</option>
+                  <option value="any">不限制</option>
+                </select>
+              </label>
+              <label>
+                <span>最低剩余凸性</span>
+                <select id="gateMinRemaining">
+                  <option value="high">仅高</option>
+                  <option value="medium">中及以上</option>
+                  <option value="low">低及以上</option>
+                  <option value="any">不限制</option>
+                </select>
+              </label>
+              <label>
+                <span>资产映射</span>
+                <select id="gateAssetPolicy">
+                  <option value="mapped">必须有可跟踪资产</option>
+                  <option value="any">允许未映射项目</option>
+                </select>
+              </label>
+              <label>
+                <span>交易性状态</span>
+                <select id="gateTradeabilityPolicy">
+                  <option value="verified">仅已核验</option>
+                  <option value="limited_or_verified">已核验或受限</option>
+                  <option value="any">不限制</option>
+                </select>
+              </label>
+              <label>
+                <span>身份核验</span>
+                <select id="gateIdentityPolicy">
+                  <option value="verified">必须已核验</option>
+                  <option value="allow_pending">允许待核验</option>
+                  <option value="any">不参与筛选</option>
+                </select>
+              </label>
+              <label>
+                <span>卖出路径</span>
+                <select id="gateSellPathPolicy">
+                  <option value="verified">必须已核验</option>
+                  <option value="allow_unknown">允许待核验</option>
+                  <option value="any">不参与筛选</option>
+                </select>
+              </label>
+              <label>
+                <span>合约风险</span>
+                <select id="gateContractRiskPolicy">
+                  <option value="low_or_medium">仅低或中风险</option>
+                  <option value="known_non_blocked">已知且非阻断</option>
+                  <option value="allow_unknown">允许待核验</option>
+                  <option value="any">不参与筛选</option>
+                </select>
+              </label>
+              <div class="gate-check-controls">
+                <label><input id="gateRequireHardTrace" type="checkbox" />必须有可信硬痕迹</label>
+                <label><input id="gateRequireCompleteConvexity" type="checkbox" />凸性核心字段必须完整</label>
+              </div>
+              <label>
+                <span>未知数据处理</span>
+                <select id="gateUnknownPolicy">
+                  <option value="exclude">排除未知项</option>
+                  <option value="keep">保留为待核验</option>
+                </select>
+              </label>
+            </fieldset>
+          </form>
+        </div>
+      </section>
+
+      <section class="section-block candidate-refresh-section">
+        <header class="section-heading refresh-heading">
+          <div><span>LIVE REFRESH</span><h2>候选实时刷新</h2></div>
+          <button id="refreshCandidates" class="primary-action" type="button">一键刷新候选</button>
+        </header>
+        <div id="refreshMessage" class="refresh-message hidden" role="status"></div>
+        <div id="latestCandidateRefresh" class="latest-candidate-refresh"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading candidate-heading">
+          <div><span>CANDIDATE REVIEW</span><h2>项目分池与判断</h2></div>
+          <div class="candidate-controls">
+            <label>
+              <span>项目池</span>
+              <select id="candidatePoolFilter">
+                <option value="all">全部项目池</option>
+              </select>
+            </label>
+            <label>
+              <span>搜索</span>
+              <input id="candidateSearch" type="search" placeholder="项目、代币、凸性来源" />
+            </label>
+          </div>
+        </header>
+
+        <div class="candidate-workspace">
+          <aside class="candidate-sidebar">
+            <div class="case-sidebar-head">
+              <strong>候选项目</strong>
+              <span id="candidateVisibleCount">--</span>
+            </div>
+            <div id="candidateList" class="candidate-list"></div>
+          </aside>
+          <article id="candidateDetail" class="candidate-detail" aria-live="polite"></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>筛选规则仅在本项目内运行</strong>
+    </footer>
+
+    <script src="opportunity-center-snapshot.js"></script>
+    <script src="research-route-snapshot.js?v=20260729-c1p05"></script>
+    <script src="candidate-pool-snapshot.js"></script>
+    <script src="screening-console.js?v=20260729-c1p05"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

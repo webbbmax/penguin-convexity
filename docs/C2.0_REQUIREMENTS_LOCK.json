@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "c2.0-requirements-lock-v1",
+  "release": "C2.0",
+  "name": "机会信号质量与可解释决策",
+  "status": "frozen",
+  "frozenAt": "2026-08-03T16:46:36+08:00",
+  "userAuthorization": "继续凸性：按已确认方案冻结 C2.0",
+  "planningAuthority": "Sol",
+  "modelVerification": {
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verified": true
+  },
+  "hashAlgorithm": "SHA-256",
+  "requirementSetCanonicalization": "按documents顺序，以path:lowercase_sha256逐行连接，行间使用LF，末尾无换行",
+  "requirementSetSha256": "f90bca4ff8764290fe5103e6191c6c1b0bd54126b94a03f708cb83cc20b3761b",
+  "documents": [
+    {
+      "path": "docs/C2.0_PRD.md",
+      "role": "正式产品需求与业务边界",
+      "bytes": 16473,
+      "sha256": "ea9bf2f01798dee5c9fc01ed50681ac98c7a7ba7588ad5007452b4902cb77433"
+    },
+    {
+      "path": "docs/C2.0_PAGE_DATA_CONTRACT.md",
+      "role": "页面归属、派生快照、排序、事件链与质量指标数据契约",
+      "bytes": 13425,
+      "sha256": "47a42748888ef53b8c1b50f706dfc220ce3ca14254de0ae22ff2a4453a704183"
+    },
+    {
+      "path": "docs/C2.0_DESIGN_SPEC.md",
+      "role": "UI与交互设计规格",
+      "bytes": 12060,
+      "sha256": "564085359250af35027da029b2cf1e0bcd5c300c95115fe583654e90b7c16799"
+    },
+    {
+      "path": "docs/C2.0_COPY_DICTIONARY.md",
+      "role": "前后台固定用语、状态与数字口径",
+      "bytes": 6611,
+      "sha256": "a69f52135baf0c787b4286bf6a94e69b9c01c85e2c7758c22f2f3e4e9a963649"
+    },
+    {
+      "path": "docs/C2.0_ACCEPTANCE_PLAN.md",
+      "role": "Luna开发自测与Sol独立终验计划",
+      "bytes": 13278,
+      "sha256": "9878e33b9ef328969916ed92526082c967631c956d50d6c161340f0128bf1805"
+    }
+  ],
+  "frozenProductChoices": {
+    "frontNavigation": [
+      "机会首页",
+      "全部机会",
+      "重要变化",
+      "我们如何判断"
+    ],
+    "readingTiers": [
+      "现在必须看",
+      "值得继续看",
+      "保持观察"
+    ],
+    "homeSignalLimit": 5,
+    "homeFillerPolicy": "不足5个不补位，0个显示真实空状态",
+    "changeImpactLabels": [
+      "可能改善",
+      "可能收紧",
+      "尚不改变判断"
+    ],
+    "changeChainWindowHours": 24,
+    "changePageSize": 20,
+    "allOpportunityPageSize": 20,
+    "projectSummarySections": 5,
+    "qualityDimensions": 7,
+    "qualityPage": "后台模型与规则栏目下的判断质量二级页面",
+    "adminTopLevelGroups": 7,
+    "updateProgressStages": 7,
+    "implementationArchitecture": "只读派生双快照，不新增SQLite业务表、列或迁移",
+    "rankingArchitecture": "固定字典序和普通语言理由，不新增数值分",
+    "visibleVersionDuringLuna": "当前版本 C1.9",
+    "visibleVersionAfterSolRelease": "仅后台左栏底部显示当前版本 C2.0"
+  },
+  "immutableBusinessBoundaries": [
+    "不修改L0-L5",
+    "不修改评分、风险、剩余凸性、交易性、点火距离、价值捕获或当前动作",
+    "不修改早期、OG、潜力项目生命周期规则",
+    "阅读优先级不成为新的投资动作、评分或仓位",
+    "不新增大批外部来源、Watcher主线或研究数据能力",
+    "不删除或覆盖原始事件、证据、溯源和历史变化",
+    "不自动交易",
+    "不与RWA、旧整合项目或源项目建立运行时引用",
+    "公共API资源共享边界不变"
+  ],
+  "immutableCoreFiles": [
+    {
+      "path": "storage/rulebook-v1.json",
+      "sha256": "efb1454566b3bce710fc7f46d694635dfedb1563b0a310d3fb7d121f0f815757"
+    },
+    {
+      "path": "storage/state-machine-v1.json",
+      "sha256": "150dec79bfbabba86d132ca690a0497917bee42bd64bd5315ccf6ddd7c4da5a0"
+    },
+    {
+      "path": "storage/schema.sql",
+      "sha256": "4a88eda2d778723a4d7d82b6bbaf8163754c285d45cf7de1e9a660f26b550853"
+    },
+    {
+      "path": "storage/data-dictionary.json",
+      "sha256": "9dd5dd7ec5b1783459f5e6da9aa08d1343f838f37ba239b9803276d44e9a9cf8"
+    },
+    {
+      "path": "scripts/rule_engine.py",
+      "sha256": "e855876892ec8891d8c441ed0ebe862e6a12544faf32de8e95c77923acdd1601"
+    }
+  ],
+  "implementationAuthority": "Luna一次性完成全部常规编码和开发自测",
+  "finalAuthority": "Sol独立终验、修复冻结范围内缺陷并发布",
+  "productCodeStartedAtFreeze": false
+}

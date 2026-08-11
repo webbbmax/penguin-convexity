@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C1.1-02 黄金校准集｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="gold-calibration-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a class="active" href="gold-calibration.html">黄金校准</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="scan-center.html">扫描中心</a>
+          <a href="manual-review.html">人工复核</a>
+          <a href="four-layer-screening.html">四层筛选</a>
+          <a href="model-acceptance.html">模型验收</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="gold-hero">
+        <div>
+          <span>C1.1 凸性发现质量升级 · C1.1-02</span>
+          <h1>黄金校准集</h1>
+          <p>把“凸性”任务中真正有决策价值的正例、极限边界、观察和排除案例固化为筛选模型基准。未来模型必须独立复现，不依赖任务对话框。</p>
+        </div>
+        <aside>
+          <strong>定期静态更新</strong>
+          <p id="goldBoundary">正在读取校准边界。</p>
+          <small id="goldCapturedAt">数据截点 --</small>
+        </aside>
+      </section>
+
+      <section class="gold-summary" aria-label="黄金校准集概览">
+        <article><span>校准案例</span><strong id="goldCaseCount">--</strong><small>不是候选数量目标</small></article>
+        <article><span>普通建仓正例</span><strong id="goldPositiveCount">--</strong><small>降险后仍有凸性</small></article>
+        <article><span>极限试仓边界</span><strong id="goldExtremeCount">--</strong><small>按归零控制亏损</small></article>
+        <article><span>只观察边界</span><strong id="goldObserveCount">--</strong><small>保留线索但不建仓</small></article>
+        <article><span>明确排除反例</span><strong id="goldRejectedCount">--</strong><small>不为凑数降门槛</small></article>
+      </section>
+
+      <section class="gold-principles">
+        <article><span>01</span><strong>先找可控亏损</strong><p>没有可验证卖出路径、安全边界或仓位封顶方式，就不能进入行动层。</p></article>
+        <article><span>02</span><strong>项目与资产分开</strong><p>产品、代码或采用成立，不代表指定代币能够捕获经济增量。</p></article>
+        <article><span>03</span><strong>价格反应会衰减赔率</strong><p>事件兑现或高换手后必须降低剩余凸性，L5转入反身性管理。</p></article>
+        <article><span>04</span><strong>允许行动层为空</strong><p>没有项目通过时保持空结果，不用低质量项目填满页面。</p></article>
+      </section>
+
+      <section class="gold-controls" aria-label="筛选黄金案例">
+        <label><span>搜索</span><input id="goldSearch" type="search" placeholder="项目、代币或凸性来源" /></label>
+        <label><span>案例分组</span><select id="goldCohortFilter"><option value="all">全部分组</option></select></label>
+        <label><span>动作</span><select id="goldActionFilter"><option value="all">全部动作</option></select></label>
+        <label><span>成熟度</span><select id="goldMaturityFilter"><option value="all">全部成熟度</option></select></label>
+      </section>
+
+      <section class="gold-workspace">
+        <aside class="gold-list-panel">
+          <header><div><strong>任务案例</strong><span id="goldVisibleCount">--</span></div><small id="goldSourceMeta">来源：凸性任务</small></header>
+          <div id="goldCaseList" class="gold-case-list"></div>
+        </aside>
+        <article id="goldCaseDetail" class="gold-case-detail" aria-live="polite"></article>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>C1.1-02 黄金校准集</strong>
+    </footer>
+
+    <script src="gold-calibration-snapshot.js"></script>
+    <script src="gold-calibration.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

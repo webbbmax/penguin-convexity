@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "c2.0-planning-status-v1",
+  "release": "C2.0",
+  "name": "机会信号质量与可解释决策",
+  "phase": "sol_final_acceptance_complete_released",
+  "requirementsStatus": "frozen",
+  "productCodeStarted": true,
+  "planningAndDesignAuthority": "Sol",
+  "implementationAuthority": "Luna",
+  "finalAcceptanceFixAndReleaseAuthority": "Sol",
+  "modelVerification": {
+    "source": "current_turn_and_thread_settings_metadata",
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verifiedAt": "2026-08-03T16:33:00+08:00"
+  },
+  "highestPriority": "把现有项目与变化压缩为少量、具体、可解释的前台决策信号，并在后台建立判断质量闭环",
+  "planningDraft": "docs/C2.0_PLANNING_DRAFT.md",
+  "requirementsLock": "docs/C2.0_REQUIREMENTS_LOCK.json",
+  "formalPrd": "docs/C2.0_PRD.md",
+  "pageDataContract": "docs/C2.0_PAGE_DATA_CONTRACT.md",
+  "designSpec": "docs/C2.0_DESIGN_SPEC.md",
+  "copyDictionary": "docs/C2.0_COPY_DICTIONARY.md",
+  "acceptancePlan": "docs/C2.0_ACCEPTANCE_PLAN.md",
+  "handoff": "docs/C2.0_HANDOFF.md",
+  "phaseFile": "docs/C2.0_PHASE.json",
+  "allowedNextAction": "C2.0 已发布；新版本需用户重新授权规划",
+  "forbiddenNextActions": [
+    "Sol在等待Luna阶段开始产品编码",
+    "未核验Luna当前任务双模型元数据就启动实现",
+    "修改评分、动作、L0-L5或投资研究规则",
+    "把阅读优先级替代为新的投资动作或评分",
+    "新增SQLite业务表或把派生结果回写投资结论",
+    "新增到RWA、旧整合项目或源项目的运行时引用",
+    "Luna提前宣布C2.0发布"
+  ],
+  "releasedAt": "2026-08-03T18:45:09+08:00",
+  "acceptanceManifest": "docs/C2.0_ACCEPTANCE_MANIFEST.json",
+  "updatedAt": "2026-08-03T18:45:09+08:00"
+}

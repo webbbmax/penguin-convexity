@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "c1.9-screenshot-manifest-v2",
+  "release": "C1.9",
+  "authority": "Sol",
+  "generatedAt": "2026-08-03T14:40:10+08:00",
+  "directory": "runtime/screenshots/c1.9-sol",
+  "viewports": ["1280x720", "1440x900", "1920x1080", "1440x900@125%模拟"],
+  "screenshots": [
+    {"file":"01-home-1440x900.png","state":"前台机会首页","bytes":130708,"sha256":"3701f24841743635be1e5657ac3e04105be8cc4d54909dc509037c521862517d"},
+    {"file":"02-all-1440x900.png","state":"全部机会与分页","bytes":131823,"sha256":"55e59f32531aae9fdb0e5d703a4d7087275914908313100baad60c50def6d16f"},
+    {"file":"03-changes-1440x900.png","state":"重要变化与筛选","bytes":109940,"sha256":"7fe7652028678b8f7d5009528e8634abc5a70ea31f903e6afaace49c22903e65"},
+    {"file":"04-detail-1440x900.png","state":"上下文项目详情与普通语言数字","bytes":92323,"sha256":"a76774c5630a8c35f807f3fd58341094724672f5f4a8399861f9450fd9d31faa"},
+    {"file":"05-method-1440x900.png","state":"我们如何判断","bytes":66517,"sha256":"b365e7ed40d0b9b6144366d0fde43faf3650c2df0e90f52eb01200ab0d194a2a"},
+    {"file":"06-workbench-1440x900.png","state":"后台工作台概览与唯一版本号","bytes":95261,"sha256":"8a5c28f4ceb457dabb1b68d5fae60b8624e5b836430e8c2ee03ab61434459398"},
+    {"file":"07-update-1440x900.png","state":"更新中心失败聚合与七阶段进度","bytes":110676,"sha256":"c14f79e74ca14d53a62fc37e0f2e56ac28a91a909fb5ab25338df2c1f732d2cc"},
+    {"file":"08-home-1280x720.png","state":"前台小视口","bytes":108469,"sha256":"063cffb795fb4a404b8d65c441a18809851c852901e9ae37129f9ae97436a3c5"},
+    {"file":"09-workbench-1280x720.png","state":"后台小视口","bytes":94645,"sha256":"96afa9a12468061e5c503221879a99d8afaddc33877a8f8b7f592b45e24f76ad"},
+    {"file":"10-home-1920x1080.png","state":"前台大视口","bytes":144915,"sha256":"f2f6b840620dc1f3e3b900df6c7814f6bfa59be9ee1afeeaa879cb4ff6b4a048"},
+    {"file":"11-workbench-1920x1080.png","state":"后台大视口","bytes":101423,"sha256":"bd7dd989b8301512e7de3a19fed2bb9865ffb2acf718b48262461b7a61ec6278"},
+    {"file":"12-desktop-host-1440x900.png","state":"桌面宿主无重复导航","bytes":130708,"sha256":"3701f24841743635be1e5657ac3e04105be8cc4d54909dc509037c521862517d"},
+    {"file":"13-home-scale125.png","state":"前台125%缩放模拟","bytes":169202,"sha256":"0e9c2cbb76105b0c34569fd901779fbcceae68d92e14eac115255b60d66fb23f"},
+    {"file":"14-workbench-scale125.png","state":"后台125%缩放模拟","bytes":122802,"sha256":"64ba1b6a514e87ff4cb52ff24dc32b1e37267cb4af5ad8578441e6c7d53504b4"}
+  ],
+  "note": "截图只用于渲染验收，没有启动更新或改写研究数据；运行中、外部等待、卡住和遥测失败由隔离状态测试覆盖。"
+}

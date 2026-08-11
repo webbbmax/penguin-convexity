@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "c1.8-phase-v1",
+  "release": "C1.8",
+  "requirementsStatus": "frozen",
+  "phase": "accepted",
+  "productCodeStarted": true,
+  "implementationAuthority": "Luna",
+  "finalAcceptanceAuthority": "Sol",
+  "lastUpdated": "2026-08-02",
+  "allowedPhases": [
+    "requirements_frozen_waiting_luna",
+    "luna_implementing",
+    "luna_self_test_complete_waiting_sol",
+    "sol_final_acceptance",
+    "blocked_return_to_luna",
+    "accepted"
+  ],
+  "frozenDocuments": [
+    "docs/C1.8_PRD.md",
+    "docs/C1.8_ACCEPTANCE_PLAN.md",
+    "docs/C1.8_HANDOFF.md"
+  ],
+  "note": "Sol repaired the user-authorized blocker scope and independently re-verified all A01-A16 gates on 2026-08-02. C1.8 is accepted and released; see docs/C1.8_ACCEPTANCE_MANIFEST.json."
+}

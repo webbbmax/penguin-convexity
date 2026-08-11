@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>项目监控基础设施｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="convexity-monitoring-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">基</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面"></nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="monitoring-infrastructure-hero">
+        <div>
+          <span>MONITORING INFRASTRUCTURE · C1.6-06</span>
+          <h1>项目监控基础设施</h1>
+          <p>逐项目登记官网、X、GitHub、协议指标、治理空间、受益资产和合约。身份或来源归属未通过的目标只保留记录，不进入自动采集。</p>
+        </div>
+        <aside>
+          <strong>数据边界</strong>
+          <p id="monitoringBoundary">正在读取基础设施规则。</p>
+          <small id="monitoringGeneratedAt">正在读取生成时间</small>
+        </aside>
+      </section>
+
+      <section class="status-grid monitoring-infrastructure-summary" aria-label="项目监控基础设施汇总">
+        <article><span>项目总数</span><strong id="monitoringProjectTotal">--</strong><small>全部凸性机器项目</small></article>
+        <article><span>监控目标</span><strong id="monitoringTargetTotal">--</strong><small>当前有效目标</small></article>
+        <article><span>自动采集已接通</span><strong id="monitoringReadyTotal">--</strong><small>身份与来源归属已通过</small></article>
+        <article><span>已登记待适配</span><strong id="monitoringRegisteredTotal">--</strong><small>官网、X或GitHub组织入口</small></article>
+        <article><span>身份阻断</span><strong id="monitoringBlockedTotal">--</strong><small>不会进入自动采集</small></article>
+        <article><span>归属冲突</span><strong id="monitoringConflictTotal">--</strong><small>必须先解决身份冲突</small></article>
+      </section>
+
+      <section class="section-block monitoring-infrastructure-browser">
+        <header class="section-heading">
+          <div><span>PROJECT TARGET REGISTRY</span><h2>逐项目查看监控目标</h2></div>
+          <p id="monitoringVisibleCount">正在读取项目。</p>
+        </header>
+        <div class="monitoring-infrastructure-controls">
+          <label>
+            <span>基础设施状态</span>
+            <select id="monitoringStatusFilter">
+              <option value="all">全部状态</option>
+              <option value="ready">监控基础设施完整</option>
+              <option value="partial">部分目标可运行</option>
+              <option value="registered">已登记待核验</option>
+              <option value="identity_blocked">身份阻断</option>
+              <option value="conflict">存在归属冲突</option>
+              <option value="empty">尚无监控目标</option>
+            </select>
+          </label>
+          <label>
+            <span>目标类型</span>
+            <select id="monitoringTypeFilter">
+              <option value="all">全部类型</option>
+              <option value="official_website">官网</option>
+              <option value="official_social">X</option>
+              <option value="github_organization">GitHub组织</option>
+              <option value="github_repository">GitHub仓库</option>
+              <option value="defillama_protocol">DefiLlama协议</option>
+              <option value="snapshot_space">Snapshot空间</option>
+              <option value="cactus_governance">Cactus治理</option>
+              <option value="asset">受益资产</option>
+              <option value="contract">资产合约</option>
+            </select>
+          </label>
+          <label class="monitoring-infrastructure-search">
+            <span>查找项目</span>
+            <input id="monitoringSearch" type="search" placeholder="项目、目标、合约或信源" />
+          </label>
+        </div>
+        <div class="monitoring-infrastructure-workspace">
+          <div class="monitoring-infrastructure-list" id="monitoringProjectList"></div>
+          <aside class="monitoring-infrastructure-detail" id="monitoringProjectDetail" aria-live="polite">
+            <strong>选择一个项目</strong>
+            <p>这里会显示哪些目标已经接通、哪些仍被身份阻断，以及每个目标对应的原始记录和研究证据。</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>目标登记不等于催化或行动结论 · 仅使用本项目数据</strong>
+    </footer>
+
+    <script src="monitoring-infrastructure-snapshot.js"></script>
+    <script src="monitoring-infrastructure.js?v=20260731-c1p6p06a"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

@@ -1,0 +1,472 @@
+TASK_DEFINITIONS = {
+    "full_refresh": {
+        "order": 0,
+        "label": "凸性全量更新",
+        "jobName": "凸性全量更新",
+        "legacyJobNames": ["凸性候选实时刷新"],
+        "description": "依次更新行情与流动性、正式项目持续证据、项目级发现、证据链接、合约与卖出路径、常用链发现和项目身份。",
+        "updates": "全部凸性候选、事实证据、项目发现与归因、链上发现队列、身份状态、合约核验和页面快照。",
+        "sourceIds": [
+            "market-coingecko",
+            "market-dexscreener",
+            "candidate-market-mapping",
+            "evidence-github-official",
+            "evidence-defillama-protocols",
+            "evidence-snapshot-governance",
+            "evidence-cactus-governance",
+            "discovery-github-repositories",
+            "discovery-defillama-protocols",
+            "discovery-snapshot-spaces",
+            "discovery-cactus-organizations",
+            "evidence-link-health",
+            "contract-identity-mapping",
+            "security-goplus",
+            "chain-robinhood-blockscout",
+            "discovery-dexscreener-profiles",
+            "discovery-dexscreener-boosts",
+            "discovery-robinhood-blockscout",
+            "identity-coingecko-registry",
+            "machine-project-asset-identity",
+            "formal-project-profile-enrichment",
+            "formal-project-market-exit-enrichment",
+            "formal-project-research-materials",
+            "machine-research-scoring",
+            "machine-conclusion-publication",
+            "machine-catalyst-trade-path",
+            "monitoring-infrastructure-registry",
+            "weak-signal-inbox-registry",
+            "data-backbone-registry",
+            "evidence-github-releases-packages",
+        ],
+        "components": [
+            "market",
+            "formal_market_exit",
+            "high_value_evidence",
+            "source_discovery",
+            "evidence",
+            "contracts",
+            "discovery",
+            "identity",
+            "project_asset_identity",
+            "profile_enrichment",
+            "formal_research_materials",
+            "monitoring_infrastructure",
+            "weak_signals",
+            "data_backbone",
+            "machine_research_scoring",
+            "machine_conclusion",
+            "catalyst_trade_path",
+            "tracking",
+        ],
+    },
+    "market_refresh": {
+        "order": 1,
+        "label": "行情与流动性",
+        "jobName": "凸性行情与流动性更新",
+        "description": "更新已映射候选的价格、成交额、流动性、市值、FDV、近似退出滑点和可核验的首次市场记录。",
+        "updates": "候选项目的最新市场快照、变化项、交易性初筛和生命周期时间证据。",
+        "sourceIds": [
+            "market-coingecko",
+            "market-dexscreener",
+            "candidate-market-mapping",
+        ],
+        "components": ["market"],
+    },
+    "high_value_evidence_refresh": {
+        "order": 13,
+        "label": "正式项目持续证据",
+        "jobName": "凸性正式项目持续证据更新",
+        "description": "从正式项目身份库自动生成目标，刷新认证GitHub代码与安全相关提交、DefiLlama采用指标、Snapshot链下治理和Cactus链上治理。",
+        "updates": "正式项目的代码变化、协议采用、治理提案和安全相关活动；完整相同的证据自动跳过，资料变化不直接改写凸性质量、收益赔率或当前动作。",
+        "sourceIds": [
+            "evidence-github-official",
+            "evidence-defillama-protocols",
+            "evidence-snapshot-governance",
+            "evidence-cactus-governance",
+        ],
+        "components": ["high_value_evidence"],
+    },
+    "evidence_refresh": {
+        "order": 3,
+        "label": "证据链接健康",
+        "jobName": "凸性证据链接更新",
+        "description": "检查候选研究中已有证据链接能否访问，以及内容指纹是否发生变化。",
+        "updates": "证据可访问、受限、失败和内容变化状态，不改写证据结论。",
+        "sourceIds": ["evidence-link-health"],
+        "components": ["evidence"],
+    },
+    "tracking_task_refresh": {
+        "order": 4,
+        "label": "项目跟踪任务",
+        "jobName": "凸性项目跟踪任务更新",
+        "description": "先刷新项目所需的一手证据、市场和交易性数据，再逐个执行已经到期的跟踪任务。",
+        "updates": "逐项目记录检查过的信源、发现与未发现、升级/继续/停止结论、下次复查时间和可单独重试的失败项。",
+        "sourceIds": [
+            "formal-project-market-exit-enrichment",
+            "market-coingecko",
+            "market-dexscreener",
+            "candidate-market-mapping",
+            "evidence-github-official",
+            "evidence-defillama-protocols",
+            "evidence-snapshot-governance",
+            "evidence-cactus-governance",
+            "evidence-link-health",
+            "contract-identity-mapping",
+            "security-goplus",
+            "chain-robinhood-blockscout",
+            "identity-coingecko-registry",
+        ],
+        "components": [
+            "formal_market_exit",
+            "high_value_evidence",
+            "evidence",
+            "identity",
+            "tracking",
+        ],
+    },
+    "contract_refresh": {
+        "order": 5,
+        "label": "合约与卖出路径",
+        "jobName": "凸性合约与卖出路径更新",
+        "description": "核验代币合约、所在网络、交易池匹配、风险标志和只读卖出路径。",
+        "updates": "合约身份、卖出路径、风险标志、目标退出金额和估算滑点。",
+        "sourceIds": [
+            "contract-identity-mapping",
+            "security-goplus",
+            "chain-robinhood-blockscout",
+            "market-coingecko",
+            "market-dexscreener",
+        ],
+        "components": ["market", "contracts"],
+    },
+    "source_discovery_refresh": {
+        "order": 6,
+        "label": "机器发现与自动建档",
+        "jobName": "凸性机器发现与自动建档",
+        "description": "从GitHub、DefiLlama、Snapshot和Cactus扩大项目级召回；满足严格身份锚点的项目无需人工放行，自动建立只观察档案。",
+        "updates": "项目级发现记录、跨源印证、已有项目匹配、机器项目档案、只观察案例、资产未识别和价值捕获未知状态。",
+        "sourceIds": [
+            "discovery-github-repositories",
+            "discovery-defillama-protocols",
+            "discovery-snapshot-spaces",
+            "discovery-cactus-organizations",
+        ],
+        "components": ["source_discovery"],
+    },
+    "cactus_discovery_continue": {
+        "order": 7,
+        "label": "继续扫描 Cactus",
+        "jobName": "凸性 Cactus 治理组织续扫",
+        "description": "只从上次保存的分页位置继续扫描Cactus治理组织，不重复运行GitHub、DefiLlama和Snapshot。",
+        "updates": "Cactus治理组织发现记录、分页游标、项目身份归因和跨源印证状态。",
+        "sourceIds": ["discovery-cactus-organizations"],
+        "components": ["source_discovery"],
+    },
+    "discovery_refresh": {
+        "order": 8,
+        "label": "常用链项目发现",
+        "jobName": "凸性常用链项目发现",
+        "description": "扫描当前启用的常用链和发现来源，新增或刷新全部符合技术条件的发现记录。",
+        "updates": "链上发现、技术预检、网络、合约、来源和待身份复核队列。",
+        "sourceIds": [
+            "discovery-dexscreener-profiles",
+            "discovery-dexscreener-boosts",
+            "discovery-robinhood-blockscout",
+        ],
+        "components": ["discovery"],
+    },
+    "identity_refresh": {
+        "order": 14,
+        "label": "发现队列身份复核",
+        "jobName": "凸性发现身份复核",
+        "description": "对发现队列中达到技术门槛的记录核验项目主体、独立资产登记和官网合约。",
+        "updates": "发现记录的身份吻合、冲突、排除、待补证和允许进入影子研究库的状态。",
+        "sourceIds": ["identity-coingecko-registry"],
+        "components": ["identity"],
+    },
+    "machine_asset_identity_refresh": {
+        "order": 9,
+        "label": "机器项目资产与基础档案",
+        "jobName": "凸性机器项目资产与基础档案更新",
+        "description": "对全部机器项目交叉核验项目主体、CoinGecko资产、代币符号、所在网络和合约；无法严格核验的项目保留明确缺口。",
+        "updates": "逐项目记录资产已核验、仅交叉印证、身份冲突或未找到项目自身代币的原因，并写入可核验资产和合约；不产生凸性评分或行动建议。",
+        "sourceIds": ["machine-project-asset-identity"],
+        "components": ["project_asset_identity"],
+    },
+    "profile_enrichment_refresh": {
+        "order": 10,
+        "label": "正式项目身份与官方入口",
+        "jobName": "凸性正式项目身份与官方入口更新",
+        "description": "优先复核正式项目，并从现有可核验身份记录补齐官网、X和GitHub入口。",
+        "updates": "正式项目身份状态、官网、X、GitHub入口证据和仍待补证项目，不改写凸性评分。",
+        "sourceIds": ["formal-project-profile-enrichment"],
+        "components": ["profile_enrichment"],
+    },
+    "formal_market_exit_refresh": {
+        "order": 11,
+        "label": "正式项目市场与退出资料",
+        "jobName": "凸性正式项目市场与退出资料更新",
+        "description": "面向全部正式项目补齐价格、市值、FDV、流动性、24小时成交、交易池、只读卖出路径和估算退出滑点。",
+        "updates": "正式项目市场快照、最深单池、合约风险、卖出路径、估算滑点和仍待补齐项目；不把资料完整度直接改写成行动建议。",
+        "sourceIds": [
+            "formal-project-market-exit-enrichment",
+            "market-coingecko",
+            "market-dexscreener",
+            "contract-identity-mapping",
+            "security-goplus",
+            "chain-robinhood-blockscout",
+        ],
+        "components": ["formal_market_exit"],
+    },
+    "formal_research_materials_refresh": {
+        "order": 12,
+        "label": "正式项目研究资料",
+        "jobName": "凸性正式项目研究资料更新",
+        "description": "从已核验官网和认证 GitHub 仓库自动发现产品文档、代币经济、团队组织及审计安全资料。",
+        "updates": "正式项目的文档入口、代币经济材料、团队与组织页面、审计与安全资料及其原始来源；不把项目方陈述直接当作价值捕获、团队实名或安全结论。",
+        "sourceIds": ["formal-project-research-materials"],
+        "components": ["formal_research_materials"],
+    },
+    "machine_research_scoring_refresh": {
+        "order": 15,
+        "label": "机器证据与凸性评分",
+        "jobName": "凸性机器证据与凸性评分更新",
+        "description": "按早期项目、OG项目和潜力项目的不同研究权重，为全部机器项目计算证据质量、事实新闻错配和凸性准备度。",
+        "updates": "逐项目保存三个分数、维度明细、证据引用、当前阻断项和事实成熟度；评分只用于研究排序，不改变当前动作。",
+        "sourceIds": ["machine-research-scoring"],
+        "components": ["machine_research_scoring"],
+    },
+    "machine_conclusion_refresh": {
+        "order": 16,
+        "label": "机器状态与结论发布",
+        "jobName": "凸性机器状态与结论发布",
+        "description": "把最新机器评分与身份、证据、风险、交易性和凸性结构硬门槛合并，发布每个项目的当前机器状态和结论。",
+        "updates": "逐项目发布当前结论、为什么不能行动、下一项自动任务、升级条件和失效条件；人工复核可介入但不阻断发布。",
+        "sourceIds": ["machine-conclusion-publication"],
+        "components": ["machine_conclusion"],
+    },
+    "catalyst_trade_path_refresh": {
+        "order": 17,
+        "label": "催化交易路径",
+        "jobName": "凸性催化交易路径更新",
+        "description": "把可溯源催化、确认信号、受益资产、价值传导、市场与退出、失效条件串成逐项目机器路径。",
+        "updates": "逐项目刷新催化路径阶段、阻断原因、实际核验金额、2万美元理论退出滑点和下一项机器任务；不自动交易。",
+        "sourceIds": ["machine-catalyst-trade-path"],
+        "components": ["catalyst_trade_path"],
+    },
+    "monitoring_infrastructure_refresh": {
+        "order": 18,
+        "label": "项目监控基础设施",
+        "jobName": "凸性项目监控基础设施更新",
+        "description": "为全部凸性项目统一登记官网、X、GitHub、协议指标、治理空间、受益资产和合约，并执行项目归属门槛。",
+        "updates": "逐项目刷新监控目标、自动采集状态、身份阻断、归属冲突、原始记录与证据引用；不抓取弱线索，不产生行动结论。",
+        "sourceIds": ["monitoring-infrastructure-registry"],
+        "components": ["monitoring_infrastructure"],
+    },
+    "weak_signal_refresh": {
+        "order": 19,
+        "label": "弱线索统一归类",
+        "jobName": "凸性弱线索统一归类更新",
+        "description": "把现有项目发现、治理、公开代码、链上痕迹和推广入口整理为统一弱线索收件箱，并执行身份、推广偏差与补证边界。",
+        "updates": "逐条刷新线索类型、项目归属、推广偏差、可补证状态、原始记录引用和升级要求；不直接改变评分、结论或行动。",
+        "sourceIds": ["weak-signal-inbox-registry"],
+        "components": ["weak_signals"],
+    },
+    "data_backbone_refresh": {
+        "order": 20,
+        "label": "最大漏斗数据主干",
+        "jobName": "凸性最大漏斗数据主干更新",
+        "description": "把现有原始记录统一写入 Event Schema v2，检查游标、断档和来源静默，保留孤儿证据，并重新编译实体关系与 Watcher。",
+        "updates": "数据连续性、来源健康、孤儿证据再归属、实体图谱，以及 Git、发布、包、EVM 和 Solana 五条监控主线；不改变项目评分、结论或动作。",
+        "sourceIds": ["data-backbone-registry", "evidence-github-releases-packages"],
+        "components": ["data_backbone"],
+    },
+}
+
+
+SOURCE_BOUNDARIES = {
+    "market-coingecko": {
+        "category": "市场数据",
+        "proves": "提供聚合价格、成交额、市值、FDV、流通供应快照和接口窗口内的首次市场记录。",
+        "doesNotProve": "近365日首条市场记录不等于项目成立日期，也不证明单一交易场所的真实退出深度或投资结论。",
+    },
+    "market-dexscreener": {
+        "category": "市场数据",
+        "proves": "提供指定交易池的价格、成交额、流动性和交易池地址。",
+        "doesNotProve": "单池数据不能代表全市场深度，估算滑点不等于真实卖出测试。",
+    },
+    "candidate-market-mapping": {
+        "category": "内部映射",
+        "proves": "记录候选案例与外部行情标识、交易池之间的人工或规则映射。",
+        "doesNotProve": "映射本身不证明代币一定属于项目主体。",
+    },
+    "evidence-link-health": {
+        "category": "证据健康",
+        "proves": "证明某个已有证据链接当前可访问、受限或内容指纹发生变化。",
+        "doesNotProve": "链接可访问不等于内容真实，也不提高证据可信度。",
+    },
+    "evidence-github-official": {
+        "category": "官方代码",
+        "proves": "证明已映射官方仓库当前存在，并记录最近推送、默认分支和仓库状态。",
+        "doesNotProve": "代码更新不等于产品采用、经济增量或代币价值捕获。",
+    },
+    "evidence-defillama-protocols": {
+        "category": "协议采用",
+        "proves": "提供已核验协议标识的TVL、分类和部署网络等结构化采用快照。",
+        "doesNotProve": "聚合TVL不等于收入，也不证明代币能够捕获协议价值。",
+    },
+    "evidence-snapshot-governance": {
+        "category": "链下治理",
+        "proves": "证明指定治理空间存在提案、投票窗口和当前提案状态。",
+        "doesNotProve": "链下投票关闭或通过不等于链上执行，也不证明经济影响已经发生。",
+    },
+    "evidence-cactus-governance": {
+        "category": "链上治理",
+        "proves": "证明指定治理组织的链上提案及其待投票、通过、执行等状态。",
+        "doesNotProve": "提案执行不自动证明价格传导、经济增量或指定代币价值捕获。",
+    },
+    "discovery-github-repositories": {
+        "category": "项目级发现",
+        "proves": "发现近期活跃且带指定主题的公开代码仓库。",
+        "doesNotProve": "仓库名称和活跃度不证明项目主体、可交易资产或价值捕获。",
+    },
+    "discovery-defillama-protocols": {
+        "category": "项目级发现",
+        "proves": "发现DefiLlama当前协议目录及其分类、部署网络和TVL线索。",
+        "doesNotProve": "目录收录与TVL不证明代币归属、收入或投资价值。",
+    },
+    "discovery-snapshot-spaces": {
+        "category": "项目级发现",
+        "proves": "发现近期出现治理提案的Snapshot空间。",
+        "doesNotProve": "治理空间名称可能被仿冒，提案活跃不证明资产身份。",
+    },
+    "machine-catalyst-trade-path": {
+        "category": "内部机器规则",
+        "proves": "证明系统按可追溯证据、资产身份、价值传导、市场和退出数据生成了当前催化交易路径。",
+        "doesNotProve": "2万美元滑点是恒定乘积理论估算，不是实际成交、报价保证或自动交易指令。",
+    },
+    "monitoring-infrastructure-registry": {
+        "category": "内部监控注册表",
+        "proves": "证明系统已经把项目身份、官方入口、协议指标、治理空间、受益资产和合约整理为可追溯监控目标，并明确哪些目标允许自动采集。",
+        "doesNotProve": "目标已经登记不代表目标内容真实、出现催化、存在凸性或适合采取行动；身份和来源归属未通过的目标不会进入自动采集。",
+    },
+    "weak-signal-inbox-registry": {
+        "category": "内部线索归类",
+        "proves": "证明系统已把现有项目目录、公开代码、治理、链上痕迹和推广入口统一标注为可补证、仅供发现、身份待核验或归属冲突。",
+        "doesNotProve": "弱线索数量、社交热度、付费推广和项目自填资料不证明凸性成立，也不会直接改变评分、结论或行动。",
+    },
+    "data-backbone-registry": {
+        "category": "内部数据主干",
+        "proves": "证明原始事件已经经过标准化、可回放游标、来源健康、项目归属和 Watcher 编译，并保留可追溯定位。",
+        "doesNotProve": "数据进入主干不代表凸性成立、催化发生、资产可交易或适合采取行动。",
+    },
+    "evidence-github-releases-packages": {
+        "category": "官方代码发布与包清单",
+        "proves": "证明已核验 GitHub 仓库当前存在发布记录或根目录包清单，并保留版本、时间、文件哈希和原始链接。",
+        "doesNotProve": "软件发布或包清单存在不代表产品采用、收入增长、代币价值捕获、凸性成立或适合采取行动。",
+    },
+    "discovery-cactus-organizations": {
+        "category": "项目级发现",
+        "proves": "发现至少存在治理提案的Cactus链上治理组织。",
+        "doesNotProve": "组织登记不证明代币价值捕获或凸性成立。",
+    },
+    "contract-identity-mapping": {
+        "category": "合约身份",
+        "proves": "连接候选资产、网络、合约和外部登记来源。",
+        "doesNotProve": "自动映射不能替代官网或独立登记的身份确认。",
+    },
+    "security-goplus": {
+        "category": "合约安全",
+        "proves": "提供合约风险字段、交易限制和部分代币安全标志。",
+        "doesNotProve": "未发现风险不等于合约安全，也不覆盖协议、团队和治理风险。",
+    },
+    "chain-robinhood-blockscout": {
+        "category": "链上浏览器",
+        "proves": "证明 Robinhood Chain 上存在相应合约和链上代币资料。",
+        "doesNotProve": "链上存在不证明项目官方关系、价值捕获或可投资性。",
+    },
+    "discovery-dexscreener-profiles": {
+        "category": "项目发现",
+        "proves": "用于发现最新提交的代币资料、网络和合约地址。",
+        "doesNotProve": "资料可能由项目方提交，只能作为线索，不能作为身份或投资证据。",
+    },
+    "discovery-dexscreener-boosts": {
+        "category": "推广线索",
+        "proves": "用于发现正在付费推广或主动曝光的代币。",
+        "doesNotProve": "推广热度和付费曝光不能增加投资评分或身份可信度。",
+    },
+    "discovery-robinhood-blockscout": {
+        "category": "链上发现",
+        "proves": "用于发现 Robinhood Chain 代币注册表中的合约。",
+        "doesNotProve": "注册表名称和符号可由发行者定义，不能单独证明项目主体。",
+    },
+    "identity-coingecko-registry": {
+        "category": "独立身份登记",
+        "proves": "交叉核验名称、符号、网络合约、官网和公开资产登记。",
+        "doesNotProve": "身份吻合不代表价值捕获、凸性成立或适合建仓。",
+    },
+    "machine-project-asset-identity": {
+        "category": "项目资产身份核验",
+        "proves": "把DefiLlama项目登记与CoinGecko资产注册按项目名称、标识、符号和合约进行机器交叉核验，并明确记录未匹配或冲突原因。",
+        "doesNotProve": "项目存在或资产身份吻合不代表代币捕获协议价值、具有凸性或适合采取行动。",
+    },
+    "formal-project-profile-enrichment": {
+        "category": "项目档案补齐",
+        "proves": "使用CoinGecko合约登记与DefiLlama、GitHub等独立同域来源交叉核验正式项目身份和官方入口。",
+        "doesNotProve": "档案身份通过不代表资产价值捕获、凸性质量、收益赔率或适合采取行动。",
+    },
+    "formal-project-market-exit-enrichment": {
+        "category": "市场与退出资料",
+        "proves": "组合CoinGecko聚合行情、DexScreener最深单池和只读合约核验，记录正式项目当前市场、流动性与退出条件。",
+        "doesNotProve": "单池流动性和公式估算滑点不等于钱包真实卖出测试，资料完整也不代表凸性成立或适合建仓。",
+    },
+    "formal-project-research-materials": {
+        "category": "正式项目研究资料",
+        "proves": "证明已核验项目的官网或认证GitHub仓库当前存在产品文档、代币经济、团队组织或审计安全资料入口。",
+        "doesNotProve": "项目方材料不自动证明代币价值捕获、团队成员实名、审计通过、协议安全、凸性成立或适合行动。",
+    },
+    "machine-research-scoring": {
+        "category": "机器衍生评分",
+        "proves": "按照项目类别和现有结构化证据，计算资料覆盖、研究排序与凸性闭环准备程度，并逐项列出依据和缺口。",
+        "doesNotProve": "高分不代表凸性成立、收益确定或适合建仓；缺少价值捕获、风险、交易性和非线性路径时仍只能观察。",
+    },
+    "machine-conclusion-publication": {
+        "category": "机器结论发布",
+        "proves": "把最新评分与身份、证据、风险、交易性和凸性结构硬门槛转换为当前状态、行动结论、阻断原因、下一项自动任务、升级条件和失效条件。",
+        "doesNotProve": "系统不自动交易；评分不能单独产生行动结论，人工复核也不构成机器发布的前置门槛。",
+    },
+    "codex-convexity-thread": {
+        "category": "内部投研",
+        "proves": "保存经人工研究整理的项目判断、阶段、风险和凸性逻辑。",
+        "doesNotProve": "内部研究结论仍需外部证据和持续数据更新支持。",
+    },
+}
+
+
+def task_definition(task_id):
+    if task_id not in TASK_DEFINITIONS:
+        raise ValueError("没有找到这个凸性更新任务。")
+    return TASK_DEFINITIONS[task_id]
+
+
+def task_for_source(source_id):
+    matching_tasks = [
+        (task_id, definition)
+        for task_id, definition in TASK_DEFINITIONS.items()
+        if task_id != "full_refresh" and source_id in definition["sourceIds"]
+    ]
+    if not matching_tasks:
+        return ""
+    return min(
+        matching_tasks,
+        key=lambda item: (len(item[1]["sourceIds"]), item[1]["order"]),
+    )[0]
+
+
+def task_id_for_job(job_name):
+    for task_id, definition in TASK_DEFINITIONS.items():
+        if job_name == definition["jobName"]:
+            return task_id
+        if job_name in definition.get("legacyJobNames", []):
+            return task_id
+    return ""

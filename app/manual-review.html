@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>人工复核与升格｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="manual-review-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">后</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="gold-calibration.html">黄金校准</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="scan-center.html">扫描中心</a>
+          <a class="active" href="manual-review.html">人工复核</a>
+          <a href="screening-console.html">筛选台</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="workbench-hero manual-review-hero">
+        <div>
+          <span>MANUAL REVIEW · PROMOTION · AUDIT</span>
+          <h1>人工复核与升格</h1>
+          <p>对全部正式项目和链上发现进行分类、排序和风险标注。人工判断不会覆盖自动采集事实；身份不清或缺少合约、研究案例的记录不能误升格。</p>
+        </div>
+        <aside class="manual-review-policy">
+          <strong>先标注，再升格</strong>
+          <p id="manualReviewPolicy">正在读取操作边界。</p>
+        </aside>
+      </section>
+
+      <section class="status-grid manual-review-summary" aria-label="人工复核汇总">
+        <article><span>必须处理</span><strong id="mustHandleTotal">--</strong><small>身份冲突或正式项目资料缺口</small></article>
+        <article><span>值得复核</span><strong id="worthReviewTotal">--</strong><small>身份较完整，值得继续研究</small></article>
+        <article><span>低优先级资料池</span><strong id="lowPriorityTotal">--</strong><small>自动保留，不要求逐条处理</small></article>
+        <article><span>机会中心已发布</span><strong id="publishedTotal">--</strong><small>可修改或撤回</small></article>
+        <article><span>全部记录</span><strong id="reviewTotal">--</strong><small>没有数量上限</small></article>
+      </section>
+
+      <section id="manualReviewFeedback" class="manual-review-feedback" hidden aria-live="polite"></section>
+      <section id="manualReviewLastOperation" class="manual-review-last-operation" hidden></section>
+
+      <section class="section-block">
+        <header class="section-heading manual-review-heading">
+          <div><span>REVIEW QUEUE</span><h2>今天先处理哪一类</h2></div>
+          <p>系统先按处理价值分队列。选择项目后，右侧会直接说明建议下一步。</p>
+        </header>
+
+        <div class="manual-review-presets" aria-label="复核快捷入口">
+          <div><strong>默认只看必须处理</strong><small>低优先级记录会自动保存，不需要人工逐条浏览。</small></div>
+          <button type="button" data-review-preset="must_handle">必须处理 <span id="presetMustHandleCount">--</span></button>
+          <button type="button" data-review-preset="worth_review">值得复核 <span id="presetWorthReviewCount">--</span></button>
+          <button type="button" data-review-preset="low_priority">低优先级资料池 <span id="presetLowPriorityCount">--</span></button>
+          <button type="button" data-review-preset="published">已发布 <span id="presetPublishedCount">--</span></button>
+          <button class="is-quiet" type="button" data-review-preset="all">查看全部</button>
+        </div>
+
+        <details class="manual-review-advanced">
+          <summary><strong>高级筛选</strong><span>项目类别、市值、FDV、流动性与发布状态</span></summary>
+          <div class="manual-review-controls">
+            <label><span>记录类型</span><select id="reviewTypeFilter"><option value="all">全部类型</option><option value="project">正式项目</option><option value="discovery">链上发现</option></select></label>
+            <label><span>人工研究标签</span><select id="reviewClassFilter"><option value="all">全部标签</option><option value="unclassified">未分类</option><option value="watch_embryo">观察胚胎</option><option value="ordinary_candidate">普通候选</option><option value="extreme_candidate">极限候选</option><option value="risk_excluded">风险排除</option></select></label>
+            <label><span>项目类别</span><select id="reviewRouteFilter"><option value="all">全部类别</option><option value="startup">早期项目</option><option value="mature">OG项目</option><option value="hybrid">潜力项目</option></select></label>
+            <label><span>发布状态</span><select id="reviewPublishFilter"><option value="all">全部状态</option><option value="published">已进入机会中心</option><option value="withdrawn">已撤回</option><option value="not_created">未升格</option></select></label>
+            <label><span>查找记录</span><input id="reviewSearch" type="search" placeholder="名称、代币、网络、合约" /></label>
+          </div>
+
+          <div class="manual-market-filters" aria-label="行情范围筛选">
+            <header>
+              <div><strong>行情范围筛选</strong><small>直接选区间，不需要手填数字；缺少数据的记录可单独筛出。</small></div>
+              <label><span>行情状态</span><select id="reviewMarketStatusFilter"><option value="all">全部记录</option><option value="available">已有行情</option><option value="missing">暂无行情</option></select></label>
+              <button id="reviewMarketReset" type="button">清空行情筛选</button>
+            </header>
+            <div class="manual-market-filter-grid">
+              <label><span>流通市值</span><select id="reviewMarketCapPreset"><option value="all">全部市值</option><option value="missing">暂无市值</option><option value="lt1m">低于100万美元</option><option value="1m10m">100万–1000万美元</option><option value="10m100m">1000万–1亿美元</option><option value="gte100m">1亿美元以上</option></select></label>
+              <label><span>FDV</span><select id="reviewFdvPreset"><option value="all">全部FDV</option><option value="missing">暂无FDV</option><option value="lt1m">低于100万美元</option><option value="1m10m">100万–1000万美元</option><option value="10m100m">1000万–1亿美元</option><option value="gte100m">1亿美元以上</option></select></label>
+              <label><span>流动性</span><select id="reviewLiquidityPreset"><option value="all">全部流动性</option><option value="missing">暂无流动性</option><option value="lt20k">低于2万美元</option><option value="20k100k">2万–10万美元</option><option value="100k1m">10万–100万美元</option><option value="gte1m">100万美元以上</option></select></label>
+              <label><span>24小时成交额</span><select id="reviewVolumePreset"><option value="all">全部成交额</option><option value="missing">暂无成交额</option><option value="lt20k">低于2万美元</option><option value="20k100k">2万–10万美元</option><option value="100k1m">10万–100万美元</option><option value="gte1m">100万美元以上</option></select></label>
+            </div>
+          </div>
+        </details>
+
+        <div class="manual-review-workspace">
+          <aside>
+            <header><strong>当前结果</strong><span id="reviewVisibleCount">--</span></header>
+            <div id="manualReviewList" class="manual-review-list"></div>
+          </aside>
+          <article id="manualReviewDetail" class="manual-review-detail" aria-live="polite"></article>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>AUDIT TRAIL</span><h2>人工操作历史</h2></div>
+          <p><b id="auditTotal">--</b> 条记录。旧结论、撤回和再次发布都保留，不会被新操作覆盖。</p>
+        </header>
+        <div class="manual-audit-table-wrap">
+          <table class="manual-audit-table">
+            <thead><tr><th>时间 / 操作</th><th>对象</th><th>状态</th><th>说明</th><th>操作者</th></tr></thead>
+            <tbody id="manualAuditRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong id="manualReviewGeneratedAt">正在读取后台快照</strong>
+    </footer>
+
+    <script src="opportunity-center-snapshot.js"></script>
+    <script src="research-route-snapshot.js?v=20260729-c1p05"></script>
+    <script src="manual-review-snapshot.js"></script>
+    <script src="page-state.js?v=20260729-c1p08"></script>
+    <script src="manual-review.js?v=20260730-c1p2p1"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

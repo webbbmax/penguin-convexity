@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "c1.9-phase-v1",
+  "release": "C1.9",
+  "phase": "sol_final_acceptance_complete_released",
+  "status": "accepted",
+  "requirementsStatus": "frozen",
+  "productCodeStarted": true,
+  "updatedAt": "2026-08-03T14:50:48+08:00",
+  "completedBy": "Sol",
+  "currentAuthority": "Sol",
+  "requiredModel": "Sol",
+  "requirementsLock": "docs/C1.9_REQUIREMENTS_LOCK.json",
+  "formalPrd": "docs/C1.9_PRD.md",
+  "acceptancePlan": "docs/C1.9_ACCEPTANCE_PLAN.md",
+  "handoff": "docs/C1.9_HANDOFF.md",
+  "acceptanceManifest": "docs/C1.9_ACCEPTANCE_MANIFEST.json",
+  "finalAcceptance": "docs/C1.9_SOL_FINAL_ACCEPTANCE.md",
+  "allowedNextAction": "等待用户确认下一版本或独立修复任务",
+  "requiredNextPhase": "等待用户授权，禁止自行开始下一版本",
+  "forbiddenNextActions": [
+    "修改C1.9冻结需求或已发布投资体系",
+    "擅自开始C2.0或其他新版本",
+    "把本轮104项跟踪失败改写为成功或有数据",
+    "建立到RWA、旧整合项目或源项目的运行时引用"
+  ]
+}

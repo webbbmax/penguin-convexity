@@ -1,0 +1,47 @@
+{
+  "version": "common-network-discovery-v1.1.0",
+  "commonNetworks": [
+    "ethereum-mainnet",
+    "solana-mainnet",
+    "base-mainnet",
+    "arbitrum-mainnet",
+    "bnb-mainnet",
+    "robinhood-mainnet"
+  ],
+  "sources": {
+    "dexscreenerProfiles": {
+      "enabled": true,
+      "url": "https://api.dexscreener.com/token-profiles/latest/v1",
+      "conflictRisk": "high",
+      "boundary": "项目方或推广资料，只用于发现，不证明项目身份与投资价值。"
+    },
+    "dexscreenerBoosts": {
+      "enabled": true,
+      "url": "https://api.dexscreener.com/token-boosts/latest/v1",
+      "conflictRisk": "high",
+      "boundary": "付费或主动推广线索，只用于发现，不能增加投资评分。"
+    },
+    "robinhoodBlockscout": {
+      "enabled": true,
+      "url": "https://robinhoodchain.blockscout.com/api/v2/tokens?type=ERC-20",
+      "conflictRisk": "medium",
+      "boundary": "证明主网存在代币合约；代币名称和符号仍可能由发行者自定义。"
+    }
+  },
+  "preflight": {
+    "exitNotionalUsd": 100,
+    "minimumLiquidityUsd": 20000,
+    "minimumVolume24hUsd": 25000,
+    "maximumExitSlippagePct": 8
+  },
+  "identityReview": {
+    "enabled": true,
+    "minimumDiscoveryScore": 60,
+    "requirePreflightPass": true,
+    "coingeckoSearchUrl": "https://api.coingecko.com/api/v3/search?query={query}",
+    "coingeckoCoinUrl": "https://api.coingecko.com/api/v3/coins/{coin_id}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false",
+    "excludedAssetSymbols": ["USDT", "USDC", "USDE", "USDG", "DAI", "FRAX", "USDS", "PYUSD", "FDUSD", "TUSD", "WETH", "WBTC"],
+    "excludedNameFragments": ["robinhood token", "wrapped ", "bridged ", "liquidity pool token"],
+    "promotionBoundary": "只升格到影子研究库。身份归属不等于价值捕获成立，更不产生建仓结论。"
+  }
+}

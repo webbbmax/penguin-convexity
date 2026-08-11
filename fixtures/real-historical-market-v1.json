@@ -1,0 +1,435 @@
+{
+  "version": "convexity-real-market-v1.0.0",
+  "generatedAt": "2026-07-28T12:19:07.322840Z",
+  "source": {
+    "name": "Binance Spot public market data",
+    "endpoint": "https://api.binance.com/api/v3/klines",
+    "purpose": "只用于观察事件前后价格反应，不作为事件事实或因果证据。"
+  },
+  "results": {
+    "real-ethereum-merge": {
+      "provider": "Binance Spot",
+      "symbol": "ETHUSDT",
+      "eventAt": "2022-09-15",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2022-08-16",
+          "close": 1876.67
+        },
+        "event": {
+          "date": "2022-09-15",
+          "close": 1472.75
+        },
+        "post7": {
+          "date": "2022-09-22",
+          "close": 1326.46
+        },
+        "post30": {
+          "date": "2022-10-15",
+          "close": 1274.92
+        },
+        "post90": {
+          "date": "2022-12-14",
+          "close": 1307.44
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -21.52,
+        "eventToPost7": -9.93,
+        "eventToPost30": -13.43,
+        "eventToPost90": -11.22
+      },
+      "window": {
+        "start": "2022-08-11",
+        "end": "2022-12-19",
+        "maximumClose": 1983.55,
+        "minimumClose": 1102.73,
+        "observationCount": 131
+      }
+    },
+    "real-uniswap-v3-capture": {
+      "provider": "Binance Spot",
+      "symbol": "UNIUSDT",
+      "eventAt": "2021-05-05",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2021-04-05",
+          "close": 30.8292
+        },
+        "event": {
+          "date": "2021-05-05",
+          "close": 42.423
+        },
+        "post7": {
+          "date": "2021-05-12",
+          "close": 36.87
+        },
+        "post30": {
+          "date": "2021-06-04",
+          "close": 26.422
+        },
+        "post90": {
+          "date": "2021-08-03",
+          "close": 21.326
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": 37.61,
+        "eventToPost7": -13.09,
+        "eventToPost30": -37.72,
+        "eventToPost90": -49.73
+      },
+      "window": {
+        "start": "2021-03-31",
+        "end": "2021-08-08",
+        "maximumClose": 43.108,
+        "minimumClose": 14.554,
+        "observationCount": 131
+      }
+    },
+    "real-aave-v3": {
+      "provider": "Binance Spot",
+      "symbol": "AAVEUSDT",
+      "eventAt": "2022-03-16",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2022-02-14",
+          "close": 161.0
+        },
+        "event": {
+          "date": "2022-03-16",
+          "close": 141.7
+        },
+        "post7": {
+          "date": "2022-03-23",
+          "close": 156.0
+        },
+        "post30": {
+          "date": "2022-04-15",
+          "close": 175.9
+        },
+        "post90": {
+          "date": "2022-06-14",
+          "close": 62.1
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -11.99,
+        "eventToPost7": 10.09,
+        "eventToPost30": 24.14,
+        "eventToPost90": -56.18
+      },
+      "window": {
+        "start": "2022-02-09",
+        "end": "2022-06-19",
+        "maximumClose": 244.6,
+        "minimumClose": 49.6,
+        "observationCount": 131
+      }
+    },
+    "real-lido-v2": {
+      "provider": "Binance Spot",
+      "symbol": "LDOUSDT",
+      "eventAt": "2023-05-15",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2023-04-15",
+          "close": 2.503
+        },
+        "event": {
+          "date": "2023-05-15",
+          "close": 2.121
+        },
+        "post7": {
+          "date": "2023-05-22",
+          "close": 2.027
+        },
+        "post30": {
+          "date": "2023-06-14",
+          "close": 1.681
+        },
+        "post90": {
+          "date": "2023-08-13",
+          "close": 1.818
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -15.26,
+        "eventToPost7": -4.43,
+        "eventToPost30": -20.74,
+        "eventToPost90": -14.29
+      },
+      "window": {
+        "start": "2023-04-10",
+        "end": "2023-08-18",
+        "maximumClose": 2.627,
+        "minimumClose": 1.624,
+        "observationCount": 131
+      }
+    },
+    "real-optimism-bedrock-capture": {
+      "provider": "Binance Spot",
+      "symbol": "OPUSDT",
+      "eventAt": "2023-06-06",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2023-05-07",
+          "close": 1.887
+        },
+        "event": {
+          "date": "2023-06-06",
+          "close": 1.495
+        },
+        "post7": {
+          "date": "2023-06-13",
+          "close": 1.154
+        },
+        "post30": {
+          "date": "2023-07-06",
+          "close": 1.185
+        },
+        "post90": {
+          "date": "2023-09-04",
+          "close": 1.341
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -20.77,
+        "eventToPost7": -22.81,
+        "eventToPost30": -20.74,
+        "eventToPost90": -10.3
+      },
+      "window": {
+        "start": "2023-05-02",
+        "end": "2023-09-09",
+        "maximumClose": 2.164,
+        "minimumClose": 1.085,
+        "observationCount": 131
+      }
+    },
+    "real-arbitrum-stylus-capture": {
+      "provider": "Binance Spot",
+      "symbol": "ARBUSDT",
+      "eventAt": "2024-09-03",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2024-08-04",
+          "close": 0.5651
+        },
+        "event": {
+          "date": "2024-09-03",
+          "close": 0.4943
+        },
+        "post7": {
+          "date": "2024-09-10",
+          "close": 0.5335
+        },
+        "post30": {
+          "date": "2024-10-03",
+          "close": 0.5336
+        },
+        "post90": {
+          "date": "2024-12-02",
+          "close": 1.0267
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -12.53,
+        "eventToPost7": 7.93,
+        "eventToPost30": 7.95,
+        "eventToPost90": 107.71
+      },
+      "window": {
+        "start": "2024-07-30",
+        "end": "2024-12-07",
+        "maximumClose": 1.1735,
+        "minimumClose": 0.4733,
+        "observationCount": 131
+      }
+    },
+    "real-ondo-ousg-mapping": {
+      "status": "unavailable",
+      "reason": "pair_not_listed_at_event",
+      "detail": "ONDOUSDT 在事件窗口没有返回交易记录，可能当时尚未上市或历史交易对已下线。"
+    },
+    "real-aerodrome-launch": {
+      "status": "unavailable",
+      "reason": "pair_not_listed_at_event",
+      "detail": "AEROUSDT 在事件窗口没有返回交易记录，可能当时尚未上市或历史交易对已下线。"
+    },
+    "real-maple-syrup-migration": {
+      "status": "unavailable",
+      "reason": "pair_not_listed_at_event",
+      "detail": "SYRUPUSDT 在事件窗口没有返回交易记录，可能当时尚未上市或历史交易对已下线。"
+    },
+    "real-sky-migration": {
+      "status": "unavailable",
+      "reason": "pair_not_listed_at_event",
+      "detail": "SKYUSDT 在事件窗口没有返回交易记录，可能当时尚未上市或历史交易对已下线。"
+    },
+    "real-pendle-mainnet": {
+      "status": "unavailable",
+      "reason": "pair_not_listed_at_event",
+      "detail": "PENDLEUSDT 在事件窗口没有返回交易记录，可能当时尚未上市或历史交易对已下线。"
+    },
+    "real-compound-v3-capture": {
+      "provider": "Binance Spot",
+      "symbol": "COMPUSDT",
+      "eventAt": "2022-08-26",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2022-07-27",
+          "close": 55.32
+        },
+        "event": {
+          "date": "2022-08-26",
+          "close": 46.25
+        },
+        "post7": {
+          "date": "2022-09-02",
+          "close": 46.18
+        },
+        "post30": {
+          "date": "2022-09-25",
+          "close": 61.3
+        },
+        "post90": {
+          "date": "2022-11-24",
+          "close": 37.94
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -16.4,
+        "eventToPost7": -0.15,
+        "eventToPost30": 32.54,
+        "eventToPost90": -17.97
+      },
+      "window": {
+        "start": "2022-07-22",
+        "end": "2022-11-29",
+        "maximumClose": 66.49,
+        "minimumClose": 34.69,
+        "observationCount": 131
+      }
+    },
+    "real-terra-collapse": {
+      "provider": "Binance Spot",
+      "symbol": "LUNAUSDT",
+      "eventAt": "2022-05-09",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2022-04-09",
+          "close": 97.41
+        },
+        "event": {
+          "date": "2022-05-09",
+          "close": 30.29
+        },
+        "post7": {
+          "date": "2022-05-13",
+          "close": 5e-05
+        },
+        "post30": {
+          "date": "2022-06-08",
+          "close": 2.1691
+        },
+        "post90": {
+          "date": "2022-08-07",
+          "close": 2.0982
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -68.9,
+        "eventToPost7": -100.0,
+        "eventToPost30": -92.84,
+        "eventToPost90": -93.07
+      },
+      "window": {
+        "start": "2022-04-04",
+        "end": "2022-08-12",
+        "maximumClose": 116.42,
+        "minimumClose": 5e-05,
+        "observationCount": 114
+      }
+    },
+    "real-ftx-collapse": {
+      "provider": "Binance Spot",
+      "symbol": "FTTUSDT",
+      "eventAt": "2022-11-11",
+      "status": "available",
+      "points": {
+        "pre30": {
+          "date": "2022-10-12",
+          "close": 23.36
+        },
+        "event": {
+          "date": "2022-11-11",
+          "close": 2.6045
+        },
+        "post7": {
+          "date": "2022-11-15",
+          "close": 1.4322
+        },
+        "post30": {
+          "date": "2022-11-15",
+          "close": 1.4322
+        },
+        "post90": {
+          "date": "2022-11-15",
+          "close": 1.4322
+        }
+      },
+      "changesPct": {
+        "pre30ToEvent": -88.85,
+        "eventToPost7": -45.01,
+        "eventToPost30": -45.01,
+        "eventToPost90": -45.01
+      },
+      "window": {
+        "start": "2022-10-07",
+        "end": "2022-11-15",
+        "maximumClose": 26.09,
+        "minimumClose": 1.4322,
+        "observationCount": 40
+      }
+    },
+    "real-celsius-withdrawal-halt": {
+      "status": "unavailable",
+      "reason": "unsupported_or_delisted",
+      "detail": "CELUSDT 行情请求失败（HTTP 400），不使用估算值替代。"
+    },
+    "real-safemoon-liquidity": {
+      "status": "unavailable",
+      "reason": "unsupported_or_delisted",
+      "detail": "SFMUSDT 行情请求失败（HTTP 400），不使用估算值替代。"
+    },
+    "real-ronin-bridge": {
+      "status": "unavailable",
+      "reason": "pair_not_listed_at_event",
+      "detail": "RONINUSDT 在事件窗口没有返回交易记录，可能当时尚未上市或历史交易对已下线。"
+    },
+    "real-mango-manipulation": {
+      "status": "unavailable",
+      "reason": "unsupported_or_delisted",
+      "detail": "MNGOUSDT 行情请求失败（HTTP 400），不使用估算值替代。"
+    },
+    "real-euler-exploit-recovery": {
+      "status": "unavailable",
+      "reason": "pair_not_listed_at_event",
+      "detail": "EULUSDT 在事件窗口没有返回交易记录，可能当时尚未上市或历史交易对已下线。"
+    },
+    "real-beanstalk-governance": {
+      "status": "unavailable",
+      "reason": "no_supported_symbol",
+      "detail": "案例没有可用的 Binance Spot 历史交易对，行情保持缺失。"
+    }
+  }
+}

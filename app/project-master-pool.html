@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>凸性项目队列｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body class="master-pool-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="project-master-pool.html" aria-label="企鹅投研凸性机会中心">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 · 项目队列</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性机会中心页面">
+          <a href="candidate-pool.html">候选库</a>
+          <a class="active" href="project-master-pool.html">项目队列</a>
+          <a href="network-discovery.html">链上发现</a>
+          <a href="data-dictionary.html">数据与运行</a>
+          <a href="rules-replay.html">规则与回放</a>
+          <a href="real-case-calibration.html">真实校准</a>
+        </nav>
+        <div class="topbar-status"><span id="masterPoolStatus">正在读取项目队列</span><time id="masterPoolGeneratedAt">--</time></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero master-pool-hero">
+        <div>
+          <span class="eyebrow">CONVEXITY PROJECT QUEUE</span>
+          <h1>凸性项目队列</h1>
+          <p>按项目存活时间自动分成早期项目、OG项目和潜力项目，再结合基础档案、前置信号与市场数据安排研究顺序。所有记录仍完整保留。</p>
+        </div>
+        <aside class="notice-panel">
+          <strong>不设项目数量上限</strong>
+          <p id="noQuotaPolicy">符合采集与筛选条件的项目全部保留；失败和排除项同样保留原因。</p>
+        </aside>
+      </section>
+
+      <section class="status-grid master-pool-summary lifecycle-pool-summary" aria-label="项目生命周期汇总">
+        <article><span>队列全部记录</span><strong id="masterTotal">--</strong><small>没有展示条数上限</small></article>
+        <article><span>早期项目</span><strong id="masterEarly">--</strong><small>公开启动未满6个月</small></article>
+        <article><span>OG项目</span><strong id="masterOg">--</strong><small>已存活至少5年</small></article>
+        <article><span>潜力项目</span><strong id="masterOther">--</strong><small>6个月至5年或待核验</small></article>
+        <article><span>时间待核验</span><strong id="masterLifecyclePending">--</strong><small>不会猜测创建日期</small></article>
+      </section>
+
+      <section class="lifecycle-policy-board" aria-label="生命周期分类规则">
+        <article><span>EARLY</span><strong>早期项目</strong><p id="earlyLifecyclePolicy"></p></article>
+        <article><span>OG</span><strong>OG项目</strong><p id="ogLifecyclePolicy"></p></article>
+        <article><span>POTENTIAL</span><strong>潜力项目</strong><p id="otherLifecyclePolicy"></p></article>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>SCAN TRACE</span><h2>最近一次按链与信源扫描</h2></div>
+          <p id="scanRunLabel">尚未产生逐链逐源扫描记录。</p>
+        </header>
+        <div id="scanSummary" class="master-scan-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading master-pool-heading">
+          <div><span>PROJECT QUEUES</span><h2>全部项目与发现</h2></div>
+          <div class="master-pool-controls">
+            <label><span>记录类型</span><select id="masterTypeFilter"><option value="all">全部类型</option><option value="project">正式项目</option><option value="discovery">链上发现</option></select></label>
+            <label><span>当前状态</span><select id="masterStatusFilter"><option value="all">全部状态</option><option value="published">已发布</option><option value="candidate">候选</option><option value="identity_pending">身份待核验</option><option value="rejected">已排除</option></select></label>
+            <label><span>项目分类</span><select id="masterRouteFilter"><option value="all">全部分类</option><option value="startup">早期项目</option><option value="mature">OG项目</option><option value="hybrid">潜力项目</option></select></label>
+            <label><span>启动时间</span><select id="masterDateFilter"><option value="all">全部时间</option><option value="30d">最近30天</option><option value="90d">最近90天</option><option value="180d">最近半年</option><option value="pending">时间待核验</option></select></label>
+            <label><span>流通市值</span><select id="masterMarketCapFilter"><option value="all">全部市值</option><option value="lt1m">100万美元以下</option><option value="1m10m">100万至1000万美元</option><option value="10m100m">1000万至1亿美元</option><option value="100m1b">1亿至10亿美元</option><option value="gte1b">10亿美元以上</option><option value="pending">市值待补</option></select></label>
+            <label><span>FDV</span><select id="masterFdvFilter"><option value="all">全部FDV</option><option value="lt1m">100万美元以下</option><option value="1m10m">100万至1000万美元</option><option value="10m100m">1000万至1亿美元</option><option value="100m1b">1亿至10亿美元</option><option value="gte1b">10亿美元以上</option><option value="pending">FDV待补</option></select></label>
+            <label><span>流动性</span><select id="masterLiquidityFilter"><option value="all">全部流动性</option><option value="lt20k">2万美元以下</option><option value="20k100k">2万至10万美元</option><option value="100k1m">10万至100万美元</option><option value="gte1m">100万美元以上</option><option value="pending">流动性待补</option></select></label>
+            <label><span>档案质量</span><select id="masterQualityFilter"><option value="all">全部质量</option><option value="research_ready">可进入研究</option><option value="partial">部分可用</option><option value="thin">资料偏薄</option><option value="identity_blocked">身份阻断</option></select></label>
+            <label><span>排序方式</span><select id="masterSort"><option value="default">分类默认排序</option><option value="qualityDesc">档案完整度：从高到低</option><option value="dateDesc">启动时间：最新优先</option><option value="dateAsc">启动时间：最早优先</option><option value="marketCapDesc">流通市值：从高到低</option><option value="marketCapAsc">流通市值：从低到高</option><option value="fdvDesc">FDV：从高到低</option><option value="liquidityDesc">流动性：从高到低</option><option value="priorityDesc">研究优先分：从高到低</option></select></label>
+            <label><span>项目检索</span><input id="masterSearch" type="search" placeholder="名称、代币、网络、合约" /></label>
+            <button id="masterResetFilters" type="button">重置筛选</button>
+          </div>
+        </header>
+
+        <div class="master-pool-workspace">
+          <aside>
+            <header><strong>当前结果</strong><span id="masterVisibleCount">--</span></header>
+            <div id="masterList" class="master-pool-list"></div>
+          </aside>
+          <article id="masterDetail" class="master-pool-detail" aria-live="polite"></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性机会中心</span>
+      <strong id="publicationBoundary">项目队列与公开发布相互分离</strong>
+    </footer>
+
+    <script src="opportunity-center-snapshot.js"></script>
+    <script src="research-route-snapshot.js?v=20260729-c1p05"></script>
+    <script src="project-master-pool-snapshot.js?v=20260729-c1p05"></script>
+    <script src="project-detail-snapshot.js"></script>
+    <script src="page-state.js?v=20260729-c1p08"></script>
+    <script src="project-master-pool.js?v=20260730-c1p5p05a"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+    <script src="c2-1-admin-snapshot.js?v=c21"></script><script src="c2-1-admin.js?v=c21-5"></script>
+  </body>
+</html>

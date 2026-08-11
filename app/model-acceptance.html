@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>模型验收｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="model-acceptance-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">验</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="gold-calibration.html">黄金校准</a>
+          <a href="four-layer-screening.html">四层筛选</a>
+          <a href="change-explanations.html">变化解释</a>
+          <a class="active" href="model-acceptance.html">模型验收</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="acceptance-hero">
+        <div>
+          <span>C1.1 凸性发现质量升级 · C1.1-09</span>
+          <h1>四层模型验收</h1>
+          <p>用黄金集检查已知规则回归，用独立情景盲测检查新边界。行动机会的误报和漏报分开计算，安全型误报一票否决。</p>
+        </div>
+        <aside>
+          <span>工程验收结论</span>
+          <strong id="acceptanceVerdict">正在计算</strong>
+          <p id="acceptanceVerdictNote">不会把规则测试包装成投资收益证明。</p>
+        </aside>
+      </section>
+
+      <section class="acceptance-summary" aria-label="模型验收汇总">
+        <article><span>黄金集回归</span><strong id="acceptanceGold">--</strong><small id="acceptanceGoldMeta">已知案例</small></article>
+        <article><span>独立盲测</span><strong id="acceptanceBlind">--</strong><small id="acceptanceBlindMeta">新情景</small></article>
+        <article><span>行动召回</span><strong id="acceptanceRecall">--</strong><small>合格机会是否漏掉</small></article>
+        <article><span>行动精确率</span><strong id="acceptancePrecision">--</strong><small>行动结论是否误报</small></article>
+        <article><span>安全型误报</span><strong id="acceptanceEscapes">--</strong><small>必须为零</small></article>
+        <article><span>真实结果样本</span><strong id="acceptanceOutcomes">--</strong><small>投资效果尚待积累</small></article>
+      </section>
+
+      <section class="section-block acceptance-criteria-section">
+        <header class="section-heading">
+          <div><span>PASS / FAIL GATES</span><h2>验收门槛</h2></div>
+          <p id="acceptanceBoundary">正在读取验收边界。</p>
+        </header>
+        <div id="acceptanceCriteria" class="acceptance-criteria-grid"></div>
+      </section>
+
+      <section class="section-block acceptance-remediation-section">
+        <header class="section-heading">
+          <div><span>PRE-FIX AUDIT</span><h2>盲测发现并修复了什么</h2></div>
+          <p id="acceptanceBeforeFix">保留修复前结果，避免只展示修复后的满分。</p>
+        </header>
+        <div id="acceptanceFindings" class="acceptance-findings"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading acceptance-case-heading">
+          <div><span>BLIND CASES</span><h2>逐案例盲测结果</h2></div>
+          <div class="acceptance-controls">
+            <label>
+              <span>一致性</span>
+              <select id="acceptanceStatusFilter">
+                <option value="all">全部</option>
+                <option value="matched">动作一致</option>
+                <option value="mismatched">动作不一致</option>
+              </select>
+            </label>
+            <label>
+              <span>预期动作</span>
+              <select id="acceptanceActionFilter">
+                <option value="all">全部动作</option>
+                <option value="ordinary">普通建仓</option>
+                <option value="extreme">极限试仓</option>
+                <option value="observe">只观察</option>
+                <option value="reflexive">反身性管理</option>
+                <option value="reject">排除</option>
+              </select>
+            </label>
+            <label>
+              <span>查找案例</span>
+              <input id="acceptanceSearch" type="search" placeholder="情景、资产、原因" />
+            </label>
+          </div>
+        </header>
+        <div class="acceptance-list-meta">
+          <strong>当前显示 <span id="acceptanceVisibleCount">--</span> 个</strong>
+          <p id="acceptanceGeneratedAt">正在读取验收时间。</p>
+        </div>
+        <div id="acceptanceCaseList" class="acceptance-case-list"></div>
+      </section>
+
+      <section class="section-block acceptance-investment-boundary">
+        <header>
+          <div><span>OUTCOME VALIDATION</span><h2 id="investmentValidationTitle">真实投资有效性尚未验证</h2></div>
+          <strong id="investmentValidationProgress">0 / 30</strong>
+        </header>
+        <p id="investmentValidationReason">正在读取真实结果样本边界。</p>
+        <small id="investmentValidationNext">后续需要保存结论后的真实结果。</small>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>C1.1-09 四层模型验收</strong>
+    </footer>
+
+    <script src="model-acceptance-snapshot.js"></script>
+    <script src="model-acceptance.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

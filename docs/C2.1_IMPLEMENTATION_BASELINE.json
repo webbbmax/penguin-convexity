@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "c2.1-implementation-baseline-v1",
+  "release": "C2.1",
+  "capturedAt": "2026-08-10T16:56:25+08:00",
+  "requirementsLock": {
+    "path": "docs/C2.1_REQUIREMENTS_LOCK.json",
+    "requirementSetSha256": "f8784fb3ee03df42d56171f97dfb37707107f50fcbceba4647764a98a16b6696",
+    "allDocumentHashesVerified": true
+  },
+  "productionDatabase": {
+    "path": "data/convexity.db",
+    "mode": "read_only_for_c2.1",
+    "bytes": 453656576,
+    "sha256AtCapture": "33674dcdb9239fbc0748c27c4b061718f05626a7c7767e20e5290a9f63f42158",
+    "projects": 620,
+    "candidateCases": 622
+  },
+  "recoveryPoint": {
+    "directory": "backups/c2.1-pre-implementation-20260810T165625",
+    "databaseBackup": "backups/c2.1-pre-implementation-20260810T165625/convexity.db",
+    "databaseBackupBytes": 453656576,
+    "databaseBackupSha256": "9e6dd5ec5e40fcbcb7e70d05bb21bde1e2526918c9054edad0b393d5d14ccdb0",
+    "integrityCheck": "ok",
+    "foreignKeyViolations": 0,
+    "note": "SQLite在线逻辑备份可能因页面布局不同而与源库物理哈希不同；完整性与外键已独立验证。"
+  },
+  "existingSchedulerGuard": {
+    "taskName": "PenguinConvexity-C1.8-Scheduler",
+    "configPath": "runtime/c1.8-scheduler.json",
+    "configSha256": "674a1a69571742b6a7e46ed7128b54824474d69cd858b0a569968aa60695982d",
+    "statePath": "runtime/c1.8-scheduler-state.json",
+    "stateSha256": "34f97819bfc2b795610c59c95032106778cb94992607b23c00751cf12250b659",
+    "developmentPolicy": "do_not_modify"
+  },
+  "gate0AcceptedRun": {
+    "runId": "gate0-solfinal-20260809T045924Z-f7bbd2",
+    "candidateRows": 4585955,
+    "eventRows": 5922807,
+    "reuseMode": "read_only_no_rescan"
+  }
+}

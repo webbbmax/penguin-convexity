@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "c2.1-release-manifest-v1",
+  "product": "企鹅投研-凸性",
+  "release": "C2.1",
+  "name": "90天新发项目自动筛选与可解释前台",
+  "status": "released",
+  "releasedAt": "2026-08-10T21:22:25+08:00",
+  "lastMaintenanceAt": "2026-08-11T10:18:28+08:00",
+  "requirements": {
+    "lock": "docs/C2.1_REQUIREMENTS_LOCK.json",
+    "requirementSetSha256": "f8784fb3ee03df42d56171f97dfb37707107f50fcbceba4647764a98a16b6696",
+    "frozenDocumentsMatched": "8/8"
+  },
+  "implementation": {
+    "baseline": "docs/C2.1_IMPLEMENTATION_BASELINE.json",
+    "baselineSha256": "8b56cfbd5659fe8510abed1d25524f94170c67494a07d56784d0998f3415200c",
+    "report": "docs/C2.1_IMPLEMENTATION_REPORT.md",
+    "reportSha256": "2d31f4eef44a1dba9f43482f3d5ff4b914ea2e213aa79d39f728dbfa56e31593"
+  },
+  "acceptance": {
+    "manifest": "docs/C2.1_ACCEPTANCE_MANIFEST.json",
+    "manifestSha256": "f68debdb1b1fcc916bba138167d0932943a3b2d29b7e44582579251aa3f31bed",
+    "report": "docs/C2.1_FINAL_ACCEPTANCE.md",
+    "reportSha256": "91d0881fc0fc7bab8f7b89ce629f8b3ed9eab49b28df247a052c0c21ee4b394c",
+    "screenshots": "docs/C2.1_SCREENSHOT_MANIFEST.json",
+    "screenshotsSha256": "70df15eb7b97ae1a58223daf19a721b1dc5f7b4678b19ff93306b575797ed847",
+    "formalChecks": "58/58",
+    "pythonTestFiles": "75/75",
+    "pagesAndResources": "31/31"
+  },
+  "runtime": {
+    "healthExperienceRelease": "C2.1",
+    "frontEntry": "candidate-pool.html",
+    "adminUpdateEntry": "update-center.html",
+    "pipelineDatabase": "data/c2.1-pipeline.db",
+    "productionDatabaseMode": "read_only_for_c2.1",
+    "frontSnapshot": "app/c2-1-front-snapshot.js",
+    "adminSnapshot": "app/c2-1-admin-snapshot.js",
+    "latestBuildId": "c21-20260810T131245Z-2831d7"
+  },
+  "schedulerMigration": {
+    "status": "released_same_task",
+    "taskName": "PenguinConvexity-C1.8-Scheduler",
+    "taskCountAdded": 0,
+    "wakeIntervalMinutes": 15,
+    "newCycleIntervalHours": 24,
+    "paused": false,
+    "launcher": "wscript.exe",
+    "launcherSha256": "be7e155d7d1012daac57846d46aa0b2a9b11bac32bc63821507dcf991881e20f",
+    "installerSha256": "c8ff8e03687c6852d8d685b2fa2f74496fa6a358d3dd00a827a99859bf16ceb2",
+    "state": "Ready",
+    "lastResult": 0,
+    "normalDesktopConsoleWindows": 0
+  },
+  "correctiveMaintenance": {
+    "date": "2026-08-11",
+    "reason": "正式桌面快捷方式暴露C2.1版本判断、空日志Null处理和桌面启动主库越界写入缺陷",
+    "launcherSha256": "1db7f7e77328b414e7266ae776b96bdac4c7857572a574f56b17c4650be2ed0a",
+    "serverSha256": "c76a76a35151b9a7e546c791edaa15a52b46389f8260a2f835eeb12722106d58",
+    "desktopIntegrationTestSha256": "4f3dccc8cf3cedbd43184153a12f641a5e0d90cf9ed9aec6e45f5ea6635d11a3",
+    "coldStartTestSha256": "22390b1fe1b46daeff37a7ed342f078d57e0ac6108f0a8cf2e0fb3527c9490cd",
+    "productionDatabaseSha256BeforeAfter": "8cb2bce2f934ed7697cf62c28171077793dd7148b138e5ec8e164f42727a0fa2",
+    "verification": {
+      "realDesktopShortcut": "passed",
+      "realHomeContent": "passed",
+      "singleInstance": "passed",
+      "windowSaveRestore": "passed",
+      "startupSnapshotValidation": "success",
+      "c21AcceptanceTests": "7/7",
+      "pythonTestFiles": "75/75",
+      "pagesAndResources": "31/31",
+      "c19LiveBoundaryRegression": "passed"
+    }
+  },
+  "rollback": {
+    "releaseMigrationBackup": "backups/c2.1-release-migration-20260810T2033",
+    "preImplementationDatabaseBackup": "backups/c2.1-pre-implementation-20260810T165625/convexity.db",
+    "schedulerRollbackInstaller": "scripts/install-c1.8-scheduler.ps1 -Install",
+    "notes": "回滚必须先保留当前数据库副本并由用户明确授权；不得为了恢复物理哈希删除真实运行记录。"
+  },
+  "postReleasePriority": "让2026-08-11 10:15已自动恢复的更新任务按断点完成，再只读核对原子快照替换；当前无需用户操作。"
+}

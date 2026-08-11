@@ -1,0 +1,30 @@
+{
+  "version": "convexity-candidate-refresh-v1.0.0",
+  "marketAssumptions": {
+    "currency": "usd",
+    "extremeExitNotionalUsd": 100,
+    "slippageModel": "DEX 池按恒定乘积近似估算 100 美元退出冲击，仅用于初筛，不替代真实卖出测试。"
+  },
+  "projects": [
+    {"caseId": "thread-uni-20260728", "provider": "coingecko", "coinId": "uniswap"},
+    {"caseId": "thread-jto-20260728", "provider": "coingecko", "coinId": "jito-governance-token"},
+    {"caseId": "thread-cowl-20260728", "provider": "dexscreener", "chainId": "robinhood", "pairId": "0x8134c95a19d158d41ee8fd7f8b48e5602f8b44a2"},
+    {"caseId": "thread-paraloom-20260728", "provider": "dexscreener", "chainId": "solana", "pairId": "9ekujhcnjdzqw5qxk41jekjteudhquk5djh8mrdhtqa7"},
+    {"caseId": "thread-dgb-20260724", "provider": "coingecko", "coinId": "digibyte"},
+    {"caseId": "thread-qubic-20260724", "provider": "coingecko", "coinId": "qubic-network"},
+    {"caseId": "thread-hashi-20260724", "provider": "unmapped", "reason": "当前没有可直接承接该叙事的已核验资产。"},
+    {"caseId": "thread-agenc-20260724", "provider": "coingecko", "coinId": "agenc"},
+    {"caseId": "thread-zama-20260724", "provider": "coingecko", "coinId": "zama"},
+    {"caseId": "thread-ldo-20260724", "provider": "coingecko", "coinId": "lido-dao"},
+    {"caseId": "thread-syrup-20260724", "provider": "coingecko", "coinId": "syrup"},
+    {"caseId": "thread-dash-20260724", "provider": "coingecko", "coinId": "dash"},
+    {"caseId": "thread-bera-20260710", "provider": "coingecko", "coinId": "berachain-bera"},
+    {"caseId": "thread-plume-20260710", "provider": "coingecko", "coinId": "plume"},
+    {"caseId": "thread-zec-20260710", "provider": "coingecko", "coinId": "zcash"},
+    {"caseId": "thread-said-20260724", "provider": "coingecko", "coinId": "said-protocol"},
+    {"caseId": "thread-akedo-20260724", "provider": "coingecko", "coinId": "akedo"},
+    {"caseId": "thread-cashcat-20260710", "provider": "coingecko", "coinId": "cash-cat"},
+    {"caseId": "thread-robiance-20260724", "provider": "unmapped", "reason": "尚未核验可交易资产身份，避免按同名代币错误匹配。"},
+    {"caseId": "thread-stx-20260724", "provider": "coingecko", "coinId": "blockstack"}
+  ]
+}

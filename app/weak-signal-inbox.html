@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>弱线索收件箱｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="weak-signal-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">线</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面"></nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="weak-signal-hero">
+        <div>
+          <span>WEAK SIGNAL INBOX · C1.6-06</span>
+          <h1>弱线索收件箱</h1>
+          <p>把项目目录、公开代码、治理、链上痕迹和推广入口放在同一条发现流水线上。线索只安排补证，不直接提高评分或改变结论。</p>
+          <div class="weak-signal-actions">
+            <a href="update-center.html?task=weak_signal_refresh">重新归类现有线索</a>
+            <a href="source-discovery.html">运行项目级发现</a>
+            <a href="scan-center.html">运行链上扫描</a>
+          </div>
+        </div>
+        <aside>
+          <strong>证据边界</strong>
+          <p id="weakSignalBoundary">正在读取弱线索规则。</p>
+          <small id="weakSignalGeneratedAt">正在读取生成时间</small>
+        </aside>
+      </section>
+
+      <section class="status-grid weak-signal-summary" aria-label="弱线索汇总">
+        <article><span>当前线索</span><strong id="weakSignalTotal">--</strong><small>本地完整保留，不限制数量</small></article>
+        <article><span>可进入补证</span><strong id="weakSignalReady">--</strong><small>项目归属通过，仍不是正式证据</small></article>
+        <article><span>仅供发现</span><strong id="weakSignalDiscoveryOnly">--</strong><small>推广与项目自填资料</small></article>
+        <article><span>身份待核验</span><strong id="weakSignalBlocked">--</strong><small>同名或符号不能代替身份</small></article>
+        <article><span>高推广偏差</span><strong id="weakSignalHighBias">--</strong><small>不会直接进入评分</small></article>
+        <article><span>未自动接入信源</span><strong id="weakSignalGaps">--</strong><small>明确显示，不伪造记录</small></article>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>SOURCE BOUNDARIES</span><h2>各入口能证明什么</h2></div>
+          <p>每个入口都同时展示采集数量和不能证明的内容。</p>
+        </header>
+        <div id="weakSignalSourceGrid" class="weak-signal-source-grid"></div>
+      </section>
+
+      <section class="section-block weak-signal-browser">
+        <header class="section-heading">
+          <div><span>UNIFIED INBOX</span><h2>逐条查看线索与升级条件</h2></div>
+          <p id="weakSignalVisibleCount">正在读取线索。</p>
+        </header>
+        <div class="weak-signal-controls">
+          <label><span>信源</span><select id="weakSignalSourceFilter"><option value="all">全部信源</option></select></label>
+          <label><span>线索类型</span><select id="weakSignalTypeFilter"><option value="all">全部类型</option></select></label>
+          <label><span>处理状态</span><select id="weakSignalTriageFilter">
+            <option value="all">全部状态</option>
+            <option value="ready_for_corroboration">可进入补证</option>
+            <option value="discovery_only">仅供发现</option>
+            <option value="identity_blocked">身份待核验</option>
+            <option value="conflict">归属冲突</option>
+          </select></label>
+          <label><span>推广偏差</span><select id="weakSignalBiasFilter">
+            <option value="all">全部偏差</option>
+            <option value="low">低</option>
+            <option value="medium">中</option>
+            <option value="high">高</option>
+          </select></label>
+          <label class="weak-signal-search"><span>查找</span><input id="weakSignalSearch" type="search" placeholder="项目、代币、合约或信源" /></label>
+        </div>
+        <div class="weak-signal-workspace">
+          <div>
+            <div id="weakSignalList" class="weak-signal-list"></div>
+            <div class="weak-signal-pagination">
+              <button id="weakSignalPrevious" type="button">上一页</button>
+              <span id="weakSignalPageLabel">第 1 / 1 页</span>
+              <button id="weakSignalNext" type="button">下一页</button>
+            </div>
+          </div>
+          <aside id="weakSignalDetail" class="weak-signal-detail" aria-live="polite">
+            <strong>选择一条线索</strong>
+            <p>这里会说明它为什么只能作为发现入口，以及升级为正式证据前还缺什么。</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>弱线索不直接参与评分、结论或行动 · 仅保存在本项目</strong>
+    </footer>
+
+    <script src="weak-signal-snapshot.js"></script>
+    <script src="weak-signal-inbox.js?v=20260731-c1p6p06a"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

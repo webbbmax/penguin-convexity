@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>真实案例校准｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body>
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="real-case-calibration.html" aria-label="企鹅投研凸性系统">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性机会中心 · 真实案例校准</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性系统页面">
+          <a href="candidate-pool.html">候选库</a>
+          <a href="project-master-pool.html">项目队列</a>
+          <a href="network-discovery.html">链上发现</a>
+          <a href="data-dictionary.html">数据与运行</a>
+          <a href="rules-replay.html">规则与回放</a>
+          <a class="active" href="real-case-calibration.html">真实校准</a>
+        </nav>
+        <div class="topbar-status"><span id="calibrationStatus">正在读取校准结果</span><time id="calibrationGeneratedAt">--</time></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero calibration-hero">
+        <div>
+          <span class="eyebrow">REAL CASE CALIBRATION · M0</span>
+          <h1>20 个真实正反案例校准</h1>
+          <p>用历史事实检查规则是否会追涨、错配代币、忽略安全失效或把项目方表述写成已经确认的事实。</p>
+        </div>
+        <aside class="notice-panel">
+          <strong>不是事后荐币</strong>
+          <p id="calibrationNotice">行情只观察事件前后反应，不证明事件导致价格变化，也不代表当时应当实际买入。</p>
+        </aside>
+      </section>
+
+      <section class="status-grid calibration-summary" aria-label="真实案例校准状态">
+        <article><span>真实案例</span><strong id="realCaseCount">--</strong><small>产品、机制与失败样本</small></article>
+        <article><span>规则一致</span><strong id="realPassedCount">--</strong><small>预期与引擎实际一致</small></article>
+        <article><span>非法迁移</span><strong id="transitionIssueCount">--</strong><small>必须保持为 0</small></article>
+        <article><span>一手证据案例</span><strong id="primaryEvidenceCount">--</strong><small>官方、治理或事故材料</small></article>
+        <article><span>历史行情可用</span><strong id="marketAvailableCount">--</strong><small>其余明确展示缺失原因</small></article>
+      </section>
+
+      <section class="calibration-boundary">
+        <div>
+          <strong>证据边界</strong>
+          <span>已确认事实</span>
+          <span>项目方陈述</span>
+          <span>监管指控</span>
+          <span>法院确认</span>
+        </div>
+        <p>规则输入是基于当时可得信息的研究员重建。初始预期被证据推翻时会保留复核说明，不为追求全绿而调低门槛。</p>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading calibration-heading">
+          <div><span>CASE REVIEW</span><h2>逐案检查</h2></div>
+          <div class="calibration-filters">
+            <label>
+              <span>案例类型</span>
+              <select id="realCaseTypeFilter"><option value="all">全部类型</option></select>
+            </label>
+            <label>
+              <span>行情状态</span>
+              <select id="marketStatusFilter">
+                <option value="all">全部</option>
+                <option value="available">行情可用</option>
+                <option value="unavailable">行情不可得</option>
+              </select>
+            </label>
+          </div>
+        </header>
+
+        <div class="calibration-workspace">
+          <aside class="case-sidebar">
+            <div class="case-sidebar-head">
+              <strong>真实案例</strong>
+              <span id="realVisibleCount">--</span>
+            </div>
+            <div id="realCaseList" class="case-list"></div>
+          </aside>
+          <article id="realCaseDetail" class="case-detail" aria-live="polite"></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性机会中心</span>
+      <strong>当前阶段：真实案例校准完成，尚未接入实时自动采集</strong>
+    </footer>
+
+    <script src="real-case-calibration-snapshot.js"></script>
+    <script src="real-case-calibration.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

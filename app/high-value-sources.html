@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C1.4-04 正式项目持续证据｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="high-value-source-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">后</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="four-layer-screening.html">四层筛选</a>
+          <a href="source-discovery.html">项目发现</a>
+          <a href="discovery-funnel.html">发现漏斗</a>
+          <a href="change-explanations.html">变化解释</a>
+          <a href="update-center.html">更新中心</a>
+          <a class="active" href="high-value-sources.html">持续证据</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="high-value-hero">
+        <div>
+          <span>C1.4 正式项目自动档案 · C1.4-04</span>
+          <h1>正式项目持续证据</h1>
+          <p id="highValuePolicy">正在读取证据边界。</p>
+          <div class="high-value-actions">
+            <a href="update-center.html?task=high_value_evidence_refresh">单独更新持续证据</a>
+            <a href="project-master-pool.html">查看正式项目档案</a>
+          </div>
+        </div>
+        <aside>
+          <span>LATEST RUN</span>
+          <strong id="highValueRunStatus">尚未读取运行</strong>
+          <p id="highValueRunMeta">等待本地快照。</p>
+        </aside>
+      </section>
+
+      <section class="high-value-summary" aria-label="正式项目持续证据摘要">
+        <article><span>已接入信源</span><strong id="highValueSourceCount">--</strong><small>GitHub、DefiLlama、Snapshot、Cactus</small></article>
+        <article><span>本次事实记录</span><strong id="highValueRecordCount">--</strong><small>每条都可打开原始来源</small></article>
+        <article><span>覆盖正式项目</span><strong id="highValueCaseCount">--</strong><small>仅使用已核验身份映射</small></article>
+        <article><span>发生指标变化</span><strong id="highValueChangeCount">--</strong><small>相对上次有效快照</small></article>
+        <article><span>失败来源</span><strong id="highValueFailureCount">--</strong><small>可在更新中心单独重试</small></article>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>SOURCE FEEDBACK</span><h2>四类持续信源分别做什么</h2></div>
+          <p>来源成功只表示取得了数据；项目是否值得行动仍由身份、交易性、经济增量、价值捕获和凸性结构共同决定。</p>
+        </header>
+        <div id="highValueSourceGrid" class="high-value-source-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading high-value-record-heading">
+          <div><span>EVIDENCE RECORDS</span><h2>这次具体更新了什么</h2></div>
+          <div class="high-value-controls">
+            <label><span>信源</span><select id="highValueSourceFilter"><option value="all">全部信源</option></select></label>
+            <label><span>项目或内容</span><input id="highValueSearch" type="search" placeholder="输入项目、事件或指标" /></label>
+          </div>
+        </header>
+        <div class="high-value-table-wrap">
+          <table class="high-value-table">
+            <thead><tr><th>项目与时间</th><th>来源与证据边界</th><th>取得的事实</th><th>原始来源</th></tr></thead>
+            <tbody id="highValueRows"></tbody>
+          </table>
+        </div>
+        <p class="high-value-visible">当前显示 <strong id="highValueVisibleCount">0</strong> 条</p>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>C1.4-04 正式项目持续证据</strong>
+    </footer>
+
+    <script src="high-value-source-snapshot.js"></script>
+    <script src="high-value-sources.js?v=20260730-c1p5p05a"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>重要变化｜企鹅投研-凸性</title>
+    <link rel="stylesheet" href="styles.css?v=20260802-c1p8-sol1">
+    <link rel="stylesheet" href="c1-9.css?v=c19">
+    <link rel="stylesheet" href="c2-0.css?v=c20">
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body class="c19-front" data-page-mode="changes">
+    <div class="c19-front-shell">
+      <header class="c19-front-header">
+        <a class="c19-brand" href="candidate-pool.html"><img src="../desktop/assets/penguin-research-icon.png" alt=""><span class="c19-brand-copy"><strong>企鹅投研</strong><small>洞见共识之外的价值</small></span></a>
+        <nav class="c19-front-nav" aria-label="凸性机会中心"><a data-front-mode="home" href="candidate-pool.html">机会首页</a><a data-front-mode="all" href="candidate-pool.html?view=all">全部机会</a><a data-front-mode="changes" class="is-active" href="change-explanations.html">重要变化</a><a data-front-mode="method" href="candidate-pool.html?view=method">我们如何判断</a></nav>
+        <span class="c19-header-spacer"></span><a class="c19-admin-link" href="workbench.html">管理工作台</a>
+      </header>
+      <main class="c19-front-main">
+        <div id="c19DataNotice" class="c19-status-notice" hidden></div>
+        <section class="c19-section" aria-labelledby="changesPageTitle">
+          <span class="c19-kicker">最近 7 天</span><h1 id="changesPageTitle" class="c19-page-title">重要变化</h1>
+          <p class="c19-page-intro">这里只展示会改变或可能改变判断的变化；稳定状态和普通行情波动不会无限堆积。</p>
+          <div class="c19-list-toolbar">
+            <input id="c19ChangeSearch" type="search" placeholder="搜索项目或变化说明">
+            <select id="changeTimeFilter"><option value="7d">最近 7 天</option><option value="24h">最近 24 小时</option><option value="30d">最近 30 天</option></select>
+            <select id="changeImpactFilter"><option value="all">所有影响</option><option value="upgrade">可能改善判断</option><option value="downgrade">可能收紧判断</option><option value="changed">需要继续观察</option></select>
+            <select id="changeActionImpactFilter"><option value="all">全部变化</option><option value="action">只看可能改变动作</option><option value="watch">只看继续观察</option></select>
+            <span id="c19ChangeCount" class="c19-result-count"></span>
+          </div>
+          <div id="c19ChangePageList" class="c19-card-grid c19-two"></div>
+          <div id="c19ChangePagination" class="c19-pagination" aria-label="重要变化分页"></div>
+        </section>
+      </main>
+    </div>
+    <!-- 历史筛选字段保留为兼容标记；审核控件已移入工作台。旧后台页面曾加载 workbench-nav.js，本页 C1.9 明确不再加载后台导航；数据快照 C1.3-08。兼容字符串：class="topbar workbench-topbar" class="topbar-actions" class="product-nav" workbench-nav.js?v=20260731-c1p6p06a。 -->
+    <!-- changeTimeFilter changeImpactFilter changeActionImpactFilter id="changeDirectionFilter" id="changeCategoryFilter" id="changeReviewFilter" -->
+    <script src="opportunity-center-snapshot.js"></script>
+    <script src="candidate-pool-snapshot.js"></script>
+    <script src="change-explanations-snapshot.js"></script>
+    <script src="research-route-snapshot.js"></script>
+    <script src="tracking-task-snapshot.js"></script>
+    <script src="decision-signals-snapshot.js"></script>
+    <script src="front-c19.js?v=c19"></script>
+    <script src="c2-front.js?v=c20"></script>
+    <script src="c2-1-front-snapshot.js?v=c21-5"></script>
+<script src="c2-1-front.js?v=c21-8"></script>
+  </body>
+</html>

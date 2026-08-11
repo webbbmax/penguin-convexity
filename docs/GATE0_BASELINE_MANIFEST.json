@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "gate0-existing-asset-baseline-v1",
+  "frozenAt": "2026-08-08T21:36:51+08:00",
+  "sourceControlAvailable": false,
+  "protectionMethod": "sha256_plus_accepted_run_ids_plus_fixed_tests",
+  "modelVerification": {
+    "turnId": "019fe190-f17d-76c2-ba33-43a478748e99",
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verifiedAt": "2026-08-08T21:36:51+08:00"
+  },
+  "protectedFiles": [
+    {"path": "scripts/gate0_dex_factory_backfill.py", "sha256": "49bb6971ed1a4ae66a1d2d7797ae500e3e1f89cc531b11727bd8947cd00ceb0f", "policy": "preserve_protocol_semantics_allow_runner_mechanics"},
+    {"path": "scripts/gate0_shadow_preflight.py", "sha256": "f596011bc0c108b15c979453e5e9329247a843df6dd7e4f68674f2dee2ecf71f", "policy": "allow_frozen_compatibility_fixes_only"},
+    {"path": "scripts/build_gate0_analysis_notebook.py", "sha256": "569c5d1f538a00fd951afe66f0af79018a79d21a99e4b7a54e16e89ba33683d2", "policy": "allow_frozen_report_compatibility_fixes"},
+    {"path": "scripts/build_gate0_report.py", "sha256": "c08dc0dcf7cad987844a0c97ede8cf2ed7728546f2927205b4bb48f2195458d7", "policy": "known_test_failure_allow_fix"},
+    {"path": "scripts/test_gate0_dex_factory_backfill.py", "sha256": "5c34086c85f502ef84a3b6665f86d58bd25b38a7a565e8b97d4ce18e1e44c4a6", "policy": "preserve_and_extend"},
+    {"path": "scripts/test_gate0_shadow_preflight.py", "sha256": "911e49e9ed3df9c198a0a5d49821d0355bb15fd8b086845b529f6ffc82bcb9db", "policy": "preserve_and_extend"},
+    {"path": "scripts/test_build_gate0_report.py", "sha256": "eca5c95d9434c2ec66d3fc922817dcb36a8b069eb550f38016310578d19754cd", "policy": "preserve_and_fix_failure"},
+    {"path": "config/gate0-dex-backfill.json", "sha256": "bbd7233dc84aee1041a26f6fd6e0c9b840cff0159e889c2aa8b301bf27a7c9df", "policy": "allow_runner_parameters_preserve_protocol_semantics"},
+    {"path": "config/gate0-shadow-scope.json", "sha256": "cc7f0b1fa0ef014f7c3f70e13692f63a6efe626f7f3951bc62993b1b4f3be71b", "policy": "read_only_scope_baseline"},
+    {"path": "docs/C2.0_REQUIREMENTS_LOCK.json", "sha256": "d383dad81fb0278c1da866f9cb69798d56d423d324aa5950ad98fbb43296d755", "policy": "immutable"},
+    {"path": "data/convexity.db", "sha256": "3a30e13ca29ada90381a05f9e9cefc35bb4879e63a4e2077fef4c7f69454392b", "policy": "immutable_no_reads_that_write"}
+  ],
+  "acceptedRun": {
+    "runId": "dex-backfill-20260805T0630474393727Z",
+    "coverage": "solana_7_dex_13_schemas_29_day_source_window",
+    "eventRows": 1076032,
+    "candidateTokens": 953165,
+    "decodeFailures": 0,
+    "validationAllChecksPass": true,
+    "files": [
+      {"path": "runtime/gate0-shadow/backfill/runs/dex-backfill-20260805T0630474393727Z/candidate-tokens.jsonl", "bytes": 232981134, "sha256": "83ede144efa14e02dd16b54d3fe208b7ec0928c3f2c6abf645642dd0604d7352"},
+      {"path": "runtime/gate0-shadow/backfill/runs/dex-backfill-20260805T0630474393727Z/events/solana-mainnet--registered-creation-schemas.jsonl", "bytes": 631532234, "sha256": "eb006949852ac3813c3bb39567835e8de69ab7590c1710af5c3126a47b9f899a"},
+      {"path": "runtime/gate0-shadow/backfill/runs/dex-backfill-20260805T0630474393727Z/request-ledger.json", "bytes": 3154055, "sha256": "3ebf1e37e7dd7a25487c321f2cf3cfdaa303d07d2a651252d06a7a4ffcf63d69"},
+      {"path": "runtime/gate0-shadow/backfill/runs/dex-backfill-20260805T0630474393727Z/solana-scan-result.json", "bytes": 2604, "sha256": "6fe7b1928d64b3c455a9263438f62801d94464553422d14b7645dc88713cc940"},
+      {"path": "runtime/gate0-shadow/backfill/runs/dex-backfill-20260805T0630474393727Z/summary.json", "bytes": 19404, "sha256": "1ccc8229b28df612b22408fa2d585fe4d894f345f63cd7fdde891ef41d2fc777"},
+      {"path": "runtime/gate0-shadow/backfill/runs/dex-backfill-20260805T0630474393727Z/validation.json", "bytes": 1498, "sha256": "372a49337114fa5505e676fac7dbd1bf62da1697ce3e3d89be46664a1b849ee5"}
+    ]
+  },
+  "unfinishedForensicRun": {
+    "runId": "dex-backfill-20260805T071018869628Z",
+    "state": "not_accepted_not_resumable_do_not_delete_do_not_merge",
+    "file": {
+      "path": "runtime/gate0-shadow/backfill/runs/dex-backfill-20260805T071018869628Z/events/solana-mainnet--registered-creation-schemas.jsonl.tmp",
+      "bytes": 126843585,
+      "lastWriteTime": "2026-08-05T15:21:49.5335217+08:00",
+      "sha256": "3fe61594a8b79dcba7fbe8e54d748063819907971aad67689d0013e8244cf887"
+    }
+  },
+  "coverageSnapshot": {
+    "networksObserved": 6,
+    "observedDexLabels": 43,
+    "verifiedEvmLabelSchemas": 18,
+    "verifiedEvmScanUnitsComplete": "16/16",
+    "solanaDexLabelsDecoded": "7/7",
+    "solanaCreationSchemas": 13,
+    "unsupportedObservedEvmLabels": {"ethereum-mainnet": 4, "base-mainnet": 8, "arbitrum-mainnet": 6},
+    "marketWideComplete": false,
+    "usableAsGlobalT0": false
+  },
+  "testBaseline": [
+    {"command": "python scripts/test_gate0_dex_factory_backfill.py", "state": "pass"},
+    {"command": "python scripts/test_gate0_shadow_preflight.py", "state": "pass"},
+    {"command": "python scripts/test_build_gate0_report.py", "state": "fail", "failure": "KeyError: requestSummary.total"}
+  ],
+  "schedulerGuard": {
+    "taskName": "PenguinConvexity-C1.8-Scheduler",
+    "state": "Ready",
+    "enabled": true,
+    "trigger": "PT1H",
+    "action": "wscript.exe scripts/run-c1-8-scheduler-hidden.vbs C:/Python312/python.exe",
+    "policy": "must_not_change"
+  },
+  "codexAutomationGuard": {
+    "automationId": "gate-0",
+    "stateAtAudit": "ACTIVE",
+    "requiredStateAfterFreeze": "PAUSED",
+    "reason": "old heartbeat binds routine preflight to Sol and repeats model work"
+  }
+}

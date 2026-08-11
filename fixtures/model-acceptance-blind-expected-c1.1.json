@@ -1,0 +1,24 @@
+{
+  "version": "C1.1-09-blind-v1",
+  "title": "四层模型独立情景盲测预期",
+  "boundary": "预期动作依据C1.1冻结的产品规则人工标注，与机器输入分文件保存。行动级正例只有普通建仓和极限试仓。",
+  "cases": [
+    {"id": "blind-ordinary-adoption", "cohort": "actionable", "expectedCategory": "ordinary", "expectedStoppedLayer": 4, "rationale": "L3证据、交易性、价值捕获与风险均已降险。"},
+    {"id": "blind-ordinary-cashflow", "cohort": "actionable", "expectedCategory": "ordinary", "expectedStoppedLayer": 4, "rationale": "基本闭环成立但价格部分反应，只能等待回撤普通小仓。"},
+    {"id": "blind-ordinary-early-mature", "cohort": "actionable", "expectedCategory": "ordinary", "expectedStoppedLayer": 4, "rationale": "L2完整通过且错配分刚越过普通建仓线。"},
+    {"id": "blind-extreme-microcap", "cohort": "actionable", "expectedCategory": "extreme", "expectedStoppedLayer": 2, "rationale": "条件证据仍待外部确认，但损失可按归零封顶。"},
+    {"id": "blind-extreme-prototype", "cohort": "actionable", "expectedCategory": "extreme", "expectedStoppedLayer": 2, "rationale": "L0硬痕迹、资产承接和极限交易性成立。"},
+    {"id": "blind-extreme-event", "cohort": "actionable", "expectedCategory": "extreme", "expectedStoppedLayer": 2, "rationale": "L2高风险事件只允许极限试仓。"},
+    {"id": "blind-observe-identity", "cohort": "non_actionable", "expectedCategory": "observe", "expectedStoppedLayer": 1, "rationale": "不知道买的资产是否属于项目，禁止形成仓位。"},
+    {"id": "blind-observe-value", "cohort": "non_actionable", "expectedCategory": "observe", "expectedStoppedLayer": 3, "rationale": "项目成立但指定资产缺少价值承接。"},
+    {"id": "blind-observe-low-score", "cohort": "non_actionable", "expectedCategory": "observe", "expectedStoppedLayer": 4, "rationale": "早期项目错配不足，不能因微型体量自动进入极限试仓。"},
+    {"id": "blind-observe-loss-bound", "cohort": "non_actionable", "expectedCategory": "observe", "expectedStoppedLayer": 4, "rationale": "早期高风险项目没有按归零封顶，不具备极限试仓资格。"},
+    {"id": "blind-observe-no-ignition", "cohort": "non_actionable", "expectedCategory": "observe", "expectedStoppedLayer": 3, "rationale": "没有点火条件和短失效窗口，极限试仓不可执行。"},
+    {"id": "blind-observe-priced", "cohort": "non_actionable", "expectedCategory": "observe", "expectedStoppedLayer": 4, "rationale": "价格已经充分反应，即使其他标签偏乐观也不得新增普通仓位。"},
+    {"id": "blind-reject-security", "cohort": "rejected", "expectedCategory": "reject", "expectedStoppedLayer": 1, "rationale": "阻断级安全风险拥有一票否决权。"},
+    {"id": "blind-reject-no-economics", "cohort": "rejected", "expectedCategory": "reject", "expectedStoppedLayer": 2, "rationale": "事件没有经济增量，不能保留为投资机会。"},
+    {"id": "blind-reject-invalidated", "cohort": "rejected", "expectedCategory": "reject", "expectedStoppedLayer": 4, "rationale": "核心逻辑已失效，即使旧字段完整也必须排除。"},
+    {"id": "blind-reflexive-l5", "cohort": "transferred", "expectedCategory": "reflexive", "expectedStoppedLayer": 3, "rationale": "L5项目转入反身性管理。"},
+    {"id": "blind-reflexive-priced", "cohort": "transferred", "expectedCategory": "reflexive", "expectedStoppedLayer": 3, "rationale": "价格充分反应且剩余凸性耗尽。"}
+  ]
+}

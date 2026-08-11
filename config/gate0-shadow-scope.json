@@ -1,0 +1,145 @@
+{
+  "schemaVersion": "convexity-gate0-shadow-scope-v0.2",
+  "status": "gate0_authorized_not_product_frozen",
+  "updatedAt": "2026-08-04T20:05:00+08:00",
+  "boundary": {
+    "productCodeWritesAllowed": false,
+    "productionDatabaseWritesAllowed": false,
+    "existingSchedulerChangesAllowed": false,
+    "newProjectWindowDays": 90,
+    "exitFromNewProjectPoolOnDay": 91,
+    "projectMinimumWaitDays": 0,
+    "allProjectAgesUseSourceHistory": true,
+    "shortHistorySyntheticDaysAllowed": false,
+    "liveReliabilityTargetDistinctDays": 14,
+    "liveReliabilityBlocksBackfillOrDevelopment": false,
+    "ageWeighting": false,
+    "randomSamplingAllowed": false,
+    "fixedCandidateCapAllowed": false
+  },
+  "classificationStates": [
+    "success",
+    "no_data",
+    "quota_limited",
+    "source_failure",
+    "unsupported",
+    "configuration_missing",
+    "program_failure"
+  ],
+  "sources": {
+    "geckoterminal": {
+      "baseUrl": "https://api.geckoterminal.com/api/v2",
+      "authenticatedBaseUrl": "https://api.coingecko.com/api/v3/onchain",
+      "credentialEnv": "GECKOTERMINAL_API_KEY",
+      "fallbackCredentialEnv": "GECKOTERMINAL_API_KEY_FALLBACK",
+      "credentialHeader": "x-cg-demo-api-key",
+      "newPoolsWindowHours": 48,
+      "pageSize": 20,
+      "publicPageLimit": 10,
+      "minimumRequestIntervalSeconds": 2.5,
+      "fallbackPolicy": "备用Key只在主Key认证失败时启用；429继续使用主Key退避，不轮换聚合额度。",
+      "boundary": "公开 new_pools 只返回最近48小时且最多按公开分页上限读取；达到上游页数上限必须标记截断，不得声称覆盖90天。"
+    },
+    "dexscreener": {
+      "baseUrl": "https://api.dexscreener.com",
+      "tokenBatchSize": 30,
+      "minimumRequestIntervalSeconds": 0.22,
+      "boundary": "池子资料中的网站和社交链接属于项目方或平台资料，只作为待核验的产品证据，不单独证明项目身份。"
+    },
+    "goplus": {
+      "baseUrl": "https://api.gopluslabs.io/api/v1",
+      "appKeyEnv": "GOPLUS_APP_KEY",
+      "appSecretEnv": "GOPLUS_APP_SECRET",
+      "accessTokenEnv": "GOPLUS_ACCESS_TOKEN",
+      "tokenBatchSize": 20,
+      "minimumRequestIntervalSeconds": 0.5,
+      "boundary": "未返回合约必须记录no_data；来源失败、额度失败和项目风险不得混为一类。"
+    },
+    "github": {
+      "credentialEnv": "BUYI_GITHUB_TOKEN",
+      "boundary": "额度探针只读取rate_limit；GitHub仓库与代币合约尚未建立可核验映射时，不得视为官方产品证据。"
+    },
+    "coingecko": {
+      "credentialEnv": "COINGECKO_DEMO_API_KEY",
+      "boundary": "Demo ping只证明接口和凭据可用，不证明Onchain历史池或90天回溯可用。"
+    },
+    "coinmarketcap": {
+      "credentialEnv": "COINMARKETCAP_API_KEY",
+      "keyInfoUrl": "https://pro-api.coinmarketcap.com/v1/key/info",
+      "boundary": "key/info只用于读取计划与额度；市场或DEX字段必须按具体端点另行验证，不得因有Key就视为数据已覆盖。"
+    },
+    "helius": {
+      "credentialEnv": "HELIUS_API_KEY",
+      "projectIdEnv": "HELIUS_PROJECT_ID",
+      "boundary": "RPC健康不等于剩余额度已知；管理用量接口还需要独立project ID。"
+    },
+    "alchemy": {
+      "credentialEnv": "ALCHEMY_API_KEY",
+      "boundary": "eth_chainId只验证网络RPC可接通，不证明90天全量Transfer回溯成本已通过。"
+    }
+  },
+  "networks": [
+    {
+      "id": "ethereum-mainnet",
+      "name": "Ethereum",
+      "geckoTerminalId": "eth",
+      "dexScreenerId": "ethereum",
+      "chainType": "EVM",
+      "chainId": "1",
+      "alchemyHost": "eth-mainnet.g.alchemy.com",
+      "goPlusSupported": true
+    },
+    {
+      "id": "solana-mainnet",
+      "name": "Solana",
+      "geckoTerminalId": "solana",
+      "dexScreenerId": "solana",
+      "chainType": "SOLANA",
+      "chainId": "solana",
+      "alchemyHost": "solana-mainnet.g.alchemy.com",
+      "alchemyProbeMethod": "getHealth",
+      "goPlusSupported": true
+    },
+    {
+      "id": "base-mainnet",
+      "name": "Base",
+      "geckoTerminalId": "base",
+      "dexScreenerId": "base",
+      "chainType": "EVM",
+      "chainId": "8453",
+      "alchemyHost": "base-mainnet.g.alchemy.com",
+      "goPlusSupported": true
+    },
+    {
+      "id": "arbitrum-mainnet",
+      "name": "Arbitrum One",
+      "geckoTerminalId": "arbitrum",
+      "dexScreenerId": "arbitrum",
+      "chainType": "EVM",
+      "chainId": "42161",
+      "alchemyHost": "arb-mainnet.g.alchemy.com",
+      "goPlusSupported": true
+    },
+    {
+      "id": "bnb-mainnet",
+      "name": "BNB Smart Chain",
+      "geckoTerminalId": "bsc",
+      "dexScreenerId": "bsc",
+      "chainType": "EVM",
+      "chainId": "56",
+      "alchemyHost": "bnb-mainnet.g.alchemy.com",
+      "goPlusSupported": true
+    },
+    {
+      "id": "robinhood-mainnet",
+      "name": "Robinhood Chain",
+      "geckoTerminalId": "robinhood",
+      "dexScreenerId": "robinhood",
+      "chainType": "EVM",
+      "chainId": "4663",
+      "alchemyHost": "robinhood-mainnet.g.alchemy.com",
+      "alchemyProbeMethod": "eth_chainId",
+      "goPlusSupported": false
+    }
+  ]
+}

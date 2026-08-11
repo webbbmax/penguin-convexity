@@ -1,0 +1,66 @@
+{
+  "version": "C1.2-05",
+  "thresholds": {
+    "earlyMonths": 6,
+    "ogYears": 5
+  },
+  "definition": "生命周期日期优先采用项目或代币公开启动日；没有明确启动日时，可使用首次可核验主网或市场活动，但必须标记为临时日期。",
+  "projects": {
+    "dash": {
+      "launchDate": "2014-01-19",
+      "dateStatus": "verified",
+      "dateBasis": "CoinGecko 记录的创世日期",
+      "sourceName": "CoinGecko",
+      "sourceUrl": "https://www.coingecko.com/en/coins/dash"
+    },
+    "digibyte": {
+      "launchDate": "2014-01-10",
+      "dateStatus": "verified",
+      "dateBasis": "DigiByte 官方记录的创世区块日期",
+      "sourceName": "DigiByte 官方网站",
+      "sourceUrl": "https://www.digibyte.org/en-us/"
+    },
+    "zcash": {
+      "launchDate": "2016-10-28",
+      "dateStatus": "verified",
+      "dateBasis": "CoinGecko 记录的创世日期",
+      "sourceName": "CoinGecko",
+      "sourceUrl": "https://www.coingecko.com/en/coins/zcash"
+    },
+    "uniswap": {
+      "launchDate": "2020-09-16",
+      "dateStatus": "verified",
+      "dateBasis": "UNI 官方公开启动日期",
+      "sourceName": "Uniswap Labs",
+      "sourceUrl": "https://blog.uniswap.org/uni"
+    },
+    "lido": {
+      "launchDate": "2020-12-17",
+      "dateStatus": "verified",
+      "dateBasis": "LDO 官方启动与创始分配起始日期",
+      "sourceName": "Lido 官方博客",
+      "sourceUrl": "https://blog.lido.fi/introducing-ldo/"
+    },
+    "stacks": {
+      "launchDate": "2021-01-14",
+      "dateStatus": "verified",
+      "dateBasis": "Stacks 2.0 主网正式启动日期",
+      "sourceName": "Stacks 官方博客",
+      "sourceUrl": "https://www.stacks.co/blog/stacks-2-0-launch-recap"
+    },
+    "cowl-protocol": {
+      "launchDate": "2026-07-28",
+      "dateStatus": "provisional",
+      "dateBasis": "首次已核验主网测试活动",
+      "sourceName": "Cowl Protocol GitHub",
+      "sourceUrl": "https://github.com/Cowl-Protocol/cli/blob/main/TESTING-MAINNET.md"
+    },
+    "paraloom": {
+      "launchDate": "2026-07-28",
+      "dateStatus": "provisional",
+      "dateBasis": "首次已核验市场活动",
+      "sourceName": "DexScreener",
+      "sourceUrl": "https://dexscreener.com/solana/9ekujhcnjdzqw5qxk41jekjteudhquk5djh8mrdhtqa7"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "c2.0-sol-screenshot-manifest-v1",
+  "release": "C2.0",
+  "generatedBy": "Sol",
+  "generatedAt": "2026-08-03T18:41:27+08:00",
+  "requiredScenarios": 17,
+  "inspectedScenarios": 17,
+  "liveScreenshotDirectory": "docs/C2.0_SOL_SCREENSHOTS",
+  "fixtureReferenceManifest": "docs/C2.0_SCREENSHOT_MANIFEST.json",
+  "note": "Sol 重新生成并视觉检查受修复影响的真实页面和四种视口；真实数据当前没有完整摘要或优先信号，因此完整、过期、口径不明和对账失败状态沿用隔离夹具截图，同时以当前真实页面 DOM 和点击路径核验布局与交互。",
+  "scenarios": [
+    {"id": 1, "scenario": "首页有 1 至 5 个有效信号", "evidence": ["docs/C2.0_SCREENSHOTS/01-home-valid-signal.png", "real UI card layout and navigation check"], "result": "passed"},
+    {"id": 2, "scenario": "首页真实 0 个优先信号", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/01-home-zero.png"], "result": "passed"},
+    {"id": 3, "scenario": "首页数据过期并沿用上次有效判断", "evidence": ["docs/C2.0_SCREENSHOTS/03-home-stale.png", "atomic failure injection"], "result": "passed"},
+    {"id": 4, "scenario": "全部机会阅读层级筛选与排序理由", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/02-all-sorted.png"], "result": "passed"},
+    {"id": 5, "scenario": "重要变化项目事件链默认折叠", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/03-changes-collapsed.png"], "result": "passed"},
+    {"id": 6, "scenario": "事件链展开并保留中间步骤", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/04-changes-expanded.png"], "result": "passed"},
+    {"id": 7, "scenario": "数值单位正常与口径不明", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/04-changes-expanded.png", "docs/C2.0_SCREENSHOTS/09-unit-unknown.png"], "result": "passed"},
+    {"id": 8, "scenario": "项目详情完整五段式摘要", "evidence": ["docs/C2.0_SCREENSHOTS/10-detail-complete.png", "current DOM: one action band plus four summary sections"], "result": "passed"},
+    {"id": 9, "scenario": "项目详情资料不足状态", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/05-detail-incomplete.png"], "result": "passed"},
+    {"id": 10, "scenario": "判断质量七类覆盖条", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/07-quality-full.png"], "result": "passed"},
+    {"id": 11, "scenario": "共性阻断排行与闭环队列", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/07-quality-full.png"], "result": "passed"},
+    {"id": 12, "scenario": "判断质量对账失败并保留上次有效数据", "evidence": ["docs/C2.0_SCREENSHOTS/18-quality-reconciliation-failed.png", "atomic failure injection"], "result": "passed"},
+    {"id": 13, "scenario": "1280x720", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/08-viewport-1280x720.png"], "result": "passed"},
+    {"id": 14, "scenario": "1440x900", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/09-viewport-1440x900.png"], "result": "passed"},
+    {"id": 15, "scenario": "1920x1080", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/10-viewport-1920x1080.png"], "result": "passed"},
+    {"id": 16, "scenario": "Windows 125%", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/11-viewport-125pct.png"], "result": "passed"},
+    {"id": 17, "scenario": "后台唯一版本号位置", "evidence": ["docs/C2.0_SOL_SCREENSHOTS/07-quality-full.png", "real UI visible count: front 0, admin 1"], "result": "passed"}
+  ],
+  "liveFiles": {
+    "01-home-zero.png": "e7c653369712296719bdf9423b556e61f0aa95d5891aa96046681979f477a9dd",
+    "02-all-sorted.png": "682444a437589bd8d0ff1c29bfd1c9d6a21969d615bfa0289beed8fc111a2ece",
+    "03-changes-collapsed.png": "eb9ad8336d6f7deb4ca220cac3af3986c15fc3366745981f717c3fdfb3fdb30a",
+    "04-changes-expanded.png": "220874ef5b6a5ae45aefe62364e1897b47631cdd7c997c2655bdd336d15022bd",
+    "05-detail-incomplete.png": "aed1349a40aa7e8caf5ff8548b446b5eb2583aa1b371afc9e7d0d14e999a1122",
+    "06-method-boundary.png": "eaad041bfd84ffe4e9342c6ad81835e8c68f80776adf797d33bc0fcd37723925",
+    "07-quality-full.png": "fc15aeaaec208f6114e35f682b27086be95da0b371e4e57236b85eae9e084942",
+    "08-viewport-1280x720.png": "9edadc004fd8e816c55f3ef78dd12224806d0439e434813a391a6b7b04c86a4c",
+    "09-viewport-1440x900.png": "ad21a7a3b221db6a64f21a8f17fa303b2186a66ef574723212de0503da4a4f9b",
+    "10-viewport-1920x1080.png": "c41d18fe79fe6034902154083363ce2464ca4011eefa2539a56f599c28c81814",
+    "11-viewport-125pct.png": "1b415d139d21593a5f9dba022d36e0c4336d248681ac88c2f0a5f1883512e6d5"
+  }
+}

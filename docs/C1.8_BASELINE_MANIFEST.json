@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "c1.8-development-baseline-v1",
+  "release": "C1.8",
+  "capturedAt": "2026-08-02T01:19:43Z",
+  "policy": "C1.8开发前数据库和活动快照使用独立只读备份；开发前项目文件集合引用紧邻的C1.7最终验收清单，不改写旧清单，也不把开发后的文件伪装成开发前文件。",
+  "projectFilesBaseline": {
+    "source": "backups/c1.7-00-baseline-20260801T042722Z/project-inventory.json",
+    "relationship": "C1.7最终验收通过后的项目文件清单，是C1.8开始前已有文件的恢复基线",
+    "bytes": 141296,
+    "sha256": "69ac9db9af7869e8ee95bc11ec8a768e3ebf2918baaf73e52b7e4e3575ca5559",
+    "fileCount": 567,
+    "directoryCount": 48
+  },
+  "databaseBaseline": {
+    "source": "backups/c1.8-implementation-baseline-20260802T011943Z/data/convexity.db",
+    "bytes": 220061696,
+    "sha256": "7e982964075da8a789e01cc8aa95b6adf445f72cd0fba7f84962db0b1cbc0038",
+    "integrityCheck": "ok",
+    "foreignKeyErrors": 0,
+    "tableCount": 54,
+    "counts": {
+      "projects": 589,
+      "candidateCases": 590,
+      "rawEvents": 16191,
+      "normalizedEventsV2": 15601,
+      "evidenceItems": 2977,
+      "evidenceLineage": 58166,
+      "trackingTaskRuns": 0,
+      "catalystTradePaths": 966,
+      "publishedCatalystTradePaths": 590,
+      "monitoringTargets": 4285,
+      "publishedMonitoringTargets": 2793
+    }
+  },
+  "activeSnapshotBaseline": {
+    "root": "backups/c1.8-implementation-baseline-20260802T011943Z/app",
+    "fileCount": 27,
+    "files": [
+      {"path": "candidate-pool-snapshot.js", "bytes": 8793238, "sha256": "9d484080f465d522ba8dbb7959fec991579d7f350420ce37cf4f39380e6b118b"},
+      {"path": "catalyst-trade-path-snapshot.js", "bytes": 2597538, "sha256": "48a420a98d65c560c6423ed7444dec6d968f541a6c97dda021f78c6a2de435d4"},
+      {"path": "change-explanations-snapshot.js", "bytes": 7794877, "sha256": "24d68874ea0b0496819ff41fade9a3fe53ba6ccbc395d9bc138cd2e70a7eacb1"},
+      {"path": "data-backbone-snapshot.js", "bytes": 60709, "sha256": "33acef9b8a40245ed2f411f51120d81e7a0ba6f5c4b868b06c0084148f2a294f"},
+      {"path": "discovery-funnel-snapshot.js", "bytes": 9106243, "sha256": "c0366dcf066e65664b0b99227c765403280d47c49107b8e574404e6acb50d8fd"},
+      {"path": "evidence-ledger-snapshot.js", "bytes": 18383132, "sha256": "06a496606c3c2d1d2c485f3d24999742fe65f2c204a7c7d8c99e6c031ee5ceae"},
+      {"path": "four-layer-screening-snapshot.js", "bytes": 4640933, "sha256": "03a12e35f0b535657a77a672947778503eb4e113e5daf93fd99eb4261628eb00"},
+      {"path": "gold-calibration-snapshot.js", "bytes": 23227, "sha256": "8f1c1de74db8ad9d27a5943e529897b58a2978a0771115b69bb4c5b42829cb48"},
+      {"path": "high-value-source-snapshot.js", "bytes": 626572, "sha256": "a3f2a4e0dacf4116a2c51953483414a83d029d995ad9d0234797dd3940d85595"},
+      {"path": "manual-review-snapshot.js", "bytes": 1908659, "sha256": "cdf1a9c386c654bfac68dd657dc35e59fe74e7eeb14b8a7f660d8054c408a9ea"},
+      {"path": "model-acceptance-snapshot.js", "bytes": 74196, "sha256": "8f7db889a9ecd752384c085e02cb481d35fa6b93ccc8fcc086c63146b8641764"},
+      {"path": "monitoring-infrastructure-snapshot.js", "bytes": 3148472, "sha256": "a3190e79d865f16ef5d4b299eb4d48a34e011d23c411f0a59ebbed16daf176c5"},
+      {"path": "network-discovery-snapshot.js", "bytes": 544674, "sha256": "629aae2f304fdd6f735cabaf9fe55c2612fa12576e0bdb72dd39fc757af7e3b1"},
+      {"path": "opportunity-center-snapshot.js", "bytes": 7257275, "sha256": "313cbcfcb3b78d77b39f057f907ace5713fae744d4e30d87a605d41f754bff60"},
+      {"path": "project-detail-snapshot.js", "bytes": 36083934, "sha256": "01a618902377b452a66b4e1ce432f9053c6dd3b3daaac124dc934db87fc658cc"},
+      {"path": "project-master-pool-snapshot.js", "bytes": 1426001, "sha256": "aed3195874c21d57f14117da901b1f40e54a81c0efb5df67a4195638e1dd73e8"},
+      {"path": "real-case-calibration-snapshot.js", "bytes": 241728, "sha256": "c180daf0aafac27fec943ddce173d5a046928284473cf61f8bc3ae8e1a3feb4a"},
+      {"path": "research-route-snapshot.js", "bytes": 4836522, "sha256": "91c5b7b9e0f6d96eaa18d5c7b64eb107f7a4bae6f1b4670f8ed9b52a06349de5"},
+      {"path": "rule-replay-snapshot.js", "bytes": 157292, "sha256": "b13aa749b3837eb3287b9b321225799dd531a8b45fb258b5e29f9d4dc3062435"},
+      {"path": "runtime-snapshot.js", "bytes": 171577, "sha256": "a6e145473f20b15094f45d6961bceb35a6093c1a755ba1dde2310c73c699e9ae"},
+      {"path": "scan-center-snapshot.js", "bytes": 284501, "sha256": "fab60e393b22b117a6be009d8b9e0a97aa8813e4ca90df5555f49b7f01943099"},
+      {"path": "source-adapter-snapshot.js", "bytes": 21718, "sha256": "82153928e75afb495dda8eb8333c51b6ffb3976f58be66528c523ed68e51879d"},
+      {"path": "source-discovery-snapshot.js", "bytes": 8151798, "sha256": "031505735fc8729b049cbf68e6bf0ac463d76e488c1a2b21c268d09e4cd7e2e3"},
+      {"path": "source-registry-snapshot.js", "bytes": 64798, "sha256": "9ae198de98d303652bc9c3106134c54c27365ee194e67c41b4f10ed04b0313e3"},
+      {"path": "tracking-task-snapshot.js", "bytes": 1426096, "sha256": "8ac6dcf047262b29caba717b7526f777b4fe606087cf56acff6ba3bf9d4d7f86"},
+      {"path": "update-center-snapshot.js", "bytes": 15194001, "sha256": "8acd775dbb0efa9fdfcd7509889a6d7382b6e172351a0d1c19544f4d5a1b71fd"},
+      {"path": "weak-signal-snapshot.js", "bytes": 17371197, "sha256": "fe2b396c6522528a05229eace3ca2695614cd064a8a35e17f7d3df6aa637a553"}
+    ]
+  },
+  "olderBaselines": {
+    "c1_7": "backups/c1.7-00-baseline-20260801T042722Z",
+    "m1_0": "backups/m1-source-baseline"
+  }
+}

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>扫描中心｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="scan-center-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">企</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="gold-calibration.html">黄金校准</a>
+          <a href="update-center.html">更新中心</a>
+          <a class="active" href="scan-center.html">扫描中心</a>
+          <a href="manual-review.html">人工复核</a>
+          <a href="screening-console.html">筛选台</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main class="scan-center-main">
+      <section class="scan-center-hero">
+        <div>
+          <span>CHAIN & SOURCE SCANNER · C1.1</span>
+          <h1>按链、按信源扫描中心</h1>
+          <p>选择一条链、一个信源或任意组合后重新扫描。这里保留每次运行范围、逐条结果、失败原因和原范围重试入口。</p>
+        </div>
+        <div class="scan-center-actions">
+          <button class="secondary-action" id="scanSelected" type="button" data-scan-action>扫描选中组合</button>
+          <button class="primary-action" id="scanAll" type="button" data-scan-action>全量扫描</button>
+        </div>
+      </section>
+
+      <section class="scan-policy-strip">
+        <strong>不设项目数量上限</strong>
+        <p id="scanNoLimitPolicy">扫描、身份复核和结果列表均不截断；并发只影响完成速度。</p>
+        <span id="scanGeneratedAt">正在读取后台快照</span>
+      </section>
+
+      <section id="scanFeedback" class="scan-feedback" hidden></section>
+
+      <section class="section-block scan-scope-section">
+        <header class="section-heading">
+          <div><span>NETWORK SCOPE</span><h2>选择要扫描的链</h2></div>
+          <p>点击卡片勾选组合；“单独扫描”只运行这一条链，其他链不会重复执行。</p>
+        </header>
+        <div id="scanNetworkGrid" class="scan-scope-grid scan-network-grid"></div>
+      </section>
+
+      <section class="section-block scan-scope-section">
+        <header class="section-heading">
+          <div><span>SOURCE SCOPE</span><h2>选择要使用的信源</h2></div>
+          <p>每个来源都明确显示能证明什么、不能证明什么，以及最近一次扫描结果。</p>
+        </header>
+        <div id="scanSourceGrid" class="scan-scope-grid scan-source-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>LATEST RUN</span><h2>最近一次扫描反馈</h2></div>
+          <p id="scanLatestRunMeta">尚未执行人工扫描。</p>
+        </header>
+        <div id="scanLatestRun" class="scan-latest-run"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>RUN HISTORY</span><h2>扫描历史与失败重试</h2></div>
+          <p>每一行都保存当时选择的链和信源。失败或部分成功的任务可按原范围单独重试。</p>
+        </header>
+        <div class="scan-table-shell scan-run-shell">
+          <table class="scan-table">
+            <thead>
+              <tr>
+                <th>时间 / 状态</th>
+                <th>扫描范围</th>
+                <th>结果</th>
+                <th>错误</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="scanRunRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section-block scan-results-section">
+        <header class="section-heading scan-results-heading">
+          <div><span>ALL RESULTS</span><h2>逐条扫描结果</h2></div>
+          <div class="scan-result-controls">
+            <label>链<select id="scanResultNetwork"><option value="">全部链</option></select></label>
+            <label>信源<select id="scanResultSource"><option value="">全部信源</option></select></label>
+            <label>状态
+              <select id="scanResultStatus">
+                <option value="">全部状态</option>
+                <option value="eligible">技术可进入</option>
+                <option value="pending">待复核</option>
+                <option value="existing">已有资产</option>
+                <option value="rejected">已排除</option>
+                <option value="error">错误</option>
+              </select>
+            </label>
+            <label class="scan-result-search">搜索<input id="scanResultSearch" type="search" placeholder="项目、代币或合约" /></label>
+          </div>
+        </header>
+        <div class="scan-result-count"><strong id="scanVisibleCount">0</strong><span>条结果正在显示，列表不分页、不截断</span></div>
+        <div class="scan-table-shell scan-result-shell">
+          <table class="scan-table scan-result-table">
+            <thead>
+              <tr>
+                <th>项目 / 合约</th>
+                <th>链</th>
+                <th>信源</th>
+                <th>结果</th>
+                <th>归属状态</th>
+                <th>发现时间</th>
+                <th>来源</th>
+              </tr>
+            </thead>
+            <tbody id="scanResultRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>扫描结果只用于发现与身份排队，不直接产生投资结论</strong>
+    </footer>
+
+    <script src="scan-center-snapshot.js"></script>
+    <script src="scan-center.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

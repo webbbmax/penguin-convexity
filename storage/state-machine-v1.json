@@ -1,0 +1,79 @@
+{
+  "version": "convexity-state-machine-v1.0.0",
+  "states": {
+    "shadow_signal": {
+      "label": "影子信号",
+      "group": "等待形成",
+      "description": "不可交易、价值捕获不足或硬证据尚未形成。"
+    },
+    "identity_pending": {
+      "label": "身份待核验",
+      "group": "等待形成",
+      "description": "项目、资产、合约、链或官方关系仍有缺口。"
+    },
+    "tradeability_pending": {
+      "label": "交易性待核验",
+      "group": "等待形成",
+      "description": "卖出路径、流动性、滑点或合约权限仍不明确。"
+    },
+    "active_embryo": {
+      "label": "正式胚胎",
+      "group": "正式研究",
+      "description": "通过正式库硬门槛，但尚未接近行动条件。"
+    },
+    "priority_watch": {
+      "label": "重点观察",
+      "group": "正式研究",
+      "description": "接近点火，进入高频复核队列。"
+    },
+    "extreme_test": {
+      "label": "极限试仓",
+      "group": "行动评估",
+      "description": "L0-L2 极限例外，现货、无杠杆且不超过目标仓位 5%。"
+    },
+    "trial_ready": {
+      "label": "可试仓",
+      "group": "行动评估",
+      "description": "证据、价值捕获、风险和交易性已显著降低不确定性。"
+    },
+    "igniting": {
+      "label": "正在点火",
+      "group": "行动评估",
+      "description": "事件开始转化为真实订单、资金或价格变化。"
+    },
+    "odds_decay": {
+      "label": "赔率衰减",
+      "group": "降级与退出",
+      "description": "价格、估值或扩散已经消耗大部分非对称性。"
+    },
+    "invalidated": {
+      "label": "逻辑失效",
+      "group": "降级与退出",
+      "description": "核心事实、价值捕获、安全或交易性已经失效。"
+    },
+    "transferred_l5": {
+      "label": "转入 L5 管理",
+      "group": "降级与退出",
+      "description": "进入反身性阶段，不再作为早期凸性胚胎。"
+    },
+    "archived": {
+      "label": "已归档",
+      "group": "降级与退出",
+      "description": "保留完整历史，但不参与当前排序。"
+    }
+  },
+  "allowedTransitions": {
+    "shadow_signal": ["identity_pending", "tradeability_pending", "active_embryo", "invalidated", "archived"],
+    "identity_pending": ["shadow_signal", "tradeability_pending", "active_embryo", "invalidated", "archived"],
+    "tradeability_pending": ["shadow_signal", "active_embryo", "invalidated", "archived"],
+    "active_embryo": ["priority_watch", "extreme_test", "trial_ready", "igniting", "odds_decay", "invalidated", "transferred_l5", "archived"],
+    "priority_watch": ["active_embryo", "extreme_test", "trial_ready", "igniting", "odds_decay", "invalidated", "transferred_l5", "archived"],
+    "extreme_test": ["active_embryo", "priority_watch", "igniting", "odds_decay", "invalidated", "transferred_l5", "archived"],
+    "trial_ready": ["active_embryo", "priority_watch", "igniting", "odds_decay", "invalidated", "transferred_l5", "archived"],
+    "igniting": ["trial_ready", "odds_decay", "invalidated", "transferred_l5", "archived"],
+    "odds_decay": ["active_embryo", "priority_watch", "invalidated", "transferred_l5", "archived"],
+    "invalidated": ["shadow_signal", "archived"],
+    "transferred_l5": ["archived"],
+    "archived": ["shadow_signal"]
+  }
+}

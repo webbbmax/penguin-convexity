@@ -1,0 +1,102 @@
+{
+  "version": "gate-screening-v1.0.0",
+  "defaultPresetId": "extreme_discovery",
+  "presets": [
+    {
+      "id": "extreme_action",
+      "name": "极限试仓资格",
+      "description": "按现行行动规则寻找真正通过硬门槛的 L0-L2 项目，结果允许为空。",
+      "settings": {
+        "marketGateEnabled": true,
+        "minimumLiquidityUsd": 20000,
+        "minimumVolume24hUsd": 25000,
+        "maximumExitSlippagePct": 5,
+        "minimumMismatchScore": 65,
+        "allowedMaturities": ["L0", "L1", "L2"],
+        "maximumRiskLevel": "medium",
+        "minimumValueCaptureGrade": "B",
+        "minimumRemainingConvexity": "high",
+        "assetPolicy": "mapped",
+        "tradeabilityPolicy": "limited_or_verified",
+        "identityPolicy": "verified",
+        "sellPathPolicy": "verified",
+        "contractRiskPolicy": "known_non_blocked",
+        "requireHardTrace": true,
+        "requireCompleteConvexity": true,
+        "unknownDataPolicy": "exclude"
+      }
+    },
+    {
+      "id": "extreme_discovery",
+      "name": "极限机会探索",
+      "description": "扩大早期项目召回，允许高风险和待核验数据进入结果，但不改变其行动结论。",
+      "settings": {
+        "marketGateEnabled": true,
+        "minimumLiquidityUsd": 20000,
+        "minimumVolume24hUsd": 25000,
+        "maximumExitSlippagePct": 8,
+        "minimumMismatchScore": 35,
+        "allowedMaturities": ["L0", "L1", "L2"],
+        "maximumRiskLevel": "high",
+        "minimumValueCaptureGrade": "C",
+        "minimumRemainingConvexity": "medium",
+        "assetPolicy": "mapped",
+        "tradeabilityPolicy": "any",
+        "identityPolicy": "verified",
+        "sellPathPolicy": "allow_unknown",
+        "contractRiskPolicy": "allow_unknown",
+        "requireHardTrace": true,
+        "requireCompleteConvexity": true,
+        "unknownDataPolicy": "keep"
+      }
+    },
+    {
+      "id": "ordinary_action",
+      "name": "普通建仓资格",
+      "description": "寻找证据、风险与标准交易性更成熟的 L2-L4 项目。",
+      "settings": {
+        "marketGateEnabled": true,
+        "minimumLiquidityUsd": 250000,
+        "minimumVolume24hUsd": 100000,
+        "maximumExitSlippagePct": 3,
+        "minimumMismatchScore": 72,
+        "allowedMaturities": ["L2", "L3", "L4"],
+        "maximumRiskLevel": "medium",
+        "minimumValueCaptureGrade": "B",
+        "minimumRemainingConvexity": "medium",
+        "assetPolicy": "mapped",
+        "tradeabilityPolicy": "verified",
+        "identityPolicy": "verified",
+        "sellPathPolicy": "verified",
+        "contractRiskPolicy": "known_non_blocked",
+        "requireHardTrace": true,
+        "requireCompleteConvexity": true,
+        "unknownDataPolicy": "exclude"
+      }
+    },
+    {
+      "id": "research_universe",
+      "name": "全量研究",
+      "description": "关闭市场数值门槛，只排除已经硬失效或风险阻断的项目。",
+      "settings": {
+        "marketGateEnabled": false,
+        "minimumLiquidityUsd": 0,
+        "minimumVolume24hUsd": 0,
+        "maximumExitSlippagePct": 100,
+        "minimumMismatchScore": 0,
+        "allowedMaturities": ["L0", "L1", "L2", "L3", "L4", "L5"],
+        "maximumRiskLevel": "any",
+        "minimumValueCaptureGrade": "any",
+        "minimumRemainingConvexity": "any",
+        "assetPolicy": "any",
+        "tradeabilityPolicy": "any",
+        "identityPolicy": "any",
+        "sellPathPolicy": "any",
+        "contractRiskPolicy": "any",
+        "requireHardTrace": false,
+        "requireCompleteConvexity": false,
+        "unknownDataPolicy": "keep"
+      }
+    }
+  ]
+}

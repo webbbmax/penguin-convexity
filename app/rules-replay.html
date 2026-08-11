@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>凸性规则与回放｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body>
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="rules-replay.html" aria-label="企鹅投研凸性系统">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性机会中心 · 规则与回放</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性系统页面">
+          <a href="candidate-pool.html">候选库</a>
+          <a href="project-master-pool.html">项目队列</a>
+          <a href="network-discovery.html">链上发现</a>
+          <a href="data-dictionary.html">数据与运行</a>
+          <a class="active" href="rules-replay.html">规则与回放</a>
+          <a href="real-case-calibration.html">真实校准</a>
+        </nav>
+        <div class="topbar-status"><span id="ruleStatus">正在运行规则</span><time id="replayGeneratedAt">--</time></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero rules-hero">
+        <div>
+          <span class="eyebrow">CONVEXITY RULE ENGINE · M0</span>
+          <h1>凸性规则与状态回放</h1>
+          <p>把“为什么进入、升级、降级或失效”变成可以逐步检查的规则，不用凭最终分数猜结论。</p>
+        </div>
+        <aside class="notice-panel">
+          <strong>规则验收样例</strong>
+          <p id="fixtureNotice">这些案例只用于检验规则，不代表真实项目的历史事实或投资结论。</p>
+        </aside>
+      </section>
+
+      <section class="status-grid replay-summary" aria-label="规则回放状态">
+        <article><span>规则版本</span><strong id="ruleVersion">--</strong><small>每次结论可追溯</small></article>
+        <article><span>验收案例</span><strong id="caseCount">--</strong><small>覆盖正反边界</small></article>
+        <article><span>通过</span><strong id="passedCount">--</strong><small>符合预期结果</small></article>
+        <article><span>状态覆盖</span><strong id="stateCoverage">--</strong><small>工作流状态</small></article>
+        <article><span>非法迁移</span><strong id="illegalTransitionCount">--</strong><small>必须保持为 0</small></article>
+      </section>
+
+      <section class="principle-strip" aria-label="规则边界">
+        <strong>先看边界</strong>
+        <div id="principleList"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>STATE MACHINE</span><h2>候选状态机</h2></div>
+          <p>成熟度、风险、交易性和剩余凸性分别判断；点击状态可筛选经过该状态的案例。</p>
+        </header>
+        <div id="stateMachine" class="state-machine"></div>
+        <button id="clearStateFilter" class="text-button hidden" type="button">清除状态筛选</button>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading replay-heading">
+          <div><span>RULE REPLAY</span><h2>案例逐步回放</h2></div>
+          <label class="table-search">
+            <span>案例类型</span>
+            <select id="caseTypeFilter"><option value="all">全部类型</option></select>
+          </label>
+        </header>
+        <div class="replay-workspace">
+          <aside class="case-sidebar">
+            <div class="case-sidebar-head">
+              <strong>验收案例</strong>
+              <span id="visibleCaseCount">--</span>
+            </div>
+            <div id="caseList" class="case-list"></div>
+          </aside>
+          <article id="caseDetail" class="case-detail" aria-live="polite"></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性机会中心</span>
+      <strong>当前阶段：规则引擎、状态回放与 20 个真实历史案例校准已完成</strong>
+    </footer>
+
+    <script src="rule-replay-snapshot.js"></script>
+    <script src="rules-replay.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+    <script src="c2-1-admin-snapshot.js?v=c21"></script><script src="c2-1-admin.js?v=c21-5"></script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "c2.0-screenshot-manifest-v1",
+  "release": "C2.0",
+  "generatedBy": "Luna",
+  "source": "Edge headless rendering; isolated fixture pages are explicitly marked",
+  "screenshots": [
+    {"id": 1, "files": ["01-home-valid-signal.png"], "scenario": "首页有 1 至 5 个有效信号", "source": "isolated fixture"},
+    {"id": 2, "files": ["02-home-zero.png"], "scenario": "首页真实 0 个优先信号", "source": "live app"},
+    {"id": 3, "files": ["03-home-stale.png"], "scenario": "首页数据过期并沿用上次有效判断", "source": "isolated fixture"},
+    {"id": 4, "files": ["05-all-sort-reasons.png"], "scenario": "全部机会阅读层级筛选与排序理由", "source": "live app"},
+    {"id": 5, "files": ["06-changes-collapsed.png"], "scenario": "重要变化项目事件链默认折叠", "source": "live app"},
+    {"id": 6, "files": ["07-changes-expanded.png"], "scenario": "事件链展开并保留中间步骤", "source": "isolated fixture wrapper"},
+    {"id": 7, "files": ["08-numeric-unit-normal.png", "09-unit-unknown.png"], "scenario": "数值单位正常与口径不明状态", "source": "live/isolated data views"},
+    {"id": 8, "files": ["10-detail-complete.png"], "scenario": "项目详情完整五段式摘要", "source": "isolated fixture"},
+    {"id": 9, "files": ["11-detail-incomplete.png"], "scenario": "项目详情资料不足状态", "source": "live app"},
+    {"id": 10, "files": ["12-quality-funnel.png"], "scenario": "判断质量七类覆盖条", "source": "live app"},
+    {"id": 11, "files": ["13-quality-blockers-queue.png"], "scenario": "共性阻断排行与闭环队列", "source": "live app"},
+    {"id": 12, "files": ["18-quality-reconciliation-failed.png"], "scenario": "判断质量对账失败并保留上次有效数据", "source": "isolated fixture"},
+    {"id": 13, "files": ["14-viewport-1280x720.png"], "scenario": "1280×720", "source": "live app"},
+    {"id": 14, "files": ["15-viewport-1440x900.png"], "scenario": "1440×900", "source": "live app"},
+    {"id": 15, "files": ["16-viewport-1920x1080.png"], "scenario": "1920×1080", "source": "live app"},
+    {"id": 16, "files": ["17-viewport-125pct.png"], "scenario": "Windows 125% 缩放", "source": "live app"},
+    {"id": 17, "files": ["17-version-location.png"], "scenario": "后台唯一版本号位置", "source": "live app"}
+  ]
+}

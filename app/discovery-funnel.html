@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C1.1-06 发现漏斗｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="discovery-funnel-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">后</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="four-layer-screening.html">四层筛选</a>
+          <a href="source-discovery.html">项目发现</a>
+          <a class="active" href="discovery-funnel.html">发现漏斗</a>
+          <a href="change-explanations.html">变化解释</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="discovery-funnel-hero">
+        <div>
+          <span>C1.1 凸性发现质量升级 · C1.1-06</span>
+          <h1>发现漏斗</h1>
+          <p id="discoveryFunnelPolicy">正在读取漏斗口径。</p>
+          <div class="discovery-funnel-actions">
+            <a href="source-discovery.html">查看原始项目发现</a>
+            <a href="four-layer-screening.html">查看既有候选四层筛选</a>
+          </div>
+        </div>
+        <aside>
+          <span>CURRENT CONCLUSION</span>
+          <strong id="discoveryFunnelConclusion">正在计算当前结论</strong>
+          <p id="discoveryFunnelGeneratedAt">等待本地快照。</p>
+        </aside>
+      </section>
+
+      <section class="discovery-funnel-summary" aria-label="发现漏斗摘要">
+        <article><span>项目级发现</span><strong id="discoveryFunnelTotal">--</strong><small>只代表召回线索</small></article>
+        <article><span>项目身份通过</span><strong id="discoveryFunnelProject">--</strong><small>官方身份锚点匹配</small></article>
+        <article><span>资产身份通过</span><strong id="discoveryFunnelAsset">--</strong><small>代币、合约和项目关系明确</small></article>
+        <article><span>价值捕获通过</span><strong id="discoveryFunnelCapture">--</strong><small>增长可传导到资产</small></article>
+        <article><span>研究案例</span><strong id="discoveryFunnelCases">--</strong><small>仅统计逐级通过者</small></article>
+        <article><span>行动级项目</span><strong id="discoveryFunnelAction">--</strong><small>普通建仓或极限试仓</small></article>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>STAGE CONVERSION</span><h2>每一步通过了多少</h2></div>
+          <p>通过数量只能向下递减；等待和阻断都保留原因，不用推测值补齐。</p>
+        </header>
+        <div id="discoveryFunnelStages" class="discovery-funnel-stages"></div>
+      </section>
+
+      <section class="section-block discovery-funnel-context">
+        <div>
+          <span>SEPARATE RESEARCH BRANCH</span>
+          <h2>既有候选研究池不冒充漏斗转化</h2>
+          <p id="discoveryFunnelSeparateNote">正在读取既有候选边界。</p>
+        </div>
+        <strong id="discoveryFunnelSeparateCount">--</strong>
+        <a href="four-layer-screening.html">单独查看</a>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>FIRST BLOCKER</span><h2>首个阻断原因</h2></div>
+          <p>每个项目只计入它最先没有通过的一步，因此所有原因之和等于项目级发现总数。</p>
+        </header>
+        <div id="discoveryFunnelBlockers" class="discovery-funnel-blockers"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading discovery-funnel-heading">
+          <div><span>PROJECT TRACE</span><h2>逐项目查看停在哪里</h2></div>
+          <div class="discovery-funnel-controls">
+            <label><span>停留层级</span><select id="discoveryFunnelStageFilter"><option value="all">全部层级</option></select></label>
+            <label><span>首个阻断</span><select id="discoveryFunnelBlockerFilter"><option value="all">全部原因</option></select></label>
+            <label><span>来源</span><select id="discoveryFunnelSourceFilter"><option value="all">全部来源</option></select></label>
+            <label class="discovery-funnel-search"><span>检索</span><input id="discoveryFunnelSearch" type="search" placeholder="项目、分类、来源或原因" /></label>
+          </div>
+        </header>
+        <div class="discovery-funnel-table-wrap">
+          <table class="discovery-funnel-table">
+            <thead><tr><th>项目主体线索</th><th>来源</th><th>已到达</th><th>首个阻断原因</th><th>下一步</th></tr></thead>
+            <tbody id="discoveryFunnelRows"></tbody>
+          </table>
+        </div>
+        <div class="discovery-funnel-pagination">
+          <p>符合当前筛选 <strong id="discoveryFunnelFilteredCount">0</strong> 个项目，本页显示 <strong id="discoveryFunnelVisibleCount">0</strong> 个。全部记录均保留。</p>
+          <div>
+            <button id="discoveryFunnelPrevious" type="button">上一页</button>
+            <span id="discoveryFunnelPageLabel">第 1 / 1 页</span>
+            <button id="discoveryFunnelNext" type="button">下一页</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>C1.1-06 发现漏斗</strong>
+    </footer>
+
+    <script src="discovery-funnel-snapshot.js"></script>
+    <script src="discovery-funnel.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

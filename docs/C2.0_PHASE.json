@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "c2.0-phase-v1",
+  "release": "C2.0",
+  "name": "机会信号质量与可解释决策",
+  "phase": "sol_final_acceptance_complete_released",
+  "status": "accepted_released",
+  "requirementsStatus": "frozen",
+  "productCodeStarted": true,
+  "updatedAt": "2026-08-03T18:45:09+08:00",
+  "completedBy": "Sol",
+  "currentAuthority": "Sol",
+  "requiredModel": "Sol",
+  "planningModelVerification": {
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verifiedAt": "2026-08-03T16:33:00+08:00"
+  },
+  "requirementsLock": "docs/C2.0_REQUIREMENTS_LOCK.json",
+  "formalPrd": "docs/C2.0_PRD.md",
+  "pageDataContract": "docs/C2.0_PAGE_DATA_CONTRACT.md",
+  "designSpec": "docs/C2.0_DESIGN_SPEC.md",
+  "copyDictionary": "docs/C2.0_COPY_DICTIONARY.md",
+  "acceptancePlan": "docs/C2.0_ACCEPTANCE_PLAN.md",
+  "handoff": "docs/C2.0_HANDOFF.md",
+  "implementationModelVerification": {
+    "turnContextModel": "gpt-5.6-luna",
+    "threadSettingsModel": "gpt-5.6-luna",
+    "reasoningEffort": "max",
+    "verifiedAt": "2026-08-03T17:50:53+08:00"
+  },
+  "implementationReport": "docs/C2.0_LUNA_IMPLEMENTATION_REPORT.md",
+  "selfTestReport": "docs/C2.0_LUNA_SELF_TEST.md",
+  "screenshotManifest": "docs/C2.0_SCREENSHOT_MANIFEST.json",
+  "finalModelVerification": {
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verifiedAt": "2026-08-03T18:45:09+08:00"
+  },
+  "acceptanceManifest": "docs/C2.0_ACCEPTANCE_MANIFEST.json",
+  "finalAcceptanceReport": "docs/C2.0_SOL_FINAL_ACCEPTANCE.md",
+  "solScreenshotManifest": "docs/C2.0_SOL_SCREENSHOT_MANIFEST.json",
+  "visibleVersion": "当前版本 C2.0",
+  "allowedNextAction": "当前无需用户操作；后续新版本或投资规则变化需用户重新授权",
+  "requiredNextPhase": "C2.0 已发布；如需 C2.1，先由用户授权新的版本规划",
+  "forbiddenNextActions": [
+    "Sol在等待Luna阶段开始常规产品编码",
+    "未核验当前任务双模型元数据就启动Luna实现",
+    "修改C2.0需求锁或冻结产品选择",
+    "修改评分、动作、L0-L5或核心研究规则",
+    "新增SQLite业务表或把阅读优先级写回投资结论",
+    "建立到RWA、旧整合项目或源项目的运行时引用",
+    "Luna提前宣布C2.0发布或把后台唯一版本号改为C2.0"
+  ]
+}

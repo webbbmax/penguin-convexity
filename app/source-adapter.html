@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>主干接入状态｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="convexity-source-adapter-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">干</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面"></nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="source-adapter-hero">
+        <div>
+          <span>COLLECTION MAINLINE · C1.6-06</span>
+          <h1>主干接入状态</h1>
+          <p>核对每个信源是否统一完成原始留存、研究证据连接和身份归属。这里只恢复能够精确核验的历史关系，不会为了减少缺口而猜测项目。</p>
+        </div>
+        <aside>
+          <strong>当前规则</strong>
+          <p id="adapterPrinciple">正在读取主干规则。</p>
+          <small id="adapterGeneratedAt">正在读取生成时间</small>
+        </aside>
+      </section>
+
+      <section class="status-grid source-adapter-summary" aria-label="主干接入汇总">
+        <article><span>登记信源</span><strong id="adapterSourceTotal">--</strong><small>凸性工作台独立信源</small></article>
+        <article><span>完整接入</span><strong id="adapterCompleteTotal">--</strong><small>原始记录与研究证据均可追溯</small></article>
+        <article class="is-warning"><span>部分接入</span><strong id="adapterPartialTotal">--</strong><small>仍有历史原始记录缺口</small></article>
+        <article><span>仅原始留存</span><strong id="adapterRawOnlyTotal">--</strong><small>不是失败，尚未形成研究证据</small></article>
+        <article><span>已精确恢复</span><strong id="adapterRecoveredTotal">--</strong><small>来自历史结构化记录</small></article>
+        <article class="is-warning"><span>剩余缺口</span><strong id="adapterGapTotal">--</strong><small>等待对应来源重新采集</small></article>
+      </section>
+
+      <section class="section-block source-adapter-explainer">
+        <header class="section-heading">
+          <div><span>HOW TO READ</span><h2>怎样理解这些状态</h2></div>
+          <p>“仅原始留存”说明机器已保存线索，但它还没有达到研究证据门槛；真正需要处理的是“部分接入”和“未采到数据”。</p>
+        </header>
+        <div class="source-adapter-legend">
+          <span class="adapter-status complete">完整接入</span><p>已有原始记录，形成的证据也能回到原始来源。</p>
+          <span class="adapter-status partial">部分接入</span><p>新数据已走主干，但部分历史证据当时没有保存原始记录。</p>
+          <span class="adapter-status raw_only">仅原始留存</span><p>采集正常，只是当前内容没有被研究规则选中。</p>
+          <span class="adapter-status no_data">未采到数据</span><p>信源已登记，尚无成功采集记录，需要检查对应任务。</p>
+        </div>
+      </section>
+
+      <section class="section-block source-adapter-browser">
+        <header class="section-heading">
+          <div><span>SOURCE ADAPTERS</span><h2>逐个信源检查</h2></div>
+          <p id="adapterVisibleCount">正在读取信源状态。</p>
+        </header>
+        <div class="source-adapter-controls">
+          <label>
+            <span>接入状态</span>
+            <select id="adapterStatusFilter">
+              <option value="all">全部状态</option>
+              <option value="complete">完整接入</option>
+              <option value="partial">部分接入</option>
+              <option value="raw_only">仅原始留存</option>
+              <option value="no_data">未采到数据</option>
+            </select>
+          </label>
+          <label>
+            <span>信源类型</span>
+            <select id="adapterTypeFilter"><option value="all">全部类型</option></select>
+          </label>
+          <label class="source-adapter-search">
+            <span>查找信源</span>
+            <input id="adapterSearch" type="search" placeholder="信源名称、类型或ID" />
+          </label>
+        </div>
+        <div class="source-adapter-workspace">
+          <div class="source-adapter-table-wrap">
+            <table>
+              <thead>
+                <tr><th>信源</th><th>状态</th><th>原始记录</th><th>研究证据</th><th>剩余缺口</th><th>最近采集</th></tr>
+              </thead>
+              <tbody id="adapterTableBody"></tbody>
+            </table>
+          </div>
+          <aside id="adapterDetail" class="source-adapter-detail" aria-live="polite">
+            <strong>选择一个信源</strong>
+            <p>这里会解释它已经接入到哪一步、还有什么缺口，以及下一步应该做什么。</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>只做精确恢复 · 仅使用本项目数据</strong>
+    </footer>
+
+    <script src="source-adapter-snapshot.js"></script>
+    <script src="source-adapter.js?v=20260731-c1p6p06a"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

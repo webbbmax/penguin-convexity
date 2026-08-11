@@ -1,0 +1,608 @@
+{
+  "version": "convexity-real-cases-v1.0.0",
+  "notice": "本清单用于校准研究规则，不是对历史收益的事后推荐。事件事实、项目方陈述、监管指控、法院认定和研究员判断分别标注；行情反应仅用于观察，不证明因果。",
+  "defaults": {
+    "maturity": "L2",
+    "identity_verified": true,
+    "asset_verified": true,
+    "official_relation_verified": true,
+    "venue_verified": true,
+    "sell_path_verified": true,
+    "hard_trace_count": 2,
+    "independent_diffusion_count": 1,
+    "value_capture_grade": "B",
+    "convexity_fields_complete": true,
+    "liquidity_usd": 1000000,
+    "volume_24h_usd": 500000,
+    "exit_slippage_pct": 1.5,
+    "contract_risk": "low",
+    "risk_level": "medium",
+    "fact_certainty": 18,
+    "economic_increment": 15,
+    "value_capture": 18,
+    "event_proximity": 14,
+    "price_unreacted": 10,
+    "risk_deduction": 5,
+    "remaining_convexity": "medium",
+    "ignition_proximity": "near",
+    "ignition_active": false,
+    "core_invalidated": false,
+    "archive_requested": false,
+    "price_reaction_pct": 0,
+    "facts_upgraded": true,
+    "primary_convexity_source": "事件",
+    "maximum_controllable_loss": "按预先定义的失效条件与目标仓位控制，不将评分等同于仓位",
+    "nonlinear_upside_path": "产品事实转化为采用、费用或资产需求后，可能形成非线性反馈",
+    "ignition_conditions": "一手事实按计划落地，并开始出现真实采用、资金流或价格确认",
+    "odds_decay_conditions": "价格先于事实大幅反应，或价值捕获没有同步改善",
+    "invalidation_window": "核心事件取消、产品或资产映射被证伪、卖出路径或安全性失效"
+  },
+  "cases": [
+    {
+      "caseId": "real-ethereum-merge",
+      "project": "Ethereum",
+      "asset": "ETH",
+      "title": "Ethereum Merge：明确日期形成事件窗口",
+      "caseType": "产品升级正例",
+      "calibrationQuestion": "测试网完成且主网日期明确时，系统是否能从可试仓升级到点火，而不是把社交热度当证据。",
+      "expectedSequence": ["trial_ready", "igniting"],
+      "eventAt": "2022-09-15",
+      "market": {"provider": "Binance Spot", "symbol": "ETHUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Mainnet Merge Announcement",
+          "publisher": "Ethereum Foundation",
+          "publishedAt": "2022-08-24",
+          "sourceType": "官方协议公告",
+          "factBoundary": "confirmed_fact",
+          "url": "https://blog.ethereum.org/2022/08/24/mainnet-merge-announcement",
+          "summary": "公开测试网已完成，主网合并触发条件及预计窗口明确。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-08-24", "label": "测试网完成并公布主网窗口", "input": {"maturity": "L2", "value_capture_grade": "A", "value_capture": 23, "event_proximity": 19, "price_unreacted": 9, "risk_deduction": 5, "remaining_convexity": "medium"}},
+        {"at": "2022-09-15", "label": "主网完成权益证明迁移", "input": {"maturity": "L3", "ignition_proximity": "immediate", "ignition_active": true}}
+      ]
+    },
+    {
+      "caseId": "real-uniswap-v3-capture",
+      "project": "Uniswap",
+      "asset": "UNI",
+      "title": "Uniswap v3：产品升级不等于 UNI 自动捕获价值",
+      "caseType": "价值捕获反例",
+      "calibrationQuestion": "真实且重大的产品升级，在协议费默认关闭时是否仍会被价值捕获门槛拦住。",
+      "expectedSequence": ["shadow_signal"],
+      "eventAt": "2021-05-05",
+      "market": {"provider": "Binance Spot", "symbol": "UNIUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Introducing Uniswap v3",
+          "publisher": "Uniswap Labs",
+          "publishedAt": "2021-03-23",
+          "sourceType": "项目官方公告",
+          "factBoundary": "confirmed_fact",
+          "url": "https://blog.uniswap.org/uniswap-v3",
+          "summary": "公布 5 月 5 日主网目标及集中流动性等功能，同时说明协议费默认关闭。"
+        }
+      ],
+      "timeline": [
+        {"at": "2021-03-23", "label": "公布 v3 与主网日期，但 UNI 直接捕获仍弱", "input": {"value_capture_grade": "C", "fact_certainty": 19, "economic_increment": 19, "value_capture": 7, "event_proximity": 19, "price_unreacted": 9, "risk_deduction": 4}}
+      ]
+    },
+    {
+      "caseId": "real-aave-v3",
+      "project": "Aave",
+      "asset": "AAVE",
+      "title": "Aave v3：治理、代码与费用控制形成映射",
+      "caseType": "产品升级正例",
+      "calibrationQuestion": "治理可控制协议费用且部署临近时，是否通过价值捕获门槛并在落地时进入点火。",
+      "expectedSequence": ["trial_ready", "igniting"],
+      "eventAt": "2022-03-16",
+      "market": {"provider": "Binance Spot", "symbol": "AAVEUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Introducing Aave V3",
+          "publisher": "Aave Governance",
+          "publishedAt": "2021-11-04",
+          "sourceType": "官方治理提案",
+          "factBoundary": "confirmed_fact",
+          "url": "https://governance.aave.com/t/introducing-aave-v3/6035",
+          "summary": "公开 v3 功能、审计与部署流程，并说明费用由 Aave 治理控制。"
+        },
+        {
+          "title": "Aave Labs Contributions Report",
+          "publisher": "Aave Governance",
+          "publishedAt": "2025-10-03",
+          "sourceType": "官方回顾",
+          "factBoundary": "project_claim",
+          "url": "https://governance.aave.com/t/aave-labs-contributions-report/24155",
+          "summary": "回顾 v3 于 2022 年 3 月首次部署。"
+        }
+      ],
+      "timeline": [
+        {"at": "2021-11-04", "label": "治理提案、审计计划与费用映射形成", "input": {"value_capture_grade": "B", "value_capture": 20, "event_proximity": 16, "price_unreacted": 11, "remaining_convexity": "high"}},
+        {"at": "2022-03-16", "label": "v3 首批网络部署", "input": {"maturity": "L3", "ignition_proximity": "immediate", "ignition_active": true, "remaining_convexity": "medium"}}
+      ]
+    },
+    {
+      "caseId": "real-lido-v2",
+      "project": "Lido",
+      "asset": "LDO",
+      "title": "Lido v2：提款功能从治理变为真实可用",
+      "caseType": "产品升级正例",
+      "calibrationQuestion": "审计、治理投票和用户可验证提款同时出现时，是否识别为真实点火。",
+      "expectedSequence": ["trial_ready", "igniting"],
+      "eventAt": "2023-05-15",
+      "market": {"provider": "Binance Spot", "symbol": "LDOUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Lido V2 Mainnet Launch",
+          "publisher": "Lido",
+          "publishedAt": "2023-05-15",
+          "sourceType": "项目官方公告",
+          "factBoundary": "confirmed_fact",
+          "url": "https://blog.lido.fi/lido-v2-launch/",
+          "summary": "链上投票通过后 v2 上线，协议内 ETH 提款与 Staking Router 可用，并披露多项审计。"
+        }
+      ],
+      "timeline": [
+        {"at": "2023-05-10", "label": "提款指南与安全准备完成", "input": {"value_capture_grade": "B", "event_proximity": 18, "price_unreacted": 10, "remaining_convexity": "medium"}},
+        {"at": "2023-05-15", "label": "v2 上线且提款可实际使用", "input": {"maturity": "L3", "ignition_proximity": "immediate", "ignition_active": true}}
+      ]
+    },
+    {
+      "caseId": "real-optimism-bedrock-capture",
+      "project": "Optimism",
+      "asset": "OP",
+      "title": "Optimism Bedrock：技术成功但 OP 捕获需另证",
+      "caseType": "价值捕获反例",
+      "calibrationQuestion": "可验证的网络升级是否会被错误外推为 OP 代币的直接经济增量。",
+      "expectedSequence": ["shadow_signal"],
+      "eventAt": "2023-06-06",
+      "market": {"provider": "Binance Spot", "symbol": "OPUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Reproduce OP Mainnet's migration to Bedrock",
+          "publisher": "Optimism Foundation",
+          "publishedAt": "2023-06-26",
+          "sourceType": "官方工程复盘",
+          "factBoundary": "confirmed_fact",
+          "url": "https://optimism.io/blog/here-s-how-you-can-reproduce-op-mainnet-s-migration-to-bedrock",
+          "summary": "确认 6 月 6 日完成升级并提供可复现迁移流程，但未直接证明 OP 持有人获得费用现金流。"
+        }
+      ],
+      "timeline": [
+        {"at": "2023-06-06", "label": "Bedrock 成功迁移，但代币直接捕获证据不足", "input": {"maturity": "L3", "value_capture_grade": "C", "fact_certainty": 20, "economic_increment": 18, "value_capture": 8, "event_proximity": 20, "price_unreacted": 9}}
+      ]
+    },
+    {
+      "caseId": "real-arbitrum-stylus-capture",
+      "project": "Arbitrum",
+      "asset": "ARB",
+      "title": "Arbitrum Stylus：生态增量与 ARB 捕获分开",
+      "caseType": "价值捕获反例",
+      "calibrationQuestion": "主网功能与开发者扩展是否会被错误写成 ARB 的直接价值捕获。",
+      "expectedSequence": ["shadow_signal"],
+      "eventAt": "2024-09-03",
+      "market": {"provider": "Binance Spot", "symbol": "ARBUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Arbitrum Foundation Annual Transparency Report 2024",
+          "publisher": "Arbitrum Foundation",
+          "publishedAt": "2025-12-01",
+          "sourceType": "基金会年度报告",
+          "factBoundary": "confirmed_fact",
+          "url": "https://docs.arbitrum.foundation/assets/files/ArbitrumFoundationTransparencyReport2024-c09352f2302b42087b98738cf017a58a.pdf",
+          "summary": "年度里程碑确认 Stylus 于 2024 年 9 月进入主网。"
+        }
+      ],
+      "timeline": [
+        {"at": "2024-09-03", "label": "Stylus 主网上线，但 ARB 现金流捕获仍需独立证据", "input": {"maturity": "L3", "value_capture_grade": "C", "fact_certainty": 19, "economic_increment": 17, "value_capture": 7, "event_proximity": 20, "price_unreacted": 11}}
+      ]
+    },
+    {
+      "caseId": "real-ondo-ousg-mapping",
+      "project": "Ondo Finance",
+      "asset": "ONDO",
+      "title": "Ondo OUSG：产品成功不能回填尚未流通的 ONDO",
+      "caseType": "资产映射反例",
+      "calibrationQuestion": "项目产品在 2023 年增长时，系统是否避免把结果事后归因给当时尚未可交易的 ONDO。",
+      "expectedSequence": ["identity_pending"],
+      "eventAt": "2023-04-13",
+      "market": {"provider": "Binance Spot", "symbol": "ONDOUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Bringing Money Market Funds On-Chain",
+          "publisher": "Ondo Finance",
+          "publishedAt": "2023-04-13",
+          "sourceType": "项目官方公告",
+          "factBoundary": "project_claim",
+          "url": "https://ondo.finance/blog/tokenizing-money-market-funds",
+          "summary": "项目方披露 OUSG 与 Flux 的早期增长；该事实不能事后替代当时的 ONDO 资产可交易性。"
+        }
+      ],
+      "timeline": [
+        {"at": "2023-04-13", "label": "OUSG 产品数据出现，但 ONDO 尚无可核验交易映射", "input": {"asset_verified": false, "venue_verified": false, "sell_path_verified": false, "liquidity_usd": null, "volume_24h_usd": null, "exit_slippage_pct": null, "contract_risk": "unknown", "value_capture_grade": "C"}}
+      ]
+    },
+    {
+      "caseId": "real-aerodrome-launch",
+      "project": "Aerodrome",
+      "asset": "AERO",
+      "title": "Aerodrome：产品、收入分配与可交易资产同日形成",
+      "caseType": "产品升级正例",
+      "calibrationQuestion": "产品上线且收入分配、治理资产和交易路径同时可核验时，系统是否识别为点火。",
+      "expectedSequence": ["igniting"],
+      "eventAt": "2023-08-28",
+      "market": {"provider": "Binance Spot", "symbol": "AEROUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Aerodrome Documentation",
+          "publisher": "Aerodrome Finance",
+          "publishedAt": "2026-07-01",
+          "sourceType": "项目官方文档",
+          "factBoundary": "project_claim",
+          "url": "https://aerodrome.finance/docs",
+          "summary": "官方文档回顾 2023 年 8 月 28 日上线，并说明协议收入分配与 veAERO 机制。"
+        }
+      ],
+      "timeline": [
+        {"at": "2023-08-28", "label": "协议上线，收入、治理与资产映射形成", "input": {"maturity": "L3", "value_capture_grade": "A", "value_capture": 24, "event_proximity": 20, "price_unreacted": 13, "risk_deduction": 9, "remaining_convexity": "high", "ignition_proximity": "immediate", "ignition_active": true}}
+      ]
+    },
+    {
+      "caseId": "real-maple-syrup-migration",
+      "project": "Maple Finance",
+      "asset": "SYRUP",
+      "title": "Maple SYRUP：迁移、回购与质押构成明确窗口",
+      "caseType": "代币机制正例",
+      "calibrationQuestion": "迁移日期、兑换比例和收入回购机制同时明确时，系统是否先进入可试仓并在上线时点火。",
+      "expectedSequence": ["trial_ready", "igniting"],
+      "eventAt": "2024-11-13",
+      "market": {"provider": "Binance Spot", "symbol": "SYRUPUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "SYRUP Token Launch: November 13",
+          "publisher": "Maple Finance",
+          "publishedAt": "2024-10-16",
+          "sourceType": "项目官方公告",
+          "factBoundary": "project_claim",
+          "url": "https://maple.finance/insights/syrup-token-launch-13-november",
+          "summary": "公布上线日期、MPL 一键迁移、收入回购和质押激励。"
+        },
+        {
+          "title": "Deployment and Migration Procedure",
+          "publisher": "Maple Finance",
+          "publishedAt": "2024-11-01",
+          "sourceType": "官方技术文档",
+          "factBoundary": "confirmed_fact",
+          "url": "https://docs.maple.finance/technical-resources/syrup/deployment-and-migration-procedure",
+          "summary": "说明迁移合约及 MPL 到 SYRUP 的 1:1 兑换路径。"
+        }
+      ],
+      "timeline": [
+        {"at": "2024-10-16", "label": "上线日期、回购和迁移路径明确", "input": {"value_capture_grade": "A", "value_capture": 23, "event_proximity": 20, "price_unreacted": 12, "remaining_convexity": "high"}},
+        {"at": "2024-11-13", "label": "SYRUP 上线并开放迁移", "input": {"maturity": "L3", "ignition_proximity": "immediate", "ignition_active": true}}
+      ]
+    },
+    {
+      "caseId": "real-sky-migration",
+      "project": "Sky",
+      "asset": "SKY",
+      "title": "Sky：MKR 迁移需要同时检查价值与执行摩擦",
+      "caseType": "代币机制正例",
+      "calibrationQuestion": "代币迁移与激励明确时，系统是否识别机会，同时保留迁移与治理风险扣分。",
+      "expectedSequence": ["trial_ready", "igniting"],
+      "eventAt": "2024-09-18",
+      "market": {"provider": "Binance Spot", "symbol": "SKYUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Sky Protocol Terms and X Activation Campaign",
+          "publisher": "Sky",
+          "publishedAt": "2024-08-20",
+          "sourceType": "官方法律与活动条款",
+          "factBoundary": "confirmed_fact",
+          "url": "https://docs.sky.money/legal/skybase-international/terms-of-use",
+          "summary": "列明 8 月 20 日至 9 月 18 日活动窗口及 SKY、MKR 相关参与路径。"
+        }
+      ],
+      "timeline": [
+        {"at": "2024-08-20", "label": "迁移与激励窗口形成，但保留治理和执行扣分", "input": {"value_capture_grade": "B", "value_capture": 19, "event_proximity": 19, "price_unreacted": 11, "risk_deduction": 9, "remaining_convexity": "medium"}},
+        {"at": "2024-09-18", "label": "活动窗口结束并进入实际迁移阶段", "input": {"maturity": "L3", "ignition_proximity": "immediate", "ignition_active": true}}
+      ]
+    },
+    {
+      "caseId": "real-pendle-mainnet",
+      "project": "Pendle",
+      "asset": "PENDLE",
+      "title": "Pendle：审计、明确日期与产品上线形成完整链路",
+      "caseType": "产品升级正例",
+      "calibrationQuestion": "测试、审计和主网日期逐步明确时，系统是否在上线前后正确迁移。",
+      "expectedSequence": ["trial_ready", "igniting"],
+      "eventAt": "2021-06-17",
+      "market": {"provider": "Binance Spot", "symbol": "PENDLEUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Mainnet Announcement",
+          "publisher": "Pendle Team",
+          "publishedAt": "2021-06-14",
+          "sourceType": "项目官方公告",
+          "factBoundary": "project_claim",
+          "url": "https://medium.com/pendle/mainnet-announcement-f9ea534d7fa7",
+          "summary": "公布 6 月 17 日主网上线时间、审计与首批产品范围。"
+        },
+        {
+          "title": "Pendle is Live",
+          "publisher": "Pendle Team",
+          "publishedAt": "2021-06-17",
+          "sourceType": "项目官方上线公告",
+          "factBoundary": "confirmed_fact",
+          "url": "https://medium.com/pendle/pendle-is-live-23589c8b14dc",
+          "summary": "确认主网市场已上线并说明可执行功能。"
+        }
+      ],
+      "timeline": [
+        {"at": "2021-06-14", "label": "审计与主网日期明确", "input": {"value_capture_grade": "B", "event_proximity": 20, "price_unreacted": 12, "remaining_convexity": "high"}},
+        {"at": "2021-06-17", "label": "主网与首批收益市场上线", "input": {"maturity": "L3", "ignition_proximity": "immediate", "ignition_active": true}}
+      ]
+    },
+    {
+      "caseId": "real-compound-v3-capture",
+      "project": "Compound",
+      "asset": "COMP",
+      "title": "Compound III：治理权与持有人现金流不可混写",
+      "caseType": "价值捕获反例",
+      "calibrationQuestion": "COMP 可治理协议是否会被系统误当成协议使用量直接流入持有人。",
+      "expectedSequence": ["shadow_signal"],
+      "eventAt": "2022-08-26",
+      "market": {"provider": "Binance Spot", "symbol": "COMPUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Compound III Documentation",
+          "publisher": "Compound",
+          "publishedAt": "2022-08-26",
+          "sourceType": "官方协议文档",
+          "factBoundary": "confirmed_fact",
+          "url": "https://docs.compound.finance/",
+          "summary": "确认 Compound III 初始 USDC 市场及治理控制，但不等同于 COMP 持有人自动获得协议现金流。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-08-26", "label": "Compound III 上线，但 COMP 直接捕获仍不足", "input": {"maturity": "L3", "value_capture_grade": "C", "fact_certainty": 19, "economic_increment": 16, "value_capture": 7, "event_proximity": 20, "price_unreacted": 10}}
+      ]
+    },
+    {
+      "caseId": "real-terra-collapse",
+      "project": "Terra",
+      "asset": "LUNA",
+      "title": "Terra：稳定机制失效必须覆盖此前高分",
+      "caseType": "核心逻辑失效",
+      "calibrationQuestion": "即使此前采用与流动性很高，稳定机制失效后是否立即停止旧逻辑。",
+      "expectedSequence": ["active_embryo", "invalidated"],
+      "adjudicationNote": "首轮曾预期为可试仓；复核后撤回。该时点没有临近事件，且稳定机制风险扣分较高，正式胚胎比可试仓更符合事前边界。",
+      "eventAt": "2022-05-09",
+      "market": {"provider": "Binance Spot", "symbol": "LUNAUSDT"},
+      "evidenceStatus": "regulator_allegation_and_market_fact",
+      "sources": [
+        {
+          "title": "SEC Charges Terraform and Do Kwon",
+          "publisher": "U.S. SEC",
+          "publishedAt": "2023-02-16",
+          "sourceType": "监管诉讼公告",
+          "factBoundary": "regulator_allegation",
+          "url": "https://www.sec.gov/newsroom/press-releases/2023-32",
+          "summary": "SEC 诉状回顾 2022 年 5 月 UST 脱锚及相关资产接近归零；欺诈部分在该公告中属于指控。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-04-25", "label": "采用与流动性高，但稳定机制风险应持续扣分", "input": {"maturity": "L4", "value_capture_grade": "A", "fact_certainty": 18, "economic_increment": 20, "value_capture": 22, "event_proximity": 8, "price_unreacted": 7, "risk_deduction": 13, "remaining_convexity": "medium"}},
+        {"at": "2022-05-09", "label": "UST 脱锚，核心稳定机制被证伪", "input": {"core_invalidated": true, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}}
+      ]
+    },
+    {
+      "caseId": "real-ftx-collapse",
+      "project": "FTX",
+      "asset": "FTT",
+      "title": "FTX：平台规模不能替代资产负债与托管证据",
+      "caseType": "核心逻辑失效",
+      "calibrationQuestion": "高交易量和品牌强度是否会被资产负债、托管和价值捕获缺口拦住。",
+      "expectedSequence": ["shadow_signal", "invalidated"],
+      "eventAt": "2022-11-11",
+      "market": {"provider": "Binance Spot", "symbol": "FTTUSDT"},
+      "evidenceStatus": "court_confirmed_retrospective",
+      "sources": [
+        {
+          "title": "Samuel Bankman-Fried Sentenced to 25 Years",
+          "publisher": "U.S. Department of Justice",
+          "publishedAt": "2024-03-28",
+          "sourceType": "法院判决结果公告",
+          "factBoundary": "court_confirmed",
+          "url": "https://www.justice.gov/usao-sdny/pr/samuel-bankman-fried-sentenced-25-years-prison",
+          "summary": "法院定罪后，司法部确认客户资金被挪用及虚假陈述等事实。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-10-28", "label": "交易量很高，但 FTT 捕获与资产负债透明度不足", "input": {"maturity": "L4", "value_capture_grade": "C", "fact_certainty": 10, "economic_increment": 16, "value_capture": 5, "event_proximity": 5, "price_unreacted": 8, "risk_deduction": 18}},
+        {"at": "2022-11-11", "label": "破产与客户资产缺口使旧逻辑失效", "input": {"core_invalidated": true, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}}
+      ]
+    },
+    {
+      "caseId": "real-celsius-withdrawal-halt",
+      "project": "Celsius",
+      "asset": "CEL",
+      "title": "Celsius：高收益承诺不能覆盖赎回与资产流动性",
+      "caseType": "核心逻辑失效",
+      "calibrationQuestion": "平台收益与 CEL 叙事是否会因资产透明度和赎回风险留在影子池，并在暂停提款后失效。",
+      "expectedSequence": ["shadow_signal", "invalidated"],
+      "eventAt": "2022-06-13",
+      "market": {"provider": "Binance Spot", "symbol": "CELUSDT"},
+      "evidenceStatus": "regulator_allegation",
+      "sources": [
+        {
+          "title": "FTC v. Celsius Network",
+          "publisher": "U.S. Federal Trade Commission",
+          "publishedAt": "2023-07-13",
+          "sourceType": "监管案件档案",
+          "factBoundary": "regulator_allegation",
+          "url": "https://www.ftc.gov/legal-library/browse/cases-proceedings/222-3137-celsius-network-inc-et-al-ftc-v",
+          "summary": "FTC 案件记录指向提款承诺、流动性与 CEL 市场相关问题；未裁判部分按指控处理。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-05-30", "label": "收益叙事强，但资产、赎回和 CEL 捕获证据不足", "input": {"maturity": "L4", "value_capture_grade": "C", "fact_certainty": 8, "economic_increment": 12, "value_capture": 4, "event_proximity": 5, "price_unreacted": 7, "risk_deduction": 20}},
+        {"at": "2022-06-13", "label": "暂停提款，卖出与赎回逻辑失效", "input": {"core_invalidated": true, "sell_path_verified": false, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}}
+      ]
+    },
+    {
+      "caseId": "real-safemoon-liquidity",
+      "project": "SafeMoon",
+      "asset": "SFM",
+      "title": "SafeMoon：涨幅与社交扩散不能替代锁仓核验",
+      "caseType": "社交与合约反例",
+      "calibrationQuestion": "价格暴涨和传播是否会被缺失硬证据、合约控制和流动性锁定问题拦住。",
+      "expectedSequence": ["tradeability_pending", "invalidated"],
+      "adjudicationNote": "首轮曾预期为影子信号；合约风险为未知时，交易性待核验能更准确表达无法判断卖出安全性的原因。",
+      "eventAt": "2021-04-20",
+      "market": {"provider": "Binance Spot", "symbol": "SFMUSDT"},
+      "evidenceStatus": "regulator_allegation",
+      "sources": [
+        {
+          "title": "SEC Charges SafeMoon and Executive Team",
+          "publisher": "U.S. SEC",
+          "publishedAt": "2023-11-01",
+          "sourceType": "监管诉讼公告",
+          "factBoundary": "regulator_allegation",
+          "url": "https://www.sec.gov/newsroom/press-releases/2023-229",
+          "summary": "SEC 诉状称流动性池并未按宣传完全锁定，并记录 2021 年 4 月 20 日信息暴露后的价格反应。"
+        }
+      ],
+      "timeline": [
+        {"at": "2021-04-15", "label": "只有社交扩散和价格上涨，缺少可信硬痕迹", "input": {"maturity": "L0", "hard_trace_count": 0, "independent_diffusion_count": 8, "contract_risk": "unknown", "value_capture_grade": "C", "fact_certainty": 4, "economic_increment": 4, "value_capture": 3, "event_proximity": 3, "price_unreacted": 1, "risk_deduction": 24}},
+        {"at": "2021-04-20", "label": "流动性锁定说法受质疑，核心安全假设失效", "input": {"core_invalidated": true, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}}
+      ]
+    },
+    {
+      "caseId": "real-ronin-bridge",
+      "project": "Ronin",
+      "asset": "RON",
+      "title": "Ronin：生态采用不能覆盖验证者与桥接集中风险",
+      "caseType": "安全失效",
+      "calibrationQuestion": "生态增长候选出现桥接私钥失陷后，是否立即失效而不是等待分数更新。",
+      "expectedSequence": ["active_embryo", "invalidated"],
+      "adjudicationNote": "首轮曾预期为可试仓；桥接集中风险扣分后总分不足，保留正式研究但不进入行动层更合理。",
+      "eventAt": "2022-03-29",
+      "market": {"provider": "Binance Spot", "symbol": "RONINUSDT"},
+      "evidenceStatus": "official_and_legal_record",
+      "sources": [
+        {
+          "title": "U.S. v. Storm and Semenov Indictment",
+          "publisher": "U.S. Department of Justice",
+          "publishedAt": "2023-08-21",
+          "sourceType": "司法文件",
+          "factBoundary": "legal_record",
+          "url": "https://www.justice.gov/d9/2023-08/u.s._v._storm_and_semenov_indictment.pdf",
+          "summary": "司法文件引用 2022 年 3 月公开的 Ronin 攻击及约 6.2 亿美元损失；刑事责任部分不等同于全部已裁判事实。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-03-15", "label": "采用增长且资产可交易，但桥接集中风险应扣分", "input": {"maturity": "L4", "value_capture_grade": "B", "fact_certainty": 16, "economic_increment": 18, "value_capture": 17, "event_proximity": 8, "price_unreacted": 11, "risk_deduction": 12}},
+        {"at": "2022-03-29", "label": "验证者密钥失陷与桥接资产损失", "input": {"core_invalidated": true, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}}
+      ]
+    },
+    {
+      "caseId": "real-mango-manipulation",
+      "project": "Mango Markets",
+      "asset": "MNGO",
+      "title": "Mango：交易量不能覆盖低流动性预言机操纵风险",
+      "caseType": "安全失效",
+      "calibrationQuestion": "可交易市场在抵押品流动性与预言机结构脆弱时，是否先降风险并在攻击后失效。",
+      "expectedSequence": ["active_embryo", "invalidated"],
+      "eventAt": "2022-10-11",
+      "market": {"provider": "Binance Spot", "symbol": "MNGOUSDT"},
+      "evidenceStatus": "regulator_allegation",
+      "sources": [
+        {
+          "title": "Mango Markets Manipulation Case",
+          "publisher": "U.S. Department of Justice",
+          "publishedAt": "2023-02-02",
+          "sourceType": "刑事指控公告",
+          "factBoundary": "regulator_allegation",
+          "url": "https://www.justice.gov/usao-sdny/pr/alleged-perpetrator-100-million-crypto-market-manipulation-scheme-make-initial",
+          "summary": "司法部指控通过操纵 MNGO 永续价格提取约 1.1 亿美元；公告明确指控尚非定罪。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-10-01", "label": "产品可用但预言机与低流动性抵押风险较高", "input": {"risk_level": "high", "risk_deduction": 17, "fact_certainty": 14, "economic_increment": 13, "value_capture": 16, "event_proximity": 7, "price_unreacted": 10}},
+        {"at": "2022-10-11", "label": "预言机与抵押机制被利用，资金被提取", "input": {"core_invalidated": true, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}}
+      ]
+    },
+    {
+      "caseId": "real-euler-exploit-recovery",
+      "project": "Euler",
+      "asset": "EUL",
+      "title": "Euler：攻击失效后，追回资金也不能直接恢复仓位",
+      "caseType": "安全失效与恢复",
+      "calibrationQuestion": "攻击后是否立即失效；资金追回后是否先回影子池重新核验，而不是自动恢复原结论。",
+      "expectedSequence": ["priority_watch", "invalidated", "shadow_signal"],
+      "adjudicationNote": "首轮曾预期为可试仓；攻击前评分只达到重点观察阈值，规则更保守，保留该结果。",
+      "eventAt": "2023-03-13",
+      "market": {"provider": "Binance Spot", "symbol": "EULUSDT"},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Euler Foundation Special Announcement",
+          "publisher": "Euler Foundation",
+          "publishedAt": "2023-04-04",
+          "sourceType": "基金会公告",
+          "factBoundary": "confirmed_fact",
+          "url": "https://forum.euler.finance/t/special-announcement/900",
+          "summary": "确认 3 月 13 日约 2 亿美元资产被提取，随后可追回资金已返还。"
+        }
+      ],
+      "timeline": [
+        {"at": "2023-03-01", "label": "产品与 EUL 映射存在，安全风险仍需持续复核", "input": {"value_capture_grade": "B", "risk_deduction": 8, "remaining_convexity": "medium"}},
+        {"at": "2023-03-13", "label": "代码漏洞被利用，核心安全假设失效", "input": {"core_invalidated": true, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}},
+        {"at": "2023-04-04", "label": "资金追回，但新版本安全与交易逻辑需重建", "input": {"core_invalidated": false, "contract_risk": "low", "risk_level": "high", "hard_trace_count": 0, "remaining_convexity": "unknown", "ignition_proximity": "forming", "ignition_active": false}}
+      ]
+    },
+    {
+      "caseId": "real-beanstalk-governance",
+      "project": "Beanstalk",
+      "asset": "BEAN",
+      "title": "Beanstalk：治理可组合性也是可致命攻击面",
+      "caseType": "安全失效",
+      "calibrationQuestion": "无抵押稳定币叙事在治理可被闪电贷操纵时，是否立即失效。",
+      "expectedSequence": ["active_embryo", "invalidated"],
+      "eventAt": "2022-04-17",
+      "market": {"provider": "Binance Spot", "symbol": null},
+      "evidenceStatus": "verified_primary",
+      "sources": [
+        {
+          "title": "Beanstalk Governance Exploit",
+          "publisher": "Beanstalk Farms",
+          "publishedAt": "2022-04-19",
+          "sourceType": "项目官方事故公告",
+          "factBoundary": "confirmed_fact",
+          "url": "https://bean.money/blog/beanstalk-governance-exploit",
+          "summary": "确认闪电贷利用治理机制并从流动性池盗取约 7700 万美元。"
+        }
+      ],
+      "timeline": [
+        {"at": "2022-04-10", "label": "经济实验存在，但无抵押与治理风险较高", "input": {"risk_level": "high", "risk_deduction": 18, "fact_certainty": 13, "economic_increment": 15, "value_capture": 15, "event_proximity": 6, "price_unreacted": 12}},
+        {"at": "2022-04-17", "label": "治理机制被闪电贷利用，核心逻辑失效", "input": {"core_invalidated": true, "contract_risk": "blocked", "risk_level": "blocked", "remaining_convexity": "none"}}
+      ]
+    }
+  ]
+}

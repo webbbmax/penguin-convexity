@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "gate0-phase-v1",
+  "release": "C2.1-Gate0",
+  "name": "可恢复90天数据预检与独立后台运行",
+  "phase": "sol_final_acceptance_complete_released_with_documented_preexisting_database_exception",
+  "requirementsStatus": "frozen",
+  "acceptanceStatus": "passed_released_with_documented_preexisting_database_baseline_exception",
+  "c2_1ProductRequirementsStatus": "draft_not_frozen",
+  "productCodeStarted": false,
+  "backgroundBackfillRunning": false,
+  "officialResultPromoted": true,
+  "planningAuthority": "Sol",
+  "implementationAuthority": "Luna",
+  "finalAcceptanceFixAndReleaseAuthority": "Sol",
+  "modelVerification": {
+    "source": "current_turn_and_thread_settings_metadata",
+    "turnId": "019fe4c4-e1e7-7893-819a-33331d3a0870",
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verifiedAt": "2026-08-09T13:15:00+08:00"
+  },
+  "requirementsLock": {
+    "path": "docs/GATE0_REQUIREMENTS_LOCK.json",
+    "sha256": "2942d993e466615e7574c6aeadf2f7e2a468b2cdf051d9f0e2c34e074f34fc44"
+  },
+  "baseline": "docs/GATE0_BASELINE_MANIFEST.json",
+  "acceptanceManifest": "docs/GATE0_ACCEPTANCE_MANIFEST.json",
+  "finalAcceptanceReport": "docs/GATE0_SOL_FINAL_ACCEPTANCE.md",
+  "acceptedEvidence": {
+    "runId": "gate0-solfinal-20260809T045924Z-f7bbd2",
+    "window": "2026-05-10T14:07:10Z/2026-08-08T14:07:10Z",
+    "partitions": "262/262",
+    "events": 5922807,
+    "candidateTokens": 4585955,
+    "requests": 6723,
+    "independentAuditPass": true,
+    "idempotentRetriggerPass": true,
+    "officialLatest": "runtime/gate0-shadow/backfill/latest.json",
+    "progressReport": "reports/gate0-backfill-progress/report.html",
+    "dataReport": "reports/gate0-data-preflight/report.html"
+  },
+  "existingEvidence": {
+    "acceptedSolana29DayRunId": "dex-backfill-20260805T0630474393727Z",
+    "acceptedSolana29DayFilesPreserved": true,
+    "unfinishedForensic90DayRunId": "dex-backfill-20260805T071018869628Z",
+    "unfinishedForensicFilePreserved": true,
+    "liveReliabilityDaysObserved": 3,
+    "liveReliabilityTargetDistinctDays": 14,
+    "liveReliabilityBlocksDevelopmentOrBackfill": false
+  },
+  "documentedException": {
+    "type": "preexisting_database_baseline_hash_deviation",
+    "frozenExpectedSha256": "3a30e13ca29ada90381a05f9e9cefc35bb4879e63a4e2077fef4c7f69454392b",
+    "observedSha256": "f8000b94b88079a6e4749a48e9d48c90d66bd169204a89a5ac1a94a560b578e0",
+    "causeEvidence": "product watchdog record predates Sol Gate 0 finalization",
+    "gate0DatabaseMutation": false,
+    "rollbackPerformed": false
+  },
+  "automation": {
+    "monitoringAutomationId": "gate-0",
+    "monitoringStatus": "DELETED",
+    "backgroundTask": "PenguinConvexity-Gate0-Backfill",
+    "backgroundTaskState": "Disabled",
+    "backgroundTaskEnabled": false,
+    "backgroundTaskDefinitionPreserved": true,
+    "completedRetriggersAreIdempotent": true
+  },
+  "allowedNextAction": "Sol may use the accepted Gate 0 evidence to define the formal C2.1 supported scope and program limits; C2.1 coding still requires a new explicit user freeze.",
+  "forbiddenNextActions": [
+    "restart or rerun the completed 90-day scan without a new data reason",
+    "rerun the accepted 29-day range",
+    "modify C2.0 product code or data/convexity.db under Gate 0",
+    "modify PenguinConvexity-C1.8-Scheduler or user pause settings",
+    "guess the 18 unsupported EVM labels",
+    "treat the 14 realtime days as a project observation period",
+    "claim market-wide coverage or global T0",
+    "start C2.1 product implementation before explicit user freeze"
+  ],
+  "nextModel": "gpt-5.6-sol",
+  "nextReasoningEffort": "xhigh",
+  "nextUserPhrase": "继续制定 C2.1 正式范围",
+  "updatedAt": "2026-08-09T13:15:00+08:00"
+}

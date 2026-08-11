@@ -1,0 +1,34 @@
+{
+  "version": "C1.1-04",
+  "updatedAt": "2026-07-29",
+  "boundary": "目标映射只来自凸性候选库已经保存的一手链接或本次接口核验。无法确认归属时保持未映射，不按名称猜测。",
+  "github": [
+    {"caseId": "thread-agenc-20260724", "repository": "tetsuo-ai/AgenC"},
+    {"caseId": "thread-cowl-20260728", "repository": "Cowl-Protocol/cli"},
+    {"caseId": "thread-hashi-20260724", "repository": "MystenLabs/hashi-ts-sdk"},
+    {"caseId": "thread-ldo-20260724", "repository": "lidofinance/lido-improvement-proposals"},
+    {"caseId": "thread-paraloom-20260728", "repository": "paraloom-labs/paraloom-core"},
+    {"caseId": "thread-qubic-20260724", "repository": "qubic/core"},
+    {"caseId": "thread-zama-20260724", "repository": "zama-ai/protocol-apps"},
+    {"caseId": "thread-zec-20260710", "repository": "zcash/zcash"}
+  ],
+  "defillama": [
+    {"caseId": "thread-bera-20260710", "slugs": ["berachain"]},
+    {"caseId": "thread-jto-20260728", "slugs": ["jito-liquid-staking", "jito-restaking"]},
+    {"caseId": "thread-ldo-20260724", "slugs": ["lido"]},
+    {"caseId": "thread-syrup-20260724", "slugs": ["maple"]},
+    {"caseId": "thread-plume-20260710", "slugs": ["plume-mainnet"]},
+    {"caseId": "thread-uni-20260728", "slugs": ["uniswap-v2", "uniswap-v3", "uniswap-v4"]}
+  ],
+  "snapshot": [
+    {"caseId": "thread-syrup-20260724", "spaceId": "mapledao.eth", "limit": 5}
+  ],
+  "cactus": [
+    {
+      "caseId": "thread-uni-20260728",
+      "organizationId": "2206072050458560434",
+      "organizationSlug": "uniswap",
+      "limit": 5
+    }
+  ]
+}

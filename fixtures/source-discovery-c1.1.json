@@ -1,0 +1,17 @@
+{
+  "version": "C1.1-05",
+  "policy": "不设置项目数量上限。外部接口的时间窗口、检索上限和配额必须单独披露。",
+  "github": {
+    "lookbackDays": 7,
+    "topics": ["defi", "blockchain", "web3", "zero-knowledge"],
+    "minimumStars": 0
+  },
+  "snapshot": {
+    "lookbackDays": 90
+  },
+  "cactus": {
+    "includeOnlyOrganizationsWithProposals": true,
+    "timeSliceSeconds": 45,
+    "requestIntervalSeconds": 10.5
+  }
+}

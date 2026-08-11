@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN" data-convexity-desktop-shell>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>企鹅投研-凸性</title>
+    <link rel="icon" href="assets/penguin-research-icon.png">
+    <link rel="stylesheet" href="shell.css?v=c19">
+  </head>
+  <body>
+    <main class="desktop-host" aria-label="企鹅投研-凸性桌面宿主">
+      <div id="loading" class="host-loading" role="status" aria-live="polite"><img src="assets/penguin-research-icon.png" alt=""><strong>正在打开凸性机会中心</strong><small>正在读取本项目的数据与页面</small></div>
+      <iframe id="appFrame" title="企鹅投研-凸性" src="/candidate-pool.html"></iframe>
+    </main>
+    <div hidden aria-hidden="true">
+      <nav class="primary-nav"><button class="is-active" type="button" data-page="candidate-pool.html"><i>机</i></button><button type="button" data-page="project-detail.html"><i>详</i></button><button type="button" data-page="workbench.html"><i>台</i></button><button type="button" data-page="candidate-pool.html"></button><button type="button" data-page="project-detail.html"></button><button type="button" data-page="workbench.html"></button></nav>
+    </div>
+    <!-- 宿主只负责窗口与页面承载；历史兼容标记：data-page="candidate-pool.html" data-detail-entry data-page="workbench.html"；旧数据主干 C1.7。 -->
+    <script src="shell.js?v=m1p0"></script>
+  </body>
+</html>

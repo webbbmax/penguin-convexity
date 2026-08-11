@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "gate0-luna-self-test-v1",
+  "modelVerification": {
+    "turnContextModel": "gpt-5.6-luna",
+    "threadSettingsModel": "gpt-5.6-luna",
+    "reasoningEffort": "max",
+    "turnId": "019fe1a2-4681-7c70-bdf3-770ac5977238",
+    "verifiedAt": "2026-08-08T22:14:00+08:00"
+  },
+  "status": "luna_self_test_complete_backfill_running_no_model_wait",
+  "tests": [
+    {"command": "python scripts/test_gate0_dex_factory_backfill.py", "result": "pass"},
+    {"command": "python scripts/test_gate0_shadow_preflight.py", "result": "pass"},
+    {"command": "python scripts/test_build_gate0_report.py", "result": "pass"},
+    {"command": "python scripts/test_gate0_backfill_recovery.py", "result": "pass"},
+    {"command": "python -m py_compile scripts/gate0_backfill_background.py scripts/build_gate0_backfill_progress.py scripts/test_gate0_backfill_recovery.py", "result": "pass"}
+  ],
+  "background": {
+    "task": "PenguinConvexity-Gate0-Backfill",
+    "runId": "gate0-backfill-20260808T140710Z-a2588321",
+    "stateAtHandoff": "running",
+    "windowStart": "2026-05-10T14:07:10Z",
+    "windowEnd": "2026-08-08T14:07:10Z",
+    "partitionProgressAtHandoff": "0/290",
+    "progressReport": "reports/gate0-backfill-progress/report.html",
+    "stateFile": "runtime/gate0-shadow/backfill/background/latest.json",
+    "planFile": "runtime/gate0-shadow/backfill/background/runs/gate0-backfill-20260808T140710Z-a2588321/run-plan.json"
+  },
+  "protectedBoundaries": {
+    "productDatabaseWrite": false,
+    "c20ProductCodeWrite": false,
+    "c18SchedulerChanged": false,
+    "accepted29DayRunChanged": false,
+    "unfinishedForensicTmpReadOrMerged": false,
+    "globalT0Claim": false,
+    "unsupportedProtocolInference": false
+  },
+  "nextModel": "gpt-5.6-sol",
+  "nextReasoningEffort": "xhigh",
+  "nextUserPhrase": "已切换 Sol，开始终验修复发布"
+}

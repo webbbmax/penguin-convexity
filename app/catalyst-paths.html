@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>催化交易路径｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260802-c1p8-sol1" />
+  </head>
+  <body class="convexity-catalyst-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">路</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面"></nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="catalyst-path-hero">
+        <div>
+          <span>CATALYST TO TRADE · C1.6-06</span>
+          <h1>催化交易路径</h1>
+          <p>逐项目检查催化事实、确认信号、受益资产、价值传导、市场表达、2万美元退出与失效条件。每个缺口都会指向下一条机器任务。</p>
+        </div>
+        <aside>
+          <strong>边界</strong>
+          <p id="catalystPathBoundary">正在读取路径规则。</p>
+          <small id="catalystPathGeneratedAt">正在读取生成时间</small>
+        </aside>
+      </section>
+
+      <section class="status-grid catalyst-path-summary" aria-label="催化交易路径汇总">
+        <article><span>项目路径</span><strong id="catalystPathTotal">--</strong><small>全部机器项目</small></article>
+        <article><span>候选催化</span><strong id="catalystPathCatalyst">--</strong><small>90日内可溯源事实</small></article>
+        <article><span>已映射资产</span><strong id="catalystPathAsset">--</strong><small>项目自身受益资产</small></article>
+        <article><span>已估算退出</span><strong id="catalystPathExit">--</strong><small>2万美元理论模型</small></article>
+        <article><span>研究闭环</span><strong id="catalystPathResearch">--</strong><small>未必达到行动门槛</small></article>
+        <article><span>行动闭环</span><strong id="catalystPathAction">--</strong><small>仍由机器硬门槛决定</small></article>
+      </section>
+
+      <section class="section-block catalyst-path-browser">
+        <header class="section-heading">
+          <div><span>PROJECT PATHS</span><h2>逐项目查看</h2></div>
+          <p id="catalystPathVisibleCount">正在读取项目路径。</p>
+        </header>
+        <div class="catalyst-path-controls">
+          <label>
+            <span>当前断点</span>
+            <select id="catalystPathStageFilter">
+              <option value="all">全部路径</option>
+              <option value="catalyst_pending">系统尚未发现催化</option>
+              <option value="asset_pending">受益资产待确认</option>
+              <option value="transmission_pending">系统正在核验价值传导</option>
+              <option value="market_pending">市场表达待补齐</option>
+              <option value="exit_pending">系统正在核验2万美元退出</option>
+              <option value="research_ready">研究路径已闭环</option>
+              <option value="action_ready">行动路径已闭环</option>
+              <option value="invalidated">路径已失效</option>
+            </select>
+          </label>
+          <label>
+            <span>催化类型</span>
+            <select id="catalystPathTypeFilter">
+              <option value="all">全部类型</option>
+              <option value="governance">治理提案</option>
+              <option value="code_release">官方代码变化</option>
+              <option value="security_change">安全相关变化</option>
+              <option value="product_release">产品发布</option>
+              <option value="regulatory">监管事件</option>
+              <option value="unknown">系统尚未发现</option>
+            </select>
+          </label>
+          <label class="catalyst-path-search">
+            <span>查找项目</span>
+            <input id="catalystPathSearch" type="search" placeholder="项目、代币或催化内容" />
+          </label>
+        </div>
+        <div class="catalyst-path-pagination" aria-label="催化路径分页">
+          <button id="catalystPathPreviousPage" type="button">上一页</button>
+          <span id="catalystPathPageMeta">第 1 / 1 页 · 每页 20 个</span>
+          <button id="catalystPathNextPage" type="button">下一页</button>
+        </div>
+        <div class="catalyst-path-workspace">
+          <div class="catalyst-path-list" id="catalystPathList"></div>
+          <aside class="catalyst-path-detail" id="catalystPathDetail" aria-live="polite">
+            <strong>选择一个项目</strong>
+            <p>这里会展示整条传导路径、证据链接、实际核验金额、2万美元理论估算、失效条件与下一项自动任务。</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>理论估算不等于真实成交 · 仅使用本项目数据</strong>
+    </footer>
+
+    <script src="catalyst-trade-path-snapshot.js"></script>
+    <script src="tracking-task-snapshot.js"></script>
+    <script src="catalyst-paths.js?v=20260802-c1p8-sol1"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

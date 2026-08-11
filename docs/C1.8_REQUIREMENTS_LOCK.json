@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "c1.8-requirements-lock-v1",
+  "release": "C1.8",
+  "status": "frozen",
+  "frozenAt": "2026-08-02",
+  "changeAuthority": "user_explicit_unfreeze_only",
+  "files": {
+    "docs/C1.8_PRD.md": {
+      "bytes": 15466,
+      "sha256": "b1408060892b365107872083f718881c912db3fd8b52a33a69543956699cb63f"
+    },
+    "docs/C1.8_ACCEPTANCE_PLAN.md": {
+      "bytes": 6965,
+      "sha256": "6c543d4eb73d8e27c7aadcabb16e27b385c43f9da23dce2862502b99d4721459"
+    },
+    "docs/C1.8_HANDOFF.md": {
+      "bytes": 5082,
+      "sha256": "ab6ab52b507da7124f18b8289a8f63b950cf3e728df9a511313bebd8cabe4d6b"
+    }
+  },
+  "note": "Luna 和 Sol 在开始各自阶段前都必须核验本锁；任何不一致都需要用户明确解冻后重新冻结。"
+}

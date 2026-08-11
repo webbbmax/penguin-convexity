@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>凸性工作台｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+    <link rel="stylesheet" href="c1-9.css?v=c19" />
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body class="convexity-workbench-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">后</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.7</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a class="active" href="workbench.html">工作台</a>
+          <a href="project-master-pool.html">项目队列</a>
+          <a href="source-discovery.html">机器发现</a>
+          <a href="manual-review.html">可选复核</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="source-registry.html">信源状态</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="c19-admin-overview" aria-labelledby="c19AdminOverviewTitle">
+        <header class="c19-admin-overview-head">
+          <div><span class="c19-kicker">后台管理</span><h1 id="c19AdminOverviewTitle">工作台概览</h1><p>先判断系统是否正常，再看当前任务、待处理事项和最近结果。技术明细进入对应后台栏目查看。</p></div>
+          <a id="c19AdminPrimary" class="primary-action" href="update-center.html">查看当前状态</a>
+        </header>
+        <div class="c19-admin-overview-cards">
+          <article><span>系统状态</span><strong id="c19AdminSystemState">正在读取</strong><p id="c19AdminSystemNote">正在确认系统是否正常。</p></article>
+          <article><span>待处理事项</span><strong id="c19AdminPendingTitle">正在读取</strong><p id="c19AdminPendingNote">正在区分必须处理、建议处理和无需处理。</p></article>
+          <article><span>最近结果</span><strong id="c19AdminResultTitle">正在读取</strong><p id="c19AdminResultNote">正在读取上次有效结果和数据时间。</p></article>
+        </div>
+      </section>
+      <section class="workbench-hero">
+        <div>
+          <span>CONVEXITY WORKSPACE · C1.7</span>
+          <h1>凸性工作台</h1>
+          <p>每天只按四步使用：更新数据、查看机器发现、检查自动档案、查看最终结论。人工复核保留为可选纠错，不阻断系统继续运行。</p>
+          <div class="workbench-hero-actions">
+            <a id="workbenchPrimaryAction" class="primary-action" href="update-center.html">正在判断下一步</a>
+            <a class="secondary-action" href="candidate-pool.html">直接查看机会结论</a>
+            <a class="secondary-action" href="evidence-ledger.html">查看原始证据</a>
+            <a class="secondary-action" href="source-adapter.html">查看主干接入</a>
+            <a class="secondary-action" href="catalyst-paths.html">查看催化路径</a>
+            <a class="secondary-action" href="monitoring-infrastructure.html">查看监控基础</a>
+            <a class="secondary-action" href="weak-signal-inbox.html">查看弱线索</a>
+            <a class="secondary-action" href="data-backbone.html">查看最大漏斗数据主干</a>
+          </div>
+        </div>
+        <aside class="workbench-recommendation">
+          <span>建议下一步</span>
+          <strong id="workbenchRecommendationTitle">正在读取当前状态</strong>
+          <p id="workbenchRecommendationNote">系统会根据运行异常、待复核项目和当前结论给出唯一建议。</p>
+          <a id="workbenchRecommendationLink" href="update-center.html">前往处理</a>
+          <small id="workbenchLatestRunTime">正在读取最近一次运行</small>
+        </aside>
+      </section>
+
+      <section class="workbench-status-grid" aria-label="凸性日常状态">
+        <article><span>机器项目档案</span><strong id="workbenchProjectTotal">--</strong><small>由项目级信源自动建立</small></article>
+        <article><span>原始发现记录</span><strong id="workbenchDiscoveryTotal">--</strong><small>全部保留并继续自动归因</small></article>
+        <article><span>自动任务待处理</span><strong id="workbenchPendingTotal">--</strong><small>运行异常、到期跟踪与二次验证</small></article>
+        <article><span>当前可行动</span><strong id="workbenchActionableTotal">--</strong><small>以机会中心最终结论为准</small></article>
+      </section>
+
+      <section id="c19ProgressPanel" class="c19-progress-panel" aria-live="polite">
+        <div class="c19-progress-head"><div><span class="c19-kicker">任务过程</span><h2 id="c19ProgressTitle">正在读取任务进度</h2><p id="c19ProgressDetail">更新中心会持续显示真实运行状态。</p></div><span id="c19ProgressState" class="c19-badge">等待检查</span></div>
+        <div class="c19-progress-bar"><span id="c19ProgressBar"></span></div>
+        <div class="c19-progress-meta"><span id="c19ProgressStage">阶段 -- / 7</span><span id="c19ProgressComponents">已处理 -- / -- 个工作单元</span><span id="c19ProgressHeartbeat">最近心跳 --</span><span id="c19ProgressElapsed">已运行 --</span></div>
+        <div id="c19ProgressStages" class="c19-stage-strip"></div>
+        <div class="c19-progress-foot"><span>当前活动：<strong id="c19ProgressCurrent">--</strong></span><span id="c19ProgressEta">剩余时间暂无法准确估计</span></div>
+      </section>
+
+      <section class="section-block workbench-closure-section" aria-labelledby="workbenchClosureTitle">
+        <header class="section-heading">
+          <div><span>REAL RESULT LOOP</span><h2 id="workbenchClosureTitle">真实结果闭环</h2></div>
+          <p id="workbenchClosureSummary">正在检查数据是否已经走完更新、跟踪、复核、二次验证和最终结论。</p>
+        </header>
+        <div class="workbench-closure-flow">
+          <a id="workbenchClosureUpdate" href="update-center.html">
+            <b>1</b><span>数据更新</span><strong>正在读取</strong><small>检查最近运行状态</small><em>查看更新</em>
+          </a>
+          <a id="workbenchClosureTracking" href="update-center.html#trackingResults">
+            <b>2</b><span>项目跟踪</span><strong>正在读取</strong><small>检查到期任务与执行结果</small><em>查看跟踪</em>
+          </a>
+          <a id="workbenchClosureReview" href="change-explanations.html?review=pending">
+            <b>3</b><span>结论复核</span><strong>正在读取</strong><small>仅处理上调与停止</small><em>查看复核</em>
+          </a>
+          <a id="workbenchClosureVerification" href="update-center.html#verificationQueueSection">
+            <b>4</b><span>二次验证</span><strong>正在读取</strong><small>确认或驳回后的自动复查</small><em>查看验证</em>
+          </a>
+          <a id="workbenchClosureConclusion" href="candidate-pool.html">
+            <b>5</b><span>最终结论</span><strong>正在读取</strong><small>查看行动与不行动原因</small><em>查看结论</em>
+          </a>
+        </div>
+      </section>
+
+      <section class="section-block workbench-daily-section">
+        <header class="section-heading">
+          <div><span>DAILY FLOW</span><h2>今天从这里开始</h2></div>
+          <p>从左到右完成即可，不需要先理解模型和数据结构。</p>
+        </header>
+        <div class="workbench-daily-flow">
+          <article id="workbenchStepUpdate">
+            <span class="workbench-step-number">1</span>
+            <div><small>UPDATE</small><h3>更新数据</h3></div>
+            <strong id="workbenchUpdateStatus">正在读取</strong>
+            <p id="workbenchUpdateNote">检查行情、证据、合约和发现任务。</p>
+            <a href="update-center.html">打开更新中心</a>
+          </article>
+          <article id="workbenchStepDiscovery">
+            <span class="workbench-step-number">2</span>
+            <div><small>DISCOVER</small><h3>查看机器发现</h3></div>
+            <strong id="workbenchDiscoveryStatus">正在读取</strong>
+            <p id="workbenchDiscoveryNote">确认最近发现了什么，以及来自哪里。</p>
+            <a href="source-discovery.html">查看机器发现</a>
+          </article>
+          <article id="workbenchStepReview">
+            <span class="workbench-step-number">3</span>
+            <div><small>PROFILE</small><h3>检查自动档案</h3></div>
+            <strong id="workbenchReviewStatus">正在读取</strong>
+            <p id="workbenchReviewNote">查看机器建立了哪些项目，哪些关键字段仍待自动补齐。</p>
+            <a href="project-master-pool.html">打开项目队列</a>
+          </article>
+          <article id="workbenchStepConclusion">
+            <span class="workbench-step-number">4</span>
+            <div><small>DECIDE</small><h3>查看结论</h3></div>
+            <strong id="workbenchConclusionStatus">正在读取</strong>
+            <p id="workbenchConclusionNote">查看普通建仓、极限试仓和只观察结论。</p>
+            <a href="candidate-pool.html">打开机会中心</a>
+          </article>
+        </div>
+      </section>
+
+      <details class="workbench-run-detail">
+        <summary>
+          <span><b>最近一次后台运行</b><small id="workbenchRunMeta">正在读取运行状态。</small></span>
+          <em>展开明细</em>
+        </summary>
+        <div id="workbenchRunSummary" class="workbench-run-summary"></div>
+        <div id="workbenchSourceFeedback" class="workbench-source-feedback"></div>
+      </details>
+
+      <details class="workbench-advanced-tools">
+        <summary>
+          <span><b>系统与模型</b><small>校准、筛选过程、变化解释和数据工具</small></span>
+          <em>查看全部工具</em>
+        </summary>
+        <div class="workbench-tool-grid">
+          <article><h3>按链与信源扫描</h3><p>指定网络和来源重新扫描，并查看逐条结果。</p><a href="scan-center.html">打开</a></article>
+          <article><h3>硬门槛筛选</h3><p>调整流动性、滑点、风险和身份核验条件。</p><a href="screening-console.html">打开</a></article>
+          <article><h3>黄金校准</h3><p>查看正例、边界、观察和排除案例。</p><a href="gold-calibration.html">打开</a></article>
+          <article><h3>四层筛选</h3><p>检查项目首先被哪一层阻断。</p><a href="four-layer-screening.html">打开</a></article>
+          <article><h3>正式项目持续证据</h3><p>查看GitHub、DefiLlama、Snapshot和Cactus的代码、采用、治理及安全相关变化。</p><a href="high-value-sources.html">打开</a></article>
+          <article><h3>原始证据账本</h3><p>追溯每条数据的信源、运行批次、研究证据与下游结论，并查看历史缺口。</p><a href="evidence-ledger.html">打开</a></article>
+          <article><h3>主干接入状态</h3><p>逐个信源检查原始留存、证据连接、精确恢复和仍待重采的历史缺口。</p><a href="source-adapter.html">打开</a></article>
+          <article><h3>催化交易路径</h3><p>查看催化事实、受益资产、价值传导、2万美元退出和下一项机器任务。</p><a href="catalyst-paths.html">打开</a></article>
+          <article><h3>项目监控基础设施</h3><p>逐项目查看官网、X、GitHub、协议指标、治理空间、资产和合约是否已经接通自动监控。</p><a href="monitoring-infrastructure.html">打开</a></article>
+          <article><h3>弱线索收件箱</h3><p>统一查看项目目录、公开代码、治理、链上痕迹和推广入口，并检查每条线索的补证边界。</p><a href="weak-signal-inbox.html">打开</a></article>
+          <article><h3>最大漏斗数据主干</h3><p>检查数据连续性、来源静默、孤儿证据、实体图谱和 Git、发布、包、EVM、Solana 五条监控主线。</p><a href="data-backbone.html">打开</a></article>
+          <article><h3>发现漏斗</h3><p>查看每层进入、通过、待核验和阻断数量。</p><a href="discovery-funnel.html">打开</a></article>
+          <article><h3>变化解释</h3><p>追溯项目上调、下调或保持不变的原因。</p><a href="change-explanations.html">打开</a></article>
+          <article><h3>模型验收</h3><p>检查盲测、误报、漏报和安全型错误。</p><a href="model-acceptance.html">打开</a></article>
+          <article><h3>项目队列</h3><p>按早期、OG和潜力项目分类，筛选创建时间、市值、FDV与流动性。</p><a href="project-master-pool.html">打开</a></article>
+          <article><h3>链上发现队列</h3><p>查看合约、卖出路径、滑点和身份核验。</p><a href="network-discovery.html">打开</a></article>
+          <article><h3>数据与运行</h3><p>查看独立数据库、字段和底层运行记录。</p><a href="data-dictionary.html">打开</a></article>
+          <article><h3>规则回放</h3><p>检查筛选规则和状态迁移是否符合预期。</p><a href="rules-replay.html">打开</a></article>
+          <article><h3>历史案例校准</h3><p>用历史正反案例检查追涨和风险遗漏。</p><a href="real-case-calibration.html">打开</a></article>
+        </div>
+      </details>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.7</span>
+      <strong>本项目独立运行</strong>
+    </footer>
+
+    <script src="runtime-snapshot.js"></script>
+    <script src="project-master-pool-snapshot.js"></script>
+    <script src="source-discovery-snapshot.js"></script>
+    <script src="network-discovery-snapshot.js"></script>
+    <script src="candidate-pool-snapshot.js"></script>
+    <script src="scan-center-snapshot.js"></script>
+    <script src="update-center-snapshot.js"></script>
+    <script src="manual-review-snapshot.js?v=20260730-c1p2p1"></script>
+    <script src="tracking-task-snapshot.js"></script>
+    <script src="change-explanations-snapshot.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+    <script src="workbench.js?v=20260730-c1p5p05a"></script>
+    <script src="c1-9-progress.js?v=c19"></script>
+    <script src="c2-1-admin-snapshot.js?v=c21"></script><script src="c2-1-admin.js?v=c21-5"></script>
+  </body>
+</html>

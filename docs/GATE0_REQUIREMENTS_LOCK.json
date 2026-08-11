@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "gate0-requirements-lock-v1",
+  "release": "C2.1-Gate0",
+  "name": "可恢复90天数据预检与独立后台运行",
+  "requirementsStatus": "frozen",
+  "authorizedByUserPhrase": "按原流程纠正 Gate 0",
+  "frozenAt": "2026-08-08T21:36:51+08:00",
+  "doesNotFreezeC2_1Product": true,
+  "doesNotAuthorizeC2_0Changes": true,
+  "planningAuthority": "Sol",
+  "implementationAuthority": "Luna",
+  "finalAcceptanceFixAndReleaseAuthority": "Sol",
+  "modelVerification": {
+    "turnId": "019fe190-f17d-76c2-ba33-43a478748e99",
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verifiedAt": "2026-08-08T21:36:51+08:00"
+  },
+  "officialDocuments": [
+    {"path": "docs/GATE0_PRD.md", "sha256": "6f29fe3a18bc074a1de180cc5221e8ef497d5d4c12960722eb926e79fc530fb1"},
+    {"path": "docs/GATE0_DATA_CONTRACT.md", "sha256": "91b74fcd896005fc5e8eef526cd62f39aadfd9bf0a847d4dfe7edc11cd0bff39"},
+    {"path": "docs/GATE0_DESIGN_SPEC.md", "sha256": "cea95cb698388b1dd07ffc7091b7ba4fe63d6ca0920614dee864555659831a2f"},
+    {"path": "docs/GATE0_ACCEPTANCE_PLAN.md", "sha256": "7d4e8329cde31ed9f07ddd73910393bb0940fb5e45aad640cd7eeee26f157b6b"},
+    {"path": "docs/GATE0_HANDOFF.md", "sha256": "4c3c53ffe3cb18ccb1cc63ca3837de8dad56228d813f2e40a152d5e9984869fb"},
+    {"path": "docs/GATE0_BASELINE_MANIFEST.json", "sha256": "139bf6eef211c0dd03a45eb225e49d0f0dad7a057e7b0afb13601004c101f42c"}
+  ],
+  "frozenOutcomes": [
+    "existing Sol protocol semantics and accepted 29-day artifacts are protected",
+    "long scans require partitions checkpoints cursors locks and recovery before launch",
+    "full 90-day scanning uses no model and runs as an independent Python process",
+    "progress is visible in a fixed auto-refreshing HTML page",
+    "Luna performs all routine implementation and self-test in one task",
+    "Sol performs final independent acceptance and directly fixes frozen-scope defects",
+    "unsupported protocols remain explicit and are not guessed by Luna"
+  ],
+  "forbidden": [
+    "modify C2.0 product code or frozen product documents",
+    "write or migrate data/convexity.db",
+    "modify PenguinConvexity-C1.8-Scheduler or user pause settings",
+    "restart the existing non-resumable 90-day scan",
+    "rerun accepted 29-day coverage",
+    "use Sol or Luna to wait for or execute the full scan",
+    "let Luna redefine T0 or protocol event semantics",
+    "freeze or implement C2.1 product features"
+  ],
+  "nextModel": "gpt-5.6-luna",
+  "nextReasoningEffort": "max",
+  "nextUserPhrase": "已切换 Luna，开始整版开发"
+}

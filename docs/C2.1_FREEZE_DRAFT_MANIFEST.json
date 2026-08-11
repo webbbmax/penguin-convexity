@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "c2.1-freeze-draft-manifest-v1",
+  "release": "C2.1",
+  "status": "confirmed_and_formalized_not_requirements_lock",
+  "generatedAt": "2026-08-10T16:24:23+08:00",
+  "confirmedAt": "2026-08-10T16:35:15+08:00",
+  "userAuthorization": "按冻结稿冻结C2.1",
+  "purpose": "固定用户实际审阅并确认的八份冻结候选文件；候选稿内的确认前状态文字作为历史快照保留，C2.1当前正式状态以需求锁为准。",
+  "hashAlgorithm": "SHA-256",
+  "aggregateRule": "sha256(concat_in_list_order(path + NUL + sha256 + LF))",
+  "files": [
+    {
+      "path": "docs/C2.1_FORMAL_SCOPE_DRAFT.md",
+      "sha256": "28610bdf370c3e69a367b53cf71b48be47cdaae0df04c1d0cc074507076f9124",
+      "bytes": 29961
+    },
+    {
+      "path": "docs/C2.1_PAGE_DATA_CONTRACT_DRAFT.md",
+      "sha256": "72b7eef880dc9ceb8af65927526f656bc5196bab34950c7338e107b6c0202f46",
+      "bytes": 10498
+    },
+    {
+      "path": "docs/C2.1_DESIGN_DRAFT.md",
+      "sha256": "98dc93ef4013960ef45debdb20cb3c6df741a9608abd7672a362f63aaa5d4e38",
+      "bytes": 6052
+    },
+    {
+      "path": "docs/C2.1_COPY_DICTIONARY_FREEZE_DRAFT.md",
+      "sha256": "4867345f482a27e39c650a74003663dd572f7bb7d78c02772b4b836d131f2558",
+      "bytes": 6248
+    },
+    {
+      "path": "docs/C2.1_RULE_CONFIG_FREEZE_DRAFT.json",
+      "sha256": "23e40fdba82ab0675ebb91b12a753a7270f6ccf5a21740ca4ed1033e78aa2be2",
+      "bytes": 9540
+    },
+    {
+      "path": "docs/C2.1_RULE_REGRESSION_MANIFEST_FREEZE_DRAFT.json",
+      "sha256": "d75451395e2403b389cec23a9a0355a2e676bd0042135cb79e1cf2e613b297d0",
+      "bytes": 5834
+    },
+    {
+      "path": "docs/C2.1_ACCEPTANCE_DRAFT.md",
+      "sha256": "ef6b437b5b113bac72d917a9989b46419ef3c1284a157ff9a05dc2bceb6fd2dc",
+      "bytes": 9529
+    },
+    {
+      "path": "docs/C2.1_HANDOFF_FREEZE_DRAFT.md",
+      "sha256": "51e986f72094fc8075417ac824789103e2e516dda2ee15f3e3bc8abd8d89f0b1",
+      "bytes": 4892
+    }
+  ],
+  "aggregateSha256": "fbabb53749a1acd4e753e8914ef16bc782bbb2fc31df0dcfd206a116191cacc9",
+  "requirementsLock": "docs/C2.1_REQUIREMENTS_LOCK.json",
+  "snapshotContentRetainedAfterConfirmation": true,
+  "implementationAuthoritySource": "requirements_lock_not_this_manifest",
+  "productCodeAuthorized": false
+}

@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "c2.1-rule-regression-manifest-v1",
+  "release": "C2.1",
+  "status": "frozen",
+  "purpose": "固定正式规则输入和边界期望，防止实现过程临场改门槛；这些样本不替代正式全量采集，也不承诺前台必须产生固定数量线索。",
+  "realEvidenceFiles": [
+    {
+      "path": "reports/c2.1-age-threshold-analysis/market-observations.jsonl",
+      "sha256": "f637e8bf48f6a3b038f347cc0bc8130ba0bc0d45b5dee2c7a74952f00d9f78e8",
+      "physicalRows": 13288,
+      "meaning": "年龄分组市场观察原始账本，包含重试记录；分析按对象最新记录归并。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/sample-selection.jsonl",
+      "sha256": "9e9799f83291abaddb97f1a9950765657ba80be92200715a3f7f25977492a187",
+      "physicalRows": 49,
+      "meaning": "六链和五个真实日龄段的固定强路径能力样本；不是前台合格项目清单。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/quote-observations.jsonl",
+      "sha256": "884c087bf11446a7d92c83e1eb851c60959588182c64a8dea794908f2419820b",
+      "physicalRows": 49,
+      "meaning": "100美元标准卖出报价能力与失败分类。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/product-inputs.jsonl",
+      "sha256": "e74a9cf54de59d8df21cddc4a932f7e6f5f194f446f92aa1d322fe165a14d19a",
+      "physicalRows": 49,
+      "meaning": "产品使用映射能力；确定映射为0时必须保持路径不可用。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/supply-inputs.jsonl",
+      "sha256": "631c094e1aa31ef222b9a4307d6ece97e4fff8b2de0777a3a1f33dfa3b995a42",
+      "physicalRows": 49,
+      "meaning": "当前供应与持仓输入；当前快照不得冒充历史改善。"
+    },
+    {
+      "path": "reports/c2.1-path4-full-pool-supply-probe/observable-pools.jsonl",
+      "sha256": "6d646a584c4952b96c6c4f69969e757fc71fef1a84fd2954639fb2a168bbab55",
+      "physicalRows": 49,
+      "meaning": "本地发现池和市场来源已索引池并集。"
+    },
+    {
+      "path": "reports/c2.1-path4-full-pool-supply-probe/pool-ohlcv.jsonl",
+      "sha256": "828b11b31ffbe6a1424ddc94155be8dabae9a0b62e6867c228d1914f8cf4677d",
+      "physicalRows": 470,
+      "meaning": "410个唯一池及恢复重试记录；最终289成功、121无数据。"
+    },
+    {
+      "path": "reports/c2.1-path4-full-pool-supply-probe/supply-history.jsonl",
+      "sha256": "787fcaf59476d15952d71bedce4be3d657f5f1c1c53008a99dade75c59fbf89a",
+      "physicalRows": 98,
+      "meaning": "49个项目的历史供应与单位稳定性记录，包含重算记录。"
+    },
+    {
+      "path": "reports/c2.1-path4-full-pool-supply-probe/path4-inputs.jsonl",
+      "sha256": "45f1850881f0892753faf247011dc6608c7922bc31b17bbbdee46faaf725068e",
+      "physicalRows": 49,
+      "meaning": "第四路径的可复算输入。"
+    }
+  ],
+  "observedAssertions": {
+    "fixedRealProjects": 49,
+    "ageBandCounts": {
+      "age_0_2": 19,
+      "age_3_6": 12,
+      "age_7_13": 9,
+      "age_14_30": 6,
+      "age_31_90": 3
+    },
+    "networkCounts": {
+      "arbitrum-mainnet": 2,
+      "bnb-mainnet": 24,
+      "ethereum-mainnet": 16,
+      "robinhood-mainnet": 3,
+      "base-mainnet": 3,
+      "solana-mainnet": 1
+    },
+    "standardSellQuote": {
+      "success": 34,
+      "no_data": 12,
+      "unsupported": 3,
+      "successAndLossPctLte10": 32,
+      "successAndLossPctGte20": 1
+    },
+    "verifiedProductUsageSeries": 0,
+    "historicalSupplyDemandImprovementComparable": 0,
+    "indexedPoolCoverageCompleteProjects": 49,
+    "strictAllDiscoveredPoolCoverageCompleteProjects": 25,
+    "historicalSupplySuccessProjects": 49,
+    "historicalSupplyUnitScaleStableProjects": 49,
+    "path4CandidateUnderDraftP60AndPositiveRiskAdjustedSurplus": 12,
+    "path1QuoteGuardAndPath4CandidateIntersection": 9
+  },
+  "interpretationBoundary": [
+    "49个对象是能力样本，不是已经通过C2.1宽硬门槛的前台项目。",
+    "交集9只证明冻结规则不是数学必然为0，不是发布时应显示9个凸性线索的承诺。",
+    "产品使用与供应需求改善缺乏历史输入时必须为unavailable，不得用先验、项目方描述或0补齐。",
+    "正式运行使用接入范围内全部合资格对象计算滚动同组百分位，固定样本不替代全量运行。"
+  ],
+  "requiredBoundaryCases": [
+    {
+      "case": "day_90_visible",
+      "expected": "front_eligible_if_all_other_hard_gates_pass"
+    },
+    {
+      "case": "day_91_exit",
+      "expected": "removed_from_new_asset_front_immediately"
+    },
+    {
+      "case": "future_days_missing",
+      "expected": "not_zero_not_missing"
+    },
+    {
+      "case": "class_D",
+      "expected": "backend_only"
+    },
+    {
+      "case": "class_C_with_product_evidence",
+      "expected": "front_eligible_with_relationship_unconfirmed_label"
+    },
+    {
+      "case": "github_only_qualifying",
+      "expected": "front_eligible_with_code_only_boundary"
+    },
+    {
+      "case": "quote_unsupported",
+      "expected": "trade_liquidity_path_unavailable_project_not_removed_if_hard_gate_passed"
+    },
+    {
+      "case": "provider_quota_limited",
+      "expected": "data_limited_preserve_last_complete_snapshot"
+    },
+    {
+      "case": "provider_source_failure",
+      "expected": "not_a_path_miss_and_not_zero"
+    },
+    {
+      "case": "supply_unit_scale_changed",
+      "expected": "path_unavailable_program_or_identity_review_required"
+    },
+    {
+      "case": "unindexed_discovered_pool",
+      "expected": "show_count_reduce_confidence_do_not_fill_zero"
+    },
+    {
+      "case": "two_scheduler_runs_same_window",
+      "expected": "one_hysteresis_observation_only"
+    },
+    {
+      "case": "confirmed_hard_sell_block",
+      "expected": "immediate_front_gate_failure"
+    },
+    {
+      "case": "strong_score_without_two_paths",
+      "expected": "not_convexity_clue"
+    },
+    {
+      "case": "hard_gate_pass_low_score",
+      "expected": "still_visible_in_front"
+    }
+  ],
+  "mobileFixturesRequired": false,
+  "desktopFixturesRequired": [
+    "1180x760",
+    "1440x900_or_maximized"
+  ]
+}
+

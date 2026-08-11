@@ -1,0 +1,27 @@
+{
+  "version": "C1.1-09-remediation-v1",
+  "evaluatedModelVersion": "four-layer-c1.1.0",
+  "blindInputVersion": "C1.1-09-blind-v1",
+  "beforeFix": {
+    "total": 17,
+    "exactMatched": 15,
+    "exactAccuracyPct": 88.2,
+    "actionableRecallPct": 100.0,
+    "actionablePrecisionPct": 75.0,
+    "safetyEscapes": 2
+  },
+  "findings": [
+    {
+      "caseId": "blind-observe-no-ignition",
+      "severity": "blocking",
+      "problem": "没有点火条件和失效窗口仍被判为极限试仓。",
+      "remediation": "极限试仓必须同时定义点火条件和失效窗口。"
+    },
+    {
+      "caseId": "blind-observe-priced",
+      "severity": "blocking",
+      "problem": "价格已经充分反应仍被判为普通建仓。",
+      "remediation": "价格充分反应且未满足反身性转出条件时，只允许观察，不新增行动仓位。"
+    }
+  ]
+}

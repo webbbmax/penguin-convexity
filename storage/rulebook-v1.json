@@ -1,0 +1,80 @@
+{
+  "version": "convexity-rules-v1.0.0",
+  "title": "企鹅投研凸性规则 v1",
+  "principles": [
+    "L0-L5 只描述事实成熟度，不代表风险、仓位或剩余凸性。",
+    "错配分只排序研究优先级，不直接生成买卖结论。",
+    "社交热度、低市值、波动和上涨本身不构成凸性。",
+    "身份、卖出路径或合约行为无法解释时，不进入行动级候选。",
+    "L0-L2、新叙事和极限试仓可能性拥有更高搜索权重，但不能绕过行动硬门槛。",
+    "极限试仓不设每日名额；没有项目通过硬门槛时，行动池允许为空。",
+    "系统只提供研究建议，不自动交易。"
+  ],
+  "priorityPolicy": {
+    "discoveryPriority": {
+      "purpose": "决定先研究谁，优先覆盖被低估的上行尾部。",
+      "earlyStageBoost": ["L0", "L1", "L2"],
+      "preferredSources": ["叙事", "技术", "产品采用", "供应", "事件"],
+      "requiresActionableAsset": false
+    },
+    "decisionPriority": {
+      "purpose": "决定是否允许形成仓位建议。",
+      "hardGateVeto": true,
+      "requiredDimensions": ["证据", "价值捕获", "可交易性", "剩余凸性", "点火条件"],
+      "extremePoolMayBeEmpty": true
+    }
+  },
+  "scoreWeights": {
+    "fact_certainty": 20,
+    "economic_increment": 20,
+    "value_capture": 25,
+    "event_proximity": 20,
+    "price_unreacted": 15
+  },
+  "scoreThresholds": {
+    "priority_watch": 65,
+    "trial_ready": 72,
+    "extreme_test": 65
+  },
+  "tradeability": {
+    "standard": {
+      "minimum_liquidity_usd": 250000,
+      "minimum_volume_24h_usd": 100000,
+      "maximum_exit_slippage_pct": 3
+    },
+    "extreme": {
+      "minimum_liquidity_usd": 20000,
+      "minimum_volume_24h_usd": 25000,
+      "maximum_exit_slippage_pct": 5,
+      "maximum_target_position_pct": 5,
+      "spot_only": true,
+      "leverage_allowed": false
+    }
+  },
+  "hardGates": [
+    "identity_verified",
+    "asset_verified",
+    "official_relation_verified",
+    "venue_verified",
+    "sell_path_verified",
+    "hard_trace_present",
+    "independent_diffusion_present",
+    "value_capture_a_or_b",
+    "convexity_fields_complete",
+    "contract_risk_known_and_not_blocked",
+    "tradeability_verified"
+  ],
+  "decayRules": {
+    "minimum_price_reaction_pct": 50,
+    "requires_no_fact_upgrade": true,
+    "remaining_convexity_levels": ["low", "none"]
+  },
+  "positionGuidance": {
+    "L0": "仅极限例外，不超过目标仓位 5%",
+    "L1": "目标仓位的 10%-20%",
+    "L2": "目标仓位的 30%-50%",
+    "L3": "由事件超预期程度、价格反应和剩余凸性决定",
+    "L4": "仅当逻辑与剩余凸性同时成立，才评估完整目标仓位",
+    "L5": "不再使用早期错配仓位框架"
+  }
+}

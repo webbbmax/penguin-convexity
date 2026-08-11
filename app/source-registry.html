@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>凸性信源库｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body class="convexity-source-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">源</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="gold-calibration.html">黄金校准</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="scan-center.html">扫描中心</a>
+          <a href="manual-review.html">人工复核</a>
+          <a href="screening-console.html">筛选台</a>
+          <a class="active" href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="source-registry-hero">
+        <div>
+          <span>CONVEXITY SOURCE REGISTRY · C1.1</span>
+          <h1>凸性信源库</h1>
+          <p>查看每个来源负责更新什么、能证明什么、不能证明什么、最近是否成功，以及它实际写入了多少条凸性数据。</p>
+        </div>
+        <a href="update-center.html">前往凸性更新中心</a>
+      </section>
+
+      <section class="source-policy-strip">
+        <strong>来源成功不等于结论成立</strong>
+        <p id="sourcePolicy">正在读取信源规则。</p>
+        <span id="sourceGeneratedAt">正在读取后台快照</span>
+      </section>
+
+      <section class="status-grid source-summary" aria-label="凸性信源汇总">
+        <article><span>信源总数</span><strong id="sourceTotal">--</strong><small>仅凸性工作台信源</small></article>
+        <article><span>启用中</span><strong id="sourceActive">--</strong><small>允许对应任务调用</small></article>
+        <article><span>最近正常</span><strong id="sourceHealthy">--</strong><small>取得数据或已有资料</small></article>
+        <article><span>需要关注</span><strong id="sourceAttention">--</strong><small>失败或部分完成</small></article>
+        <article><span>尚未运行</span><strong id="sourceNeverRun">--</strong><small>已登记但无运行结果</small></article>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading source-registry-heading">
+          <div><span>SOURCE DIRECTORY</span><h2>全部凸性信源</h2></div>
+          <div class="source-registry-controls">
+            <label><span>来源类别</span><select id="sourceCategoryFilter"><option value="all">全部类别</option></select></label>
+            <label><span>健康状态</span><select id="sourceHealthFilter"><option value="all">全部状态</option><option value="success">成功</option><option value="active">已有资料</option><option value="partial_success">部分完成</option><option value="failed">失败</option><option value="never_run">尚未运行</option></select></label>
+            <label><span>查找来源</span><input id="sourceSearch" type="search" placeholder="名称、用途、接口类型" /></label>
+          </div>
+        </header>
+
+        <div class="source-registry-workspace">
+          <aside>
+            <header><strong>当前结果</strong><span id="sourceVisibleCount">--</span></header>
+            <div id="sourceRegistryList" class="source-registry-list"></div>
+          </aside>
+          <article id="sourceRegistryDetail" class="source-registry-detail" aria-live="polite"></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>凸性信源在本项目独立管理</strong>
+    </footer>
+
+    <script src="source-registry-snapshot.js"></script>
+    <script src="source-registry.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+    <script src="c2-1-admin-snapshot.js?v=c21"></script><script src="c2-1-admin.js?v=c21-5"></script>
+  </body>
+</html>

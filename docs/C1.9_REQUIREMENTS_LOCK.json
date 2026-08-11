@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "c1.9-requirements-lock-v1",
+  "release": "C1.9",
+  "name": "前后台分离与全产品体验重构",
+  "status": "frozen",
+  "frozenAt": "2026-08-03T12:25:29+08:00",
+  "userAuthorization": "按当前方案冻结 C1.9",
+  "hashAlgorithm": "SHA-256",
+  "requirementSetCanonicalization": "按documents顺序，以path:lowercase_sha256逐行连接，行间使用LF，末尾无换行",
+  "requirementSetSha256": "cd19167c610e0a463378b60834c59cabfb29fc8f06df3a4eb949255c772f68be",
+  "documents": [
+    {
+      "path": "docs/C1.9_PRD.md",
+      "role": "正式产品需求",
+      "bytes": 16357,
+      "sha256": "9c6a43aa54c974c50af987205cbb94078f8a7a0a291461af7e5a9a8d8590fae0"
+    },
+    {
+      "path": "docs/C1.9_PAGE_INVENTORY.md",
+      "role": "页面唯一归属与版本号位置",
+      "bytes": 5736,
+      "sha256": "e2849e61a770cfb4b4ff57d2af7994ba824b373de0b6b9bc670aebb50009d212"
+    },
+    {
+      "path": "docs/C1.9_DESIGN_SPEC.md",
+      "role": "UI与交互设计规格",
+      "bytes": 10463,
+      "sha256": "a535742464804a5c01d7bbd187b0d05a17f79b93b789ec03e5d7341b01c0c1e1"
+    },
+    {
+      "path": "docs/C1.9_COPY_DICTIONARY.md",
+      "role": "前后台固定用语",
+      "bytes": 4291,
+      "sha256": "649a977bfffc62659fea68ae304d34b83eeea68d8d5d72ec287424ae233e8b50"
+    },
+    {
+      "path": "docs/C1.9_ACCEPTANCE_PLAN.md",
+      "role": "开发自测与Sol独立终验计划",
+      "bytes": 8540,
+      "sha256": "59ba4267b25aa14eb97fed490d60df34f202ab06ed2412a7db24cbad52cb2120"
+    }
+  ],
+  "frozenProductChoices": {
+    "frontNavigation": [
+      "机会首页",
+      "全部机会",
+      "重要变化",
+      "我们如何判断"
+    ],
+    "projectDetail": "上下文页面，不是顶级导航",
+    "localAdminEntry": "前台右上角低干扰管理工作台入口，未来大众构建隐藏",
+    "publicCatalystPage": "不建立；摘要进入首页和项目详情，完整管理留在后台",
+    "adminNavigationGroups": 7,
+    "updateProgressStages": 7,
+    "visibleVersion": "只在后台工作台浅色左侧栏底部显示一次"
+  },
+  "immutableBusinessBoundaries": [
+    "不修改L0-L5",
+    "不修改评分、风险、剩余凸性、交易性、点火距离或当前动作",
+    "不修改早期、OG、潜力项目生命周期规则",
+    "不新增核心研究数据能力、信源、Watcher或数据主干",
+    "不自动交易",
+    "不与RWA、旧整合项目或源项目建立运行时引用",
+    "公共API资源共享边界不变"
+  ],
+  "allowedBackendChange": "仅增加服务于后台体验的本项目运行状态遥测，包括七阶段映射、计数、心跳、结果与失败聚合；不得改变采集结果、数据库业务语义或研究结论",
+  "implementationAuthority": "Luna一次性完成全部常规编码和开发自测",
+  "finalAuthority": "Sol独立终验、修复冻结范围内缺陷并发布",
+  "productCodeStartedAtFreeze": false
+}

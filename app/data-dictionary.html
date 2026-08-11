@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>凸性数据底座｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body>
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="data-dictionary.html" aria-label="企鹅投研凸性系统">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性机会中心 · 独立数据底座</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性系统页面">
+          <a href="candidate-pool.html">候选库</a>
+          <a href="project-master-pool.html">项目队列</a>
+          <a href="network-discovery.html">链上发现</a>
+          <a class="active" href="data-dictionary.html">数据与运行</a>
+          <a href="rules-replay.html">规则与回放</a>
+          <a href="real-case-calibration.html">真实校准</a>
+        </nav>
+        <div class="topbar-status"><span id="databaseStatus">正在读取数据库</span><time id="generatedAt">--</time></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <span class="eyebrow">CONVEXITY FOUNDATION · M0</span>
+          <h1>凸性数据底座</h1>
+          <p>这里定义凸性系统记录什么、为什么记录，以及自动运行没有找到项目时应当如何解释。</p>
+        </div>
+        <aside>
+          <strong>独立数据边界</strong>
+          <p>本页只展示凸性系统自己的数据结构和运行反馈，不读取或改写其他项目。</p>
+        </aside>
+      </section>
+
+      <section class="status-grid" aria-label="数据底座状态">
+        <article><span>数据表</span><strong id="tableCount">--</strong><small>结构化实体</small></article>
+        <article><span>已登记来源</span><strong id="sourceCount">--</strong><small>下一阶段开始接入</small></article>
+        <article><span>影子池</span><strong id="shadowCount">--</strong><small>身份或交易性待核验</small></article>
+        <article><span>正式候选</span><strong id="activeCount">--</strong><small>已通过硬门槛</small></article>
+        <article><span>可重试错误</span><strong id="retryCount">--</strong><small>允许单任务重试</small></article>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>RUN FEEDBACK</span><h2>运行与反馈</h2></div>
+          <p>自动任务不能只显示“成功”或“没有项目”，必须交代每一步发生了什么。</p>
+        </header>
+        <div id="latestRun" class="latest-run"></div>
+        <div id="sourceFeedback" class="source-feedback"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>ZERO RESULT</span><h2>零结果原因</h2></div>
+          <p>将“确实没有候选”和“任务根本没工作”分开，避免开机一天却不知道发生了什么。</p>
+        </header>
+        <div id="zeroResultGrid" class="zero-result-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>DATA DICTIONARY</span><h2>数据字典</h2></div>
+          <label class="table-search">
+            <span>查找数据</span>
+            <input id="data-table-search" type="search" placeholder="输入项目、资产、运行、证据等关键词" />
+          </label>
+        </header>
+        <nav id="groupTabs" class="group-tabs" aria-label="数据分类"></nav>
+        <div id="tableGrid" class="table-grid"></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性机会中心</span>
+      <strong>当前阶段：数据契约、规则回放、真实校准和首批任务候选导入已完成，自动采集尚未开始</strong>
+    </footer>
+
+    <script src="runtime-snapshot.js"></script>
+    <script src="app.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

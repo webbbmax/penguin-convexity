@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "c1.9-planning-status-v2",
+  "release": "C1.9",
+  "name": "前后台分离与全产品体验重构",
+  "phase": "sol_final_acceptance_complete_released",
+  "requirementsStatus": "frozen",
+  "productCodeStarted": true,
+  "planningAndDesignAuthority": "Sol",
+  "implementationAuthority": "Luna",
+  "finalAcceptanceFixAndReleaseAuthority": "Sol",
+  "singleTaskPolicy": {
+    "solPlanningAndDesign": "one_task",
+    "lunaImplementationAndSelfTest": "one_task_no_split",
+    "solFinalAcceptanceFixAndRelease": "one_task"
+  },
+  "handoffProtocol": "docs/MODEL_HANDOFF_PROTOCOL.md",
+  "authorizedScope": [
+    "前台机会中心与后台工作台边界重建",
+    "信息架构、栏目、用语、UI与交互重做",
+    "项目详情改为上下文页面而非顶级导航",
+    "长任务进度、心跳、阶段、结果与失败反馈体验",
+    "可见业务版本号仅在后台工作台固定位置展示一次"
+  ],
+  "resolvedProductChoices": {
+    "frontFourthNavigation": "我们如何判断",
+    "localAdminEntry": "前台右上角低干扰管理工作台入口，未来大众构建隐藏",
+    "publicCatalystPage": "C1.9不设独立前台催化页，摘要进入首页和项目详情，完整管理留在后台",
+    "visibleVersionPlacement": "后台工作台浅色左侧栏底部固定显示一次"
+  },
+  "planningDocuments": [
+    "docs/C1.9_EXPERIENCE_AUDIT.md",
+    "docs/C1.9_PRD.md",
+    "docs/C1.9_PAGE_INVENTORY.md",
+    "docs/C1.9_DESIGN_SPEC.md",
+    "docs/C1.9_COPY_DICTIONARY.md",
+    "docs/C1.9_ACCEPTANCE_PLAN.md"
+  ],
+  "forbiddenScope": [
+    "新增核心研究数据能力",
+    "修改评分、结论、动作或L0-L5",
+    "修改凸性研究业务规则",
+    "与其他业务建立运行时耦合",
+    "在Luna阶段外开始常规产品编码"
+  ],
+  "frozenAt": "2026-08-03T12:25:29+08:00",
+  "requirementsLock": "docs/C1.9_REQUIREMENTS_LOCK.json",
+  "phaseFile": "docs/C1.9_PHASE.json",
+  "implementationHandoff": "docs/C1.9_HANDOFF.md",
+  "lastUpdated": "2026-08-03T14:50:48+08:00",
+  "acceptanceManifest": "docs/C1.9_ACCEPTANCE_MANIFEST.json",
+  "finalAcceptance": "docs/C1.9_SOL_FINAL_ACCEPTANCE.md",
+  "nextGate": "waiting_for_user_authorization"
+}

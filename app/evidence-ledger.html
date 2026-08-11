@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>原始证据账本｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="convexity-evidence-ledger-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">证</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面"></nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="evidence-ledger-hero">
+        <div>
+          <span>RAW EVIDENCE LEDGER · C1.6-06</span>
+          <h1>原始证据账本</h1>
+          <p>查看每条数据从哪里来、哪次运行采到、是否形成研究证据，以及后来进入了哪项评分或结论。原始记录只追加、不覆盖。</p>
+        </div>
+        <aside>
+          <strong>账本原则</strong>
+          <p id="ledgerPrinciple">正在读取证据规则。</p>
+          <small id="ledgerGeneratedAt">正在读取生成时间</small>
+        </aside>
+      </section>
+
+      <section class="status-grid evidence-ledger-summary" aria-label="证据账本汇总">
+        <article><span>原始记录</span><strong id="ledgerRawTotal">--</strong><small>外部采集与机器审计全部保留</small></article>
+        <article><span>外部来源记录</span><strong id="ledgerExternalTotal">--</strong><small>官网、代码、治理、市场及链上来源</small></article>
+        <article><span>已形成研究证据</span><strong id="ledgerLinkedTotal">--</strong><small>可直接回到原始记录</small></article>
+        <article><span>尚未转化线索</span><strong id="ledgerRawOnlyTotal">--</strong><small>保留等待后续归因或研究</small></article>
+        <article class="is-warning"><span>历史原始记录缺口</span><strong id="ledgerGapTotal">--</strong><small>只标记缺口，不伪造补齐</small></article>
+      </section>
+
+      <section class="section-block evidence-ledger-coverage">
+        <header class="section-heading">
+          <div><span>SOURCE COVERAGE</span><h2>来源留痕情况</h2></div>
+          <p>按来源核对实际留存数量、已转成证据数量和最近采集时间。</p>
+        </header>
+        <div id="ledgerSourceCoverage" class="evidence-source-strip"></div>
+      </section>
+
+      <section class="section-block evidence-ledger-browser">
+        <header class="section-heading evidence-ledger-heading">
+          <div>
+            <span>TRACE BROWSER</span>
+            <h2 id="ledgerBrowserTitle">全部原始记录</h2>
+          </div>
+          <div class="evidence-ledger-modes" role="group" aria-label="账本视图">
+            <button class="active" type="button" data-mode="records">原始记录</button>
+            <button type="button" data-mode="gaps">历史缺口</button>
+          </div>
+        </header>
+
+        <div class="evidence-ledger-controls">
+          <label>
+            <span>记录角色</span>
+            <select id="ledgerRoleFilter">
+              <option value="all">全部角色</option>
+              <option value="external_source">外部来源</option>
+              <option value="machine_audit">机器审计</option>
+            </select>
+          </label>
+          <label>
+            <span>溯源状态</span>
+            <select id="ledgerStatusFilter">
+              <option value="all">全部状态</option>
+              <option value="linked">已形成研究证据</option>
+              <option value="raw_only">尚未转化</option>
+            </select>
+          </label>
+          <label>
+            <span>信源</span>
+            <select id="ledgerSourceFilter"><option value="all">全部信源</option></select>
+          </label>
+          <label class="evidence-ledger-search">
+            <span>查找</span>
+            <input id="ledgerSearch" type="search" placeholder="项目、事件、来源、ID或摘要" />
+          </label>
+        </div>
+
+        <div class="evidence-ledger-workspace">
+          <div class="evidence-ledger-table-panel">
+            <header>
+              <strong id="ledgerVisibleCount">正在读取</strong>
+              <span>每页显示 100 条，点击记录查看完整溯源</span>
+            </header>
+            <div class="evidence-ledger-table-wrap">
+              <table>
+                <thead id="ledgerTableHead"></thead>
+                <tbody id="ledgerTableBody"></tbody>
+              </table>
+            </div>
+            <nav class="evidence-ledger-pagination" aria-label="账本翻页">
+              <button id="ledgerPreviousPage" type="button">上一页</button>
+              <span id="ledgerPageStatus">第 1 页</span>
+              <button id="ledgerNextPage" type="button">下一页</button>
+            </nav>
+          </div>
+          <aside id="ledgerDetail" class="evidence-ledger-detail" aria-live="polite">
+            <strong>选择一条记录</strong>
+            <p>这里会展示来源链接、运行批次、内容指纹、研究证据和下游用途。</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>原始记录不可覆盖 · 仅使用本项目数据</strong>
+    </footer>
+
+    <script src="evidence-ledger-snapshot.js"></script>
+    <script src="evidence-ledger.js?v=20260731-c1p6p06a"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

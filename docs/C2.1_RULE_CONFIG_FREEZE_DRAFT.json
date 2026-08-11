@@ -1,0 +1,212 @@
+{
+  "schemaVersion": "c2.1-rule-config-freeze-draft-v1",
+  "release": "C2.1",
+  "status": "freeze_draft_waiting_user_confirmation_not_product_code",
+  "ruleVersionCandidate": "c2.1-rules-v1",
+  "timeDefinition": {
+    "t0": "earliest_verified_public_circulation_evidence_in_supported_scope",
+    "ageWeight": 0,
+    "frontWindowDaysInclusive": [0, 90],
+    "exitAtAgeDay": 91,
+    "futureDaysCountAsZero": false,
+    "firstSeenAtCanDefineAge": false
+  },
+  "ageBands": {
+    "age_0_2": {
+      "minAgeDays": 0,
+      "maxAgeDays": 2,
+      "liquidityFloorUsd": 2000,
+      "baselineP60": {"liquidityUsd": 5626.118, "volumeUsd": 58.572, "transactions": 9.8, "volumeLiquidityRatio": 0.200577},
+      "baselineP70": {"volumeUsd": 223.238, "transactions": 16.2, "volumeLiquidityRatio": 0.364686}
+    },
+    "age_3_6": {
+      "minAgeDays": 3,
+      "maxAgeDays": 6,
+      "liquidityFloorUsd": 2000,
+      "baselineP60": {"liquidityUsd": 5483.718, "volumeUsd": 50.842, "transactions": 4.0, "volumeLiquidityRatio": 0.0364878},
+      "baselineP70": {"volumeUsd": 104.864, "transactions": 8.2, "volumeLiquidityRatio": 0.147373}
+    },
+    "age_7_13": {
+      "minAgeDays": 7,
+      "maxAgeDays": 13,
+      "liquidityFloorUsd": 3000,
+      "baselineP60": {"liquidityUsd": 8686.754, "volumeUsd": 140.35, "transactions": 7.0, "volumeLiquidityRatio": 0.0635844},
+      "baselineP70": {"volumeUsd": 399.56, "transactions": 9.0, "volumeLiquidityRatio": 0.103676}
+    },
+    "age_14_30": {
+      "minAgeDays": 14,
+      "maxAgeDays": 30,
+      "liquidityFloorUsd": 3000,
+      "baselineP60": {"liquidityUsd": 11543.57, "volumeUsd": 276.646, "transactions": 2.2, "volumeLiquidityRatio": 0.0520534},
+      "baselineP70": {"volumeUsd": 566.507, "transactions": 11.4, "volumeLiquidityRatio": 0.0889283}
+    },
+    "age_31_90": {
+      "minAgeDays": 31,
+      "maxAgeDays": 90,
+      "liquidityFloorUsd": 5000,
+      "baselineP60": {"liquidityUsd": 5977.446, "volumeUsd": 46.844, "transactions": 2.0, "volumeLiquidityRatio": 0.0198899},
+      "baselineP70": {"volumeUsd": 147.912, "transactions": 3.2, "volumeLiquidityRatio": 0.0243472}
+    }
+  },
+  "cohortPercentiles": {
+    "primary": {"scope": "same_chain_same_age_band_rolling_30_days", "minimumValidObjects": 20},
+    "secondary": {"scope": "all_supported_chains_same_age_band_rolling_30_days", "minimumValidObjects": 50},
+    "fallback": "frozen_age_band_baseline_in_this_file",
+    "invalidValuesExcluded": true,
+    "missingValuesExcludedFromMetricDenominatorOnly": true,
+    "missingValuesBecomeZero": false
+  },
+  "comparisonWindows": {
+    "age_0_2": {"unit": "hour", "minimumWidth": 6, "maximumWidth": 24, "rule": "two_equal_trailing_completed_windows"},
+    "age_3_6": {"unit": "hour", "minimumWidth": 6, "maximumWidth": 24, "rule": "two_equal_trailing_completed_windows"},
+    "age_7_13": {"unit": "day", "width": 3, "rule": "previous_3_completed_days_vs_current_3_completed_days"},
+    "age_14_30": {"unit": "day", "width": 3, "rule": "previous_3_completed_days_vs_current_3_completed_days"},
+    "age_31_90": {"unit": "day", "width": 7, "rule": "previous_7_completed_days_vs_current_7_completed_days"}
+  },
+  "hardGate": {
+    "requiredChecks": [
+      "t0_verified_in_supported_scope",
+      "within_0_90_days",
+      "relationship_class_A_B_or_C",
+      "asset_pool_direction_consistent",
+      "observed_public_buy",
+      "observed_public_sell",
+      "no_confirmed_hard_trade_block",
+      "qualifying_product_evidence"
+    ],
+    "fixedMarketAmountThresholdsAllowed": false,
+    "compositeScoreCanControlFrontEligibility": false,
+    "frontVisibleMustEqualHardGatePassed": true
+  },
+  "strongPaths": {
+    "trade_liquidity_formation": {
+      "requiredForConvexityClue": true,
+      "requiredSourceTypes": ["market_pool_data", "sell_quote_or_verified_route"],
+      "formedWhenAll": [
+        "latest_liquidity_usd_gte_max_cohort_p60_and_age_floor",
+        "observed_buys_gte_1_and_observed_sells_gte_1",
+        "at_least_2_of_volume_transactions_volume_liquidity_ratio_gte_cohort_p60",
+        "standard_sell_quote_100_usd_state_success",
+        "standard_sell_quote_loss_pct_lte_10",
+        "no_severe_q_anomaly"
+      ],
+      "quote": {"notionalUsd": 100, "maximumLossPct": 10, "missingOrUnsupported": "path_unavailable_not_zero"}
+    },
+    "verified_product_usage_expansion": {
+      "requiredForConvexityClue": false,
+      "requiredSourceTypes": ["official_or_direct_product_series"],
+      "formedWhenAll": [
+        "deterministic_project_contract_or_business_metric_mapping",
+        "same_metric_definition_in_two_equal_completed_windows",
+        "current_value_gte_5",
+        "current_value_gte_previous_value_plus_3",
+        "current_value_gte_previous_value_times_1_2",
+        "growth_is_not_price_social_or_repository_star_count"
+      ],
+      "missingSeries": "path_unavailable_not_zero"
+    },
+    "supply_demand_structure_improvement": {
+      "requiredForConvexityClue": false,
+      "requiredSourceTypes": ["direct_chain_supply_or_holder_history", "market_pool_data"],
+      "formedWhenAny": [
+        "top10_holder_share_decreases_at_least_5_percentage_points_and_market_activity_not_below_p50",
+        "holder_hhi_decreases_at_least_10_percent_and_market_activity_not_below_p50",
+        "total_supply_decreases_at_least_0_5_percent_and_market_activity_not_below_p50"
+      ],
+      "unitScaleMustBeStable": true,
+      "stableSupplyAloneFormsPath": false,
+      "currentSnapshotOnly": "path_unavailable_not_zero"
+    },
+    "indexed_pool_activity_outpaces_supply_adjusted_valuation": {
+      "requiredForConvexityClue": false,
+      "requiredSourceTypes": ["market_pool_ohlcv", "direct_chain_historical_supply"],
+      "activityLogChange": "ln((current_average_indexed_pool_volume_usd+1)/(previous_average_indexed_pool_volume_usd+1))",
+      "valuationLogChange": "ln((current_volume_weighted_median_price_usd*current_total_supply)/(previous_volume_weighted_median_price_usd*previous_total_supply))",
+      "relativeExpansion": "activityLogChange-valuationLogChange",
+      "riskAdjustedSurplus": "activityLogChange-abs(valuationLogChange)",
+      "formedWhenAll": [
+        "all_provider_indexed_pools_have_required_ohlcv",
+        "historical_total_supply_success",
+        "supply_unit_scale_stable",
+        "relative_expansion_gte_same_age_cohort_p60",
+        "risk_adjusted_surplus_gt_0",
+        "no_severe_q_anomaly"
+      ],
+      "unindexedDiscoveredPools": "display_count_and_reduce_confidence_not_zero_or_automatic_rejection",
+      "literalGlobalAllPoolsClaimAllowed": false
+    }
+  },
+  "convexityClue": {
+    "hardGateMustPass": true,
+    "minimumObservedFactors": 3,
+    "minimumFormedStrongPaths": 2,
+    "mandatoryPath": "trade_liquidity_formation",
+    "secondPathAnyOf": [
+      "verified_product_usage_expansion",
+      "supply_demand_structure_improvement",
+      "indexed_pool_activity_outpaces_supply_adjusted_valuation"
+    ],
+    "minimumIndependentSourceTypes": 2,
+    "compositeScoreAloneCanTrigger": false
+  },
+  "activeProject": {
+    "onlyWhenNotConvexityClue": true,
+    "formedWhenAny": [
+      "one_of_volume_transactions_volume_liquidity_ratio_gte_same_age_cohort_p70_with_observed_buy_and_sell",
+      "qualifying_official_repository_has_non_document_own_commit_within_30_days",
+      "verified_product_contract_or_business_metric_has_new_real_usage",
+      "liquidity_above_age_floor_in_two_consecutive_completed_windows_and_drawdown_lt_50_percent"
+    ],
+    "priceIncreaseSocialFollowers_repositoryStarsAloneCanTrigger": false
+  },
+  "statePriority": [
+    "data_limited",
+    "convexity_clue",
+    "active_project",
+    "early_observation",
+    "continuous_observation"
+  ],
+  "hysteresis": {
+    "entry": "one_complete_evaluation_after_required_comparison_windows_exist",
+    "normalExit": "two_consecutive_new_completed_evaluation_window_ids_below_exit_rule",
+    "exitPercentile": 0.5,
+    "sourceFailureCountsAsMiss": false,
+    "hardGateFailureOrDay91Exit": "immediate",
+    "confirmedSevereAnomaly": "immediate_remove_clue_label_and_recompute_front_eligibility",
+    "repeatedSchedulerRunWithoutNewWindowCounts": false
+  },
+  "severeQAnomalies": {
+    "liquidityDropPctGteBetweenComparableWindows": 80,
+    "sellQuoteLossPctGte": 20,
+    "supplyUnitScaleChanged": true,
+    "confirmedFreezeBlacklistOrSellFailure": true,
+    "poolVolumeConcentrationAloneIsSevere": false,
+    "walletManipulationPerfectDetectionClaimAllowed": false
+  },
+  "dataQualityBlocks": {
+    "crossSourcePriceDeviationPctGte": 25,
+    "effect": "affected_path_unavailable_and_project_data_limited_if_current_state_cannot_be_determined",
+    "projectRiskFlagCreated": false
+  },
+  "dataStatePolicy": {
+    "states": ["success", "no_data", "quota_limited", "source_failure", "unsupported", "configuration_missing", "program_failure"],
+    "missingBecomesZero": false,
+    "sourceFailureChangesFundamentalScore": false,
+    "lastCompleteSnapshotPreserved": true,
+    "newNeverCompletedHardGateObjectStaysBackend": true,
+    "previouslyVisibleObjectWithCriticalRefreshFailure": "remain_visible_as_data_limited_until_hard_gate_is_confirmed_failed"
+  },
+  "confidenceWeights": {
+    "fieldCoverage": 0.35,
+    "dataFreshness": 0.25,
+    "realHistoryCoverage": 0.20,
+    "crossSourceConsistency": 0.20
+  },
+  "desktopOnly": {
+    "supported": true,
+    "defaultAcceptanceSize": "1180x760",
+    "largeAcceptanceSize": "1440x900_or_maximized",
+    "mobilePhoneTabletLayoutsInScope": false,
+    "mobileViewportAcceptanceInScope": false
+  }
+}

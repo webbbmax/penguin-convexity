@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C1.5-05 机器发现与自动建档｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body class="source-discovery-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">后</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="four-layer-screening.html">四层筛选</a>
+          <a class="active" href="source-discovery.html">项目发现</a>
+          <a href="discovery-funnel.html">发现漏斗</a>
+          <a href="change-explanations.html">变化解释</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="source-discovery-hero">
+        <div>
+          <span>C1.5 无人值守机器结论版 · C1.5-05</span>
+          <h1>机器发现与自动建档</h1>
+          <p id="sourceDiscoveryPolicy">正在读取发现边界。</p>
+          <div class="source-discovery-actions">
+            <a href="update-center.html?task=source_discovery_refresh">运行机器发现与建档</a>
+            <a href="discovery-funnel.html">查看逐层阻断原因</a>
+            <a href="high-value-sources.html">查看已核验事实信源</a>
+          </div>
+        </div>
+        <aside>
+          <span>LATEST RUN</span>
+          <strong id="sourceDiscoveryRunStatus">尚未读取运行</strong>
+          <p id="sourceDiscoveryRunMeta">等待本地快照。</p>
+        </aside>
+      </section>
+
+      <section class="source-discovery-summary" aria-label="发现与归因摘要">
+        <article><span>来源原始发现</span><strong id="sourceDiscoveryRaw">--</strong><small>全部保留，不做站内数量截断</small></article>
+        <article><span>项目归因组</span><strong id="sourceDiscoveryClusters">--</strong><small>同名或同主体跨源合并查看</small></article>
+        <article><span>机器建立项目档案</span><strong id="sourceDiscoveryMachine">--</strong><small>无需人工放行，当前只进入观察</small></article>
+        <article><span>跨源印证</span><strong id="sourceDiscoveryCorroborated">--</strong><small>至少两个独立来源，仍需资产核验</small></article>
+        <article><span>证据不足待补齐</span><strong id="sourceDiscoveryPending">--</strong><small>保留原始发现，等待后续机器补证</small></article>
+        <article><span>资产未识别</span><strong id="sourceDiscoveryNoAsset">--</strong><small>项目存在不等于有可交易资产</small></article>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>SOURCE COVERAGE</span><h2>各来源本次扫到了什么</h2></div>
+          <p>站内不限制项目数量；时间窗口、GitHub检索上限和外部接口异常在各来源卡片中单独披露。</p>
+        </header>
+        <div id="sourceDiscoverySourceGrid" class="source-discovery-source-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading source-discovery-heading">
+          <div><span>IDENTITY ATTRIBUTION</span><h2>项目级发现队列</h2></div>
+          <div class="source-discovery-controls">
+            <label><span>来源</span><select id="sourceDiscoverySourceFilter"><option value="all">全部来源</option></select></label>
+            <label><span>项目身份</span><select id="sourceDiscoveryIdentityFilter">
+              <option value="all">全部状态</option>
+              <option value="verified">已建档或已有匹配</option>
+              <option value="corroborated">机器观察档案</option>
+              <option value="pending">证据不足待补齐</option>
+              <option value="conflict">归因冲突</option>
+            </select></label>
+            <label><span>资产身份</span><select id="sourceDiscoveryAssetFilter">
+              <option value="all">全部状态</option>
+              <option value="verified">已核验</option>
+              <option value="pending">有记录待核验</option>
+              <option value="not_identified">未识别</option>
+              <option value="conflict">冲突</option>
+            </select></label>
+            <label class="source-discovery-search"><span>检索</span><input id="sourceDiscoverySearch" type="search" placeholder="项目、分类或来源" /></label>
+          </div>
+        </header>
+        <div class="source-discovery-table-wrap">
+          <table class="source-discovery-table">
+            <thead><tr><th>项目主体线索</th><th>发现来源</th><th>项目身份</th><th>资产与价值捕获</th><th>原始入口</th></tr></thead>
+            <tbody id="sourceDiscoveryRows"></tbody>
+          </table>
+        </div>
+        <div class="source-discovery-pagination">
+          <p>符合当前筛选 <strong id="sourceDiscoveryFilteredCount">0</strong> 个项目组，本页显示 <strong id="sourceDiscoveryVisibleCount">0</strong> 个。全部记录已保留在本地数据库。</p>
+          <div>
+            <button id="sourceDiscoveryPrevious" type="button">上一页</button>
+            <span id="sourceDiscoveryPageLabel">第 1 / 1 页</span>
+            <button id="sourceDiscoveryNext" type="button">下一页</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>C1.5-05 机器发现与自动建档</strong>
+    </footer>
+
+    <script src="source-discovery-snapshot.js"></script>
+    <script src="source-discovery.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+    <script src="c2-1-admin-snapshot.js?v=c21"></script><script src="c2-1-admin.js?v=c21-5"></script>
+  </body>
+</html>

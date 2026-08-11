@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>数据主干｜企鹅投研-凸性</title>
+    <link rel="stylesheet" href="styles.css?v=20260801-c1p7a" />
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body class="convexity-workbench-page data-backbone-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="返回企鹅投研凸性工作台">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.7</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性工作台页面"></nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main class="data-backbone-main">
+      <section class="data-backbone-hero">
+        <div>
+          <span>MAXIMUM FUNNEL DATA BACKBONE · C1.7</span>
+          <h1>最大漏斗数据主干</h1>
+          <p>检查数据有没有连续进入、来源是否静默、未归属证据有没有丢失，以及 Git、发布、包、EVM、Solana 五条监控主线是否已经接通。</p>
+          <div class="data-backbone-actions">
+            <a class="primary-action" href="update-center.html">运行数据主干更新</a>
+            <a class="secondary-action" href="evidence-ledger.html">查看原始证据</a>
+            <a class="secondary-action" href="monitoring-infrastructure.html">查看项目监控目标</a>
+          </div>
+        </div>
+        <aside>
+          <span>当前判断</span>
+          <strong id="backboneVerdict">正在读取</strong>
+          <p id="backboneVerdictNote">只判断数据主干，不改变任何项目的评分、结论或动作。</p>
+        </aside>
+      </section>
+
+      <section class="data-backbone-summary" aria-label="数据主干摘要">
+        <article><span>原始事件</span><strong id="backboneRawEvents">--</strong><small>不可变原始账本</small></article>
+        <article><span>标准事件</span><strong id="backboneNormalizedEvents">--</strong><small>Event Schema v2</small></article>
+        <article><span>待归属证据</span><strong id="backboneOrphanEvents">--</strong><small>保留原始位置，等待身份锚点</small></article>
+        <article><span>开放断档</span><strong id="backboneOpenGaps">--</strong><small>来源静默、失败或规则缺口</small></article>
+        <article><span>Watcher</span><strong id="backboneWatchers">--</strong><small>项目实体编译后的监控目标</small></article>
+      </section>
+
+      <section class="section-block data-continuity-section">
+        <header class="section-heading">
+          <div><span>DATA CONTINUITY</span><h2>数据连续性</h2></div>
+          <p id="backboneContinuityNote">正在检查标准化覆盖、游标、积压和断档。</p>
+        </header>
+        <div class="data-continuity-grid">
+          <article><span>可追溯覆盖</span><strong id="backboneTraceability">--</strong><small>标准事件同时具备原始定位和内容哈希</small></article>
+          <article><span>来源游标</span><strong id="backboneCursorSources">--</strong><small>游标与健康状态完全保存在本项目</small></article>
+          <article><span>待处理积压</span><strong id="backboneBacklog">--</strong><small>原始事件尚未进入 Event Schema v2</small></article>
+          <article><span>最近重放</span><strong id="backboneReplayStatus">--</strong><small id="backboneReplayNote">等待运行记录</small></article>
+        </div>
+      </section>
+
+      <section class="section-block data-mainline-section">
+        <header class="section-heading">
+          <div><span>COLLECTION MAINLINES</span><h2>五条采集主线</h2></div>
+          <p>Watcher 已登记不等于已经采到事件；事件为 0 时原样显示，不用登记数量冒充真实变化。</p>
+        </header>
+        <div id="backboneMainlines" class="data-mainline-grid"></div>
+      </section>
+
+      <section class="section-block source-health-section">
+        <header class="section-heading">
+          <div><span>SOURCE HEALTH V2</span><h2>来源健康与静默保护</h2></div>
+          <p>明确区分真实零结果、采集静默、任务失败、额度耗尽、规则缺口和未知状态。</p>
+        </header>
+        <div id="backboneHealthSummary" class="source-health-summary"></div>
+        <div class="data-backbone-table-wrap">
+          <table class="data-backbone-table">
+            <thead><tr><th>来源</th><th>状态</th><th>最近事件</th><th>断档</th><th>诊断</th></tr></thead>
+            <tbody id="backboneHealthRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section-block orphan-evidence-section">
+        <header class="section-heading">
+          <div><span>ORPHAN EVIDENCE</span><h2>孤儿证据与再归属</h2></div>
+          <p id="backboneOrphanNote">无法唯一归属的证据不会删除，也不会提前进入项目评分。</p>
+        </header>
+        <div class="data-backbone-table-wrap">
+          <table class="data-backbone-table">
+            <thead><tr><th>时间</th><th>来源/类型</th><th>项目提示</th><th>资产/网络</th><th>当前原因</th><th>原始定位</th></tr></thead>
+            <tbody id="backboneOrphanRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="data-backbone-boundary">
+        <strong>产品边界</strong>
+        <p id="backboneBoundary">数据主干只负责采集连续性、标准化、归属和监控编译，不改变凸性研究结论。</p>
+      </section>
+    </main>
+
+    <footer><span>企鹅投研 · 凸性工作台 C1.7</span><strong>本项目独立运行</strong></footer>
+    <script src="data-backbone-snapshot.js"></script>
+    <script src="workbench-nav.js?v=20260801-c1p7a"></script>
+    <script src="data-backbone.js?v=20260801-c1p7a"></script>
+    <script src="c2-1-admin-snapshot.js?v=c21"></script><script src="c2-1-admin.js?v=c21-5"></script>
+  </body>
+</html>

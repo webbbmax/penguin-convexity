@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "c2.1-requirements-lock-v1",
+  "release": "C2.1",
+  "name": "90天新发项目自动筛选与可解释前台",
+  "status": "frozen",
+  "frozenAt": "2026-08-10T16:35:15+08:00",
+  "userAuthorization": "按冻结稿冻结C2.1",
+  "planningAuthority": "user_confirmed_current_model",
+  "modelVerification": {
+    "required": false,
+    "policy": "user_selects_model_no_model_audit_or_forced_handoff"
+  },
+  "hashAlgorithm": "SHA-256",
+  "requirementSetCanonicalization": "按documents顺序，以path:lowercase_sha256逐行连接，行间使用LF，末尾无换行",
+  "requirementSetSha256": "f8784fb3ee03df42d56171f97dfb37707107f50fcbceba4647764a98a16b6696",
+  "draftConfirmation": {
+    "plainLanguageDraft": "docs/C2.1_FREEZE_DRAFT.md",
+    "draftManifest": "docs/C2.1_FREEZE_DRAFT_MANIFEST.json",
+    "draftAggregateSha256": "fbabb53749a1acd4e753e8914ef16bc782bbb2fc31df0dcfd206a116191cacc9",
+    "formalizationPolicy": "只机械替换候选状态、文件名与确认前提示；不改产品规则、数值门槛或页面方案"
+  },
+  "documents": [
+    {
+      "path": "docs/C2.1_PRD.md",
+      "role": "正式产品需求、能力范围与程序上限",
+      "bytes": 29789,
+      "sha256": "e8a52129ab8e9e350bcb5e34742f686e8afe751733045ab89d2399aecab4c5ee"
+    },
+    {
+      "path": "docs/C2.1_PAGE_DATA_CONTRACT.md",
+      "role": "页面、前后台、快照、字段、状态与查询数据契约",
+      "bytes": 10460,
+      "sha256": "f35556ebc6342d052944172d81ff0a17065bae48b8d6b74600bd22839f73ec8e"
+    },
+    {
+      "path": "docs/C2.1_DESIGN_SPEC.md",
+      "role": "Windows桌面UI、交互、信息密度与可访问性规格",
+      "bytes": 6033,
+      "sha256": "4c32456b60621e4e3d386fa44de14fcd4c3cf89b570f0833e0e559a5ccbc8291"
+    },
+    {
+      "path": "docs/C2.1_COPY_DICTIONARY.md",
+      "role": "前后台固定用语、边界表达与禁止用语",
+      "bytes": 6223,
+      "sha256": "66b528a12766cbc06c11a0087ddc34f1418c56364344d41b7f71a940cc5573e4"
+    },
+    {
+      "path": "docs/C2.1_RULE_CONFIG.json",
+      "role": "T0、日龄、P60/P70、美元护栏、四路径、五状态、异常与防抖正式配置",
+      "bytes": 10174,
+      "sha256": "fb813f71569f1a0a299b5e9f334b10da6b53b26cd7b55c97164242911e7e8df6"
+    },
+    {
+      "path": "docs/C2.1_RULE_REGRESSION_MANIFEST.json",
+      "role": "真实证据文件、固定能力样本和边界回归清单",
+      "bytes": 6192,
+      "sha256": "30bc072059f34948fa1ffede6ef88f69ee0f50004275e1cd0db44c5953492c29"
+    },
+    {
+      "path": "docs/C2.1_ACCEPTANCE_PLAN.md",
+      "role": "开发自测、独立完整终验和发布阻断计划",
+      "bytes": 9493,
+      "sha256": "f1270e2a8d136e9242bec81b7740657cf7196d597b9dd2a649170ca12f13a7c3"
+    },
+    {
+      "path": "docs/C2.1_HANDOFF.md",
+      "role": "实现顺序、允许修改范围、长任务责任和终验交接",
+      "bytes": 4777,
+      "sha256": "b51adc6681f907772b4429ac10bf072184d981081136d4b305957460378b7918"
+    }
+  ],
+  "frozenProductChoices": {
+    "productPositioning": "零逐项目人工复核的90天新发代币项目发现与可信度筛选",
+    "t0": "已接入范围内目前可核验的最早公开流通证据",
+    "frontWindowDaysInclusive": [0, 90],
+    "exitAtAgeDay": 91,
+    "ageWeight": 0,
+    "frontVisibleClasses": ["A", "B", "C"],
+    "backendOnlyClasses": ["D"],
+    "frontVisiblePolicy": "全部宽硬门槛通过项目可见，综合分和强路径不控制前台资格",
+    "states": ["data_limited", "convexity_clue", "active_project", "early_observation", "continuous_observation"],
+    "convexityClueMinimumStrongPaths": 2,
+    "convexityClueMandatoryPath": "trade_liquidity_formation",
+    "compositeScoreAloneCanTriggerConvexityClue": false,
+    "liquidityFloorsUsdByAgeBand": [2000, 2000, 3000, 3000, 5000],
+    "standardSellQuoteNotionalUsd": 100,
+    "standardSellQuoteMaximumLossPct": 10,
+    "manualAndAutomaticUseSameHiddenResumablePipeline": true,
+    "newWritableDatabase": "data/c2.1-pipeline.db",
+    "productionDatabaseMode": "data/convexity.db_read_only",
+    "windowsDesktopOnly": true,
+    "mobilePhoneTabletLayoutsInScope": false,
+    "frontTopLevelNavigationCount": 4,
+    "allOpportunityPageSize": 20,
+    "homeProjectLimit": 8
+  },
+  "immutableBusinessBoundaries": [
+    "不把Gate 0候选代币数写成项目数或全市场覆盖",
+    "不把程序首次收录时间写成T0",
+    "不对年轻项目加权，不把未来日期计0或缺失",
+    "不用综合分单独定义凸性线索",
+    "不用大模型补T0、身份、缺失字段、分数或结论",
+    "不建立逐项目人工通过、退回、复核或发布确认",
+    "不输出投资动作、仓位、买卖点、价格预测或收益概率",
+    "不修改C2.0评分、动作、L0-L5、风险、剩余凸性、交易性或点火距离",
+    "不写入、迁移或覆盖data/convexity.db",
+    "不重跑Gate 0已接受90天扫描或恢复一次性Gate 0任务",
+    "不新增第二个长期调度器，不擅自改变用户启停与频率",
+    "不与RWA、旧整合项目或旧凸性源目录建立运行时引用",
+    "不开发或发布手机、平板或移动端适配"
+  ],
+  "implementationAuthority": "用户选择的当前模型可在冻结范围内实现并完成开发自测",
+  "finalAuthority": "使用用户选择的模型从需求锁和原始输入重新执行独立完整终验、修复与发布",
+  "productCodeStartedAtFreeze": false
+}

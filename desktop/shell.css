@@ -1,0 +1,14 @@
+:root {
+  color: #102a3a;
+  background: #f5f9fb;
+  font-family: Inter, "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+.desktop-host { position: relative; width: 100%; height: 100%; background: #f5f9fb; }
+.desktop-host iframe { display: block; width: 100%; height: 100%; border: 0; background: #f5f9fb; }
+.host-loading { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; color: #102a3a; background: #f5f9fb; transition: opacity .18s ease; }
+.host-loading img { width: 56px; height: 56px; border-radius: 16px; object-fit: cover; }
+.host-loading strong { font-size: 17px; }
+.host-loading small { color: #587080; font-size: 13px; }
+.host-loading.is-hidden { opacity: 0; pointer-events: none; }

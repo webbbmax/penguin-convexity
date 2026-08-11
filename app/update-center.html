@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>凸性更新中心｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260802-c1p8-sol1" />
+    <link rel="stylesheet" href="c1-9.css?v=c19" />
+    <link rel="stylesheet" href="c2-1.css?v=c21-5">
+  </head>
+  <body class="convexity-update-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">更</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="gold-calibration.html">黄金校准</a>
+          <a class="active" href="update-center.html">更新中心</a>
+          <a href="scan-center.html">扫描中心</a>
+          <a href="manual-review.html">人工复核</a>
+          <a href="screening-console.html">筛选台</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="update-center-hero">
+        <div>
+          <span>INDEPENDENT UPDATE CENTER · C1.6-06</span>
+          <h1>凸性更新中心</h1>
+          <p>一键运行全部任务，也可以只更新行情、证据、合约、链上发现或身份复核。每次运行都显示采集来源、具体变化、失败原因和单项重试入口。</p>
+        </div>
+        <div class="update-hero-actions">
+          <a href="source-registry.html">查看凸性信源库</a>
+          <button id="runFullUpdate" type="button" data-update-task="full_refresh">立即运行一次</button>
+        </div>
+      </section>
+
+      <section class="update-policy-strip">
+        <strong>失败任务可以单独重试</strong>
+        <p id="updatePolicy">正在读取更新规则。</p>
+        <span id="updateGeneratedAt">正在读取后台快照</span>
+      </section>
+
+      <section id="updateActivity" class="update-activity is-checking" aria-live="polite">
+        <span class="update-activity-dot" aria-hidden="true"></span>
+        <div>
+          <strong id="updateActivityTitle">正在确认后台更新状态</strong>
+          <p id="updateActivityDetail">重新进入页面后也会继续显示真实运行状态。</p>
+        </div>
+        <time id="updateActivityTime">正在连接</time>
+      </section>
+
+      <section id="c19ProgressPanel" class="c19-progress-panel" aria-live="polite">
+        <div class="c19-progress-head"><div><span class="c19-kicker">任务过程</span><h2 id="c19ProgressTitle">正在读取任务进度</h2><p id="c19ProgressDetail">刷新页面或切换栏目不会中断后台任务。</p></div><span id="c19ProgressState" class="c19-badge">等待检查</span></div>
+        <div class="c19-progress-bar" aria-label="更新进度"><span id="c19ProgressBar"></span></div>
+        <div class="c19-progress-meta"><span id="c19ProgressStage">阶段 -- / 7</span><span id="c19ProgressComponents">已处理 -- / -- 个工作单元</span><span id="c19ProgressHeartbeat">最近心跳 --</span><span id="c19ProgressElapsed">已运行 --</span></div>
+        <div id="c19ProgressStages" class="c19-stage-strip"></div>
+        <div class="c19-progress-foot"><span>当前活动：<strong id="c19ProgressCurrent">--</strong></span><span id="c19ProgressEta">剩余时间暂无法准确估计</span></div>
+      </section>
+
+      <section id="updateWatchdog" class="update-watchdog is-idle" aria-live="polite">
+        <header>
+          <div><span>PIPELINE WATCHDOG</span><h2>自动守护与失败恢复</h2></div>
+          <strong id="watchdogState">正在检查</strong>
+        </header>
+        <div>
+          <article>
+            <span>当前守护状态</span>
+            <strong id="watchdogMessage">正在读取后台运行状态。</strong>
+            <small id="watchdogCheckedAt">尚未完成检查</small>
+          </article>
+          <article>
+            <span>成功数据保护</span>
+            <strong id="watchdogDataProtection">单项失败不会清除其他成功结果。</strong>
+            <small id="watchdogTimeout">外部信源超时会转为可重试记录</small>
+          </article>
+          <article>
+            <span>中断恢复</span>
+            <strong id="watchdogRecoverySummary">尚未发现中断任务</strong>
+            <small id="watchdogRecoveryTime">没有待恢复任务</small>
+            <button id="watchdogRecoveryAction" type="button" hidden>只恢复这项任务</button>
+          </article>
+        </div>
+      </section>
+
+      <section id="c18SchedulerPanel" class="section-block c18-scheduler-panel" aria-live="polite">
+        <header class="section-heading"><div><span>UNATTENDED SCHEDULER</span><h2>无人值守自动跟踪</h2></div><p>窗口关闭后仍由本项目独立计划任务运行。继续跟踪和无变化自动处理，只有重大升级或停止需要你确认。</p></header>
+        <div class="c18-scheduler-grid">
+          <article><span>当前状态</span><strong id="c18SchedulerState">正在读取</strong><small id="c18SchedulerReason">--</small></article>
+          <article><span>每日全量</span><strong id="c18SchedulerDaily">08:00</strong><small id="c18SchedulerNextDaily">--</small></article>
+          <article><span>每小时到期检查</span><strong id="c18SchedulerDue">--</strong><small id="c18SchedulerNextHourly">--</small></article>
+          <article><span>人工队列</span><strong id="c18SchedulerHuman">--</strong><small>只处理重大升级或停止</small></article>
+        </div>
+        <div class="c18-scheduler-actions">
+          <button id="c18SchedulerPause" type="button">暂停自动运行</button>
+          <button id="c18SchedulerResume" type="button">恢复自动运行</button>
+          <label><span>每日时间</span><input id="c18SchedulerTime" type="time" value="08:00" /></label>
+          <button id="c18SchedulerSaveTime" type="button">保存时间</button>
+          <button id="c18SchedulerRunNow" type="button">立即检查到期任务</button>
+        </div>
+        <p id="c18SchedulerFeedback" class="c18-scheduler-feedback"></p>
+      </section>
+
+      <section id="updateFeedback" class="update-feedback" hidden aria-live="polite"></section>
+
+      <section class="status-grid update-summary" aria-label="凸性更新中心汇总">
+        <article><span>独立更新任务</span><strong id="updateTaskCount">--</strong><small>不包含“一键全部更新”</small></article>
+        <article><span>历史运行</span><strong id="updateRunCount">--</strong><small>全部运行记录</small></article>
+        <article><span>逐条变化</span><strong id="updateChangeCount">--</strong><small>没有项目数量上限</small></article>
+        <article><span>可继续任务</span><strong id="updateRetryCount">--</strong><small>失败重试或分页续扫</small></article>
+        <article><span>已登记信源</span><strong id="updateSourceCount">--</strong><small>来源与任务可以追溯</small></article>
+        <article><span>项目跟踪执行</span><strong id="trackingExecutionCount">--</strong><small>逐项目永久留痕</small></article>
+        <article><span>二次验证待执行</span><strong id="verificationDueCount">--</strong><small>确认或驳回后的自动复查</small></article>
+      </section>
+
+      <section id="verificationQueueSection" class="section-block verification-queue-section">
+        <header class="section-heading">
+          <div><span>SECOND VERIFICATION</span><h2>结论二次验证队列</h2></div>
+          <p id="verificationQueueSummary">正在读取确认与驳回后的自动复查任务。</p>
+        </header>
+        <div id="verificationQueue" class="verification-queue"></div>
+      </section>
+
+      <section id="trackingResults" class="section-block tracking-execution-section">
+        <header class="section-heading update-change-heading">
+          <div><span>TRACKING RESULTS</span><h2>项目跟踪执行结果</h2></div>
+          <div class="update-change-controls">
+            <label><span>执行状态</span><select id="trackingExecutionStatus"><option value="all">全部状态</option><option value="success">发现有效记录</option><option value="no_change">已检查暂无新增</option><option value="partial_success">部分完成</option><option value="failed">失败</option></select></label>
+            <label><span>跟踪决定</span><select id="trackingDecisionFilter"><option value="all">全部决定</option><option value="upgrade">升级复核</option><option value="continue">继续跟踪</option><option value="stop">停止跟踪</option><option value="monitor">行动后监测</option><option value="undetermined">暂无法判定</option></select></label>
+            <label><span>查找项目</span><input id="trackingExecutionSearch" type="search" placeholder="项目、任务、信源" /></label>
+          </div>
+        </header>
+        <p id="trackingExecutionSummary" class="tracking-execution-summary">正在读取项目跟踪执行记录。</p>
+        <div id="trackingFailureGroups" class="c19-failure-groups" aria-label="聚合失败原因"></div>
+        <div class="update-run-table-wrap">
+          <table class="update-run-table tracking-execution-table">
+            <thead><tr><th>项目 / 任务</th><th>本轮检查结果</th><th>发现与未发现</th><th>结论 / 下次复查</th></tr></thead>
+            <tbody id="trackingExecutionRows"></tbody>
+          </table>
+        </div>
+        <div class="update-change-pagination c19-tracking-pagination" aria-label="项目跟踪执行分页">
+          <button id="trackingPreviousPage" type="button">上一页</button>
+          <span id="trackingPageMeta">第 1 / 1 页</span>
+          <button id="trackingNextPage" type="button">下一页</button>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>UPDATE TASKS</span><h2>选择要更新的内容</h2></div>
+          <p>每张卡片都是独立任务。点击后只运行这一类工作，其他已经成功的数据不会重复更新。</p>
+        </header>
+        <div id="updateTaskGrid" class="update-task-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading">
+          <div><span>RUN HISTORY</span><h2>运行历史与失败重试</h2></div>
+          <p id="latestUpdateRunMeta">正在读取最近一次运行。</p>
+        </header>
+        <div class="update-run-table-wrap">
+          <table class="update-run-table">
+            <thead><tr><th>任务 / 时间</th><th>运行结果</th><th>来源反馈</th><th>失败与重试</th></tr></thead>
+            <tbody id="updateRunRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <header class="section-heading update-change-heading">
+          <div><span>WHAT CHANGED</span><h2>这次具体更新了什么</h2></div>
+          <div class="update-change-controls">
+            <label><span>更新任务</span><select id="changeTaskFilter"><option value="all">全部任务</option></select></label>
+            <label><span>内容类型</span><select id="changeTypeFilter"><option value="all">全部类型</option></select></label>
+            <label><span>查找记录</span><input id="changeSearch" type="search" placeholder="项目、代币、链、来源" /></label>
+          </div>
+        </header>
+        <div class="update-change-count">
+          <span>筛选结果 <strong id="visibleChangeCount">--</strong> 条</span>
+          <div class="update-change-pagination" aria-label="更新记录分页">
+            <button id="changePreviousPage" type="button">上一页</button>
+            <span id="changePageMeta">第 1 / 1 页</span>
+            <button id="changeNextPage" type="button">下一页</button>
+          </div>
+        </div>
+        <div class="update-change-table-wrap">
+          <table class="update-change-table">
+            <thead><tr><th>时间 / 类型</th><th>项目或资产</th><th>更新内容</th><th>采集来源</th></tr></thead>
+            <tbody id="updateChangeRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>独立更新，只读取和改写本项目</strong>
+    </footer>
+
+    <script src="update-center-snapshot.js"></script>
+    <script src="source-registry-snapshot.js"></script>
+    <script src="tracking-task-snapshot.js"></script>
+    <script src="update-center.js?v=20260802-c1p8-sol1"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+    <script src="c2-1-admin-snapshot.js?v=c21"></script><script src="c2-1-admin.js?v=c21-5"></script>
+  </body>
+</html>

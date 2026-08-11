@@ -1,0 +1,196 @@
+{
+  "version": "C1.1-09-blind-v1",
+  "title": "四层模型独立情景盲测输入",
+  "boundary": "本文件只保存与黄金集项目完全分离的匿名情景事实，不保存预期动作。它验证规则边界，不代表真实投资收益验证。",
+  "defaults": {
+    "maturity": "L2",
+    "risk": "R3",
+    "remainingConvexity": "medium_high",
+    "mismatchScore": 70,
+    "projectIdentity": "verified",
+    "assetIdentity": "verified",
+    "officialRelation": "verified",
+    "tradeability": "standard",
+    "sellPath": "verified",
+    "contractRisk": "low",
+    "securityBlocked": false,
+    "securityUnresolved": false,
+    "coreInvalidated": false,
+    "hardTrace": true,
+    "evidenceGrade": "verified",
+    "economicIncrement": "verified",
+    "primaryConvexity": "已核验产品采用与资产价值捕获",
+    "valueCapture": "A",
+    "lossBound": "bounded",
+    "nonlinearUpside": true,
+    "ignitionDefined": true,
+    "invalidationDefined": true,
+    "priceReaction": "low"
+  },
+  "cases": [
+    {
+      "id": "blind-ordinary-adoption",
+      "project": "情景A：采用扩张",
+      "asset": "SCN-A",
+      "input": {"maturity": "L3", "risk": "R2", "mismatchScore": 76}
+    },
+    {
+      "id": "blind-ordinary-cashflow",
+      "project": "情景B：现金流部分定价",
+      "asset": "SCN-B",
+      "input": {"maturity": "L4", "risk": "R3", "mismatchScore": 65, "priceReaction": "partial"}
+    },
+    {
+      "id": "blind-ordinary-early-mature",
+      "project": "情景C：早期产品闭环",
+      "asset": "SCN-C",
+      "input": {"maturity": "L2", "risk": "R3", "mismatchScore": 61}
+    },
+    {
+      "id": "blind-extreme-microcap",
+      "project": "情景D：微型流动性",
+      "asset": "SCN-D",
+      "input": {
+        "maturity": "L1",
+        "risk": "R5",
+        "remainingConvexity": "high",
+        "mismatchScore": 48,
+        "tradeability": "extreme",
+        "contractRisk": "high",
+        "evidenceGrade": "conditional",
+        "valueCapture": "B",
+        "lossBound": "bounded_zero"
+      }
+    },
+    {
+      "id": "blind-extreme-prototype",
+      "project": "情景E：原型已上链",
+      "asset": "SCN-E",
+      "input": {
+        "maturity": "L0",
+        "risk": "R4",
+        "remainingConvexity": "high",
+        "mismatchScore": 40,
+        "tradeability": "extreme",
+        "contractRisk": "medium",
+        "evidenceGrade": "conditional",
+        "valueCapture": "A",
+        "lossBound": "bounded_zero"
+      }
+    },
+    {
+      "id": "blind-extreme-event",
+      "project": "情景F：临近事件",
+      "asset": "SCN-F",
+      "input": {
+        "maturity": "L2",
+        "risk": "R4",
+        "remainingConvexity": "high",
+        "mismatchScore": 55,
+        "tradeability": "extreme",
+        "contractRisk": "high",
+        "evidenceGrade": "conditional",
+        "valueCapture": "B",
+        "lossBound": "bounded_zero"
+      }
+    },
+    {
+      "id": "blind-observe-identity",
+      "project": "情景G：资产归属待核验",
+      "asset": "SCN-G",
+      "input": {"projectIdentity": "pending", "assetIdentity": "pending", "officialRelation": "pending"}
+    },
+    {
+      "id": "blind-observe-value",
+      "project": "情景H：项目成立但代币不承接",
+      "asset": "SCN-H",
+      "input": {"valueCapture": "C"}
+    },
+    {
+      "id": "blind-observe-low-score",
+      "project": "情景I：错配不足",
+      "asset": "SCN-I",
+      "input": {
+        "maturity": "L1",
+        "risk": "R4",
+        "remainingConvexity": "high",
+        "mismatchScore": 30,
+        "tradeability": "extreme",
+        "valueCapture": "B",
+        "lossBound": "bounded_zero"
+      }
+    },
+    {
+      "id": "blind-observe-loss-bound",
+      "project": "情景J：早期亏损边界不足",
+      "asset": "SCN-J",
+      "input": {
+        "maturity": "L1",
+        "risk": "R5",
+        "remainingConvexity": "high",
+        "mismatchScore": 50,
+        "tradeability": "extreme",
+        "valueCapture": "B",
+        "lossBound": "bounded"
+      }
+    },
+    {
+      "id": "blind-observe-no-ignition",
+      "project": "情景K：没有点火与失效窗口",
+      "asset": "SCN-K",
+      "input": {
+        "maturity": "L1",
+        "risk": "R5",
+        "remainingConvexity": "high",
+        "mismatchScore": 50,
+        "tradeability": "extreme",
+        "valueCapture": "B",
+        "lossBound": "bounded_zero",
+        "ignitionDefined": false,
+        "invalidationDefined": false
+      }
+    },
+    {
+      "id": "blind-observe-priced",
+      "project": "情景L：价格已经充分反应",
+      "asset": "SCN-L",
+      "input": {
+        "maturity": "L2",
+        "risk": "R3",
+        "remainingConvexity": "medium_high",
+        "mismatchScore": 72,
+        "priceReaction": "full"
+      }
+    },
+    {
+      "id": "blind-reject-security",
+      "project": "情景M：安全阻断",
+      "asset": "SCN-M",
+      "input": {"risk": "blocked", "contractRisk": "blocked", "securityBlocked": true}
+    },
+    {
+      "id": "blind-reject-no-economics",
+      "project": "情景N：事件没有经济增量",
+      "asset": "SCN-N",
+      "input": {"economicIncrement": "none"}
+    },
+    {
+      "id": "blind-reject-invalidated",
+      "project": "情景O：核心逻辑已经失效",
+      "asset": "SCN-O",
+      "input": {"coreInvalidated": true}
+    },
+    {
+      "id": "blind-reflexive-l5",
+      "project": "情景P：进入L5",
+      "asset": "SCN-P",
+      "input": {"maturity": "L5", "remainingConvexity": "low", "priceReaction": "full"}
+    },
+    {
+      "id": "blind-reflexive-priced",
+      "project": "情景Q：赔率已经耗尽",
+      "asset": "SCN-Q",
+      "input": {"maturity": "L3", "remainingConvexity": "none", "priceReaction": "full"}
+    }
+  ]
+}

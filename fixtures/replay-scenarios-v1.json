@@ -1,0 +1,450 @@
+{
+  "version": "convexity-replay-scenarios-v1.0.0",
+  "notice": "本文件是规则验收样例，不代表对任何真实项目的历史事实或投资结论。",
+  "defaults": {
+    "maturity": "L1",
+    "identity_verified": true,
+    "asset_verified": true,
+    "official_relation_verified": true,
+    "venue_verified": true,
+    "sell_path_verified": true,
+    "hard_trace_count": 1,
+    "independent_diffusion_count": 1,
+    "value_capture_grade": "A",
+    "convexity_fields_complete": true,
+    "liquidity_usd": 350000,
+    "volume_24h_usd": 140000,
+    "exit_slippage_pct": 2.2,
+    "contract_risk": "low",
+    "risk_level": "medium",
+    "fact_certainty": 12,
+    "economic_increment": 12,
+    "value_capture": 18,
+    "event_proximity": 10,
+    "price_unreacted": 12,
+    "risk_deduction": 6,
+    "remaining_convexity": "high",
+    "ignition_proximity": "forming",
+    "ignition_active": false,
+    "core_invalidated": false,
+    "archive_requested": false,
+    "price_reaction_pct": 0,
+    "facts_upgraded": true,
+    "primary_convexity_source": "事件",
+    "maximum_controllable_loss": "按预设目标仓位和失效条件控制",
+    "nonlinear_upside_path": "事件兑现后，采用、流动性与市场认知可能形成非线性反馈",
+    "ignition_conditions": "硬事实升级并开始转化为真实订单或资金流",
+    "odds_decay_conditions": "价格先于事实大幅反应，或估值与供应结构恶化",
+    "invalidation_window": "核心事件取消、卖出路径失效或价值捕获被证伪"
+  },
+  "cases": [
+    {
+      "caseId": "scenario-early-ignition",
+      "title": "早期硬痕迹逐步点火",
+      "caseType": "正向链路",
+      "description": "验证身份补齐、正式入库、重点观察和点火的连续迁移。",
+      "expectedSequence": ["identity_pending", "active_embryo", "priority_watch", "igniting"],
+      "timeline": [
+        {
+          "at": "T-30",
+          "label": "发现代码与部署痕迹，但资产关系未核验",
+          "input": {
+            "maturity": "L0",
+            "identity_verified": false,
+            "asset_verified": false,
+            "official_relation_verified": false
+          }
+        },
+        {
+          "at": "T-18",
+          "label": "官方关系、合约和卖出路径核验完成",
+          "input": {
+            "maturity": "L1",
+            "identity_verified": true,
+            "asset_verified": true,
+            "official_relation_verified": true
+          }
+        },
+        {
+          "at": "T-5",
+          "label": "明确日期临近，进入重点复核",
+          "input": {
+            "maturity": "L2",
+            "fact_certainty": 18,
+            "economic_increment": 14,
+            "value_capture": 18,
+            "event_proximity": 13,
+            "price_unreacted": 10,
+            "risk_deduction": 6,
+            "ignition_proximity": "near"
+          }
+        },
+        {
+          "at": "T0",
+          "label": "真实订单和资金流开始出现",
+          "input": {
+            "maturity": "L3",
+            "ignition_proximity": "immediate",
+            "ignition_active": true
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-social-only",
+      "title": "只有社交热度",
+      "caseType": "负向过滤",
+      "description": "验证 X 热度和价格波动不能替代硬痕迹。",
+      "expectedSequence": ["shadow_signal"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "传播快速扩散，但没有代码、链上或一手产品证据",
+          "input": {
+            "maturity": "L0",
+            "hard_trace_count": 0,
+            "independent_diffusion_count": 6,
+            "price_reaction_pct": 45,
+            "fact_certainty": 4,
+            "economic_increment": 3
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-capture-c",
+      "title": "可交易但价值捕获为 C",
+      "caseType": "负向过滤",
+      "description": "验证纯叙事代理即使高分和流动性充足，也只能留在影子池。",
+      "expectedSequence": ["shadow_signal"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "资产可交易，但没有费用、收入、安全或核心工作负载捕获",
+          "input": {
+            "maturity": "L2",
+            "value_capture_grade": "C",
+            "fact_certainty": 19,
+            "economic_increment": 18,
+            "value_capture": 22,
+            "event_proximity": 18,
+            "price_unreacted": 14,
+            "risk_deduction": 4
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-dangerous-contract",
+      "title": "合约权限风险恶化",
+      "caseType": "失效链路",
+      "description": "验证正式候选出现阻断级合约权限后必须失效并保留历史。",
+      "expectedSequence": ["active_embryo", "invalidated"],
+      "timeline": [
+        {
+          "at": "T-7",
+          "label": "已通过正式胚胎门槛",
+          "input": {}
+        },
+        {
+          "at": "T0",
+          "label": "发现不可解释的冻结或增发权限",
+          "input": {
+            "contract_risk": "blocked",
+            "risk_level": "blocked"
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-priced-in",
+      "title": "事实未升级但价格已充分反应",
+      "caseType": "赔率衰减",
+      "description": "验证价格上涨不能被继续包装成尚未兑现的早期凸性。",
+      "expectedSequence": ["active_embryo", "odds_decay"],
+      "timeline": [
+        {
+          "at": "T-10",
+          "label": "事实和价格仍存在明显错配",
+          "input": {}
+        },
+        {
+          "at": "T0",
+          "label": "价格上涨 80%，事实与价值捕获没有同步升级",
+          "input": {
+            "price_reaction_pct": 80,
+            "facts_upgraded": false,
+            "remaining_convexity": "low",
+            "price_unreacted": 2
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-l5-transfer",
+      "title": "进入 L5 后转入反身性管理",
+      "caseType": "阶段移交",
+      "description": "验证继续上涨不等于仍有早期凸性。",
+      "expectedSequence": ["active_embryo", "priority_watch", "transferred_l5"],
+      "timeline": [
+        {
+          "at": "T-20",
+          "label": "正式胚胎阶段",
+          "input": {}
+        },
+        {
+          "at": "T-3",
+          "label": "临近点火并进入重点观察",
+          "input": {
+            "maturity": "L2",
+            "fact_certainty": 17,
+            "economic_increment": 14,
+            "value_capture": 18,
+            "event_proximity": 14,
+            "price_unreacted": 10,
+            "risk_deduction": 6,
+            "ignition_proximity": "near"
+          }
+        },
+        {
+          "at": "T0",
+          "label": "交易所、资金、传播和价格形成共振",
+          "input": {
+            "maturity": "L5",
+            "remaining_convexity": "low",
+            "price_reaction_pct": 140
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-native-extreme",
+      "title": "原生社群与硬痕迹形成极限例外",
+      "caseType": "边界行动",
+      "description": "验证低成熟度只有在交易性、风险和非线性路径都满足时才允许极限试仓。",
+      "expectedSequence": ["extreme_test"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "L0 硬痕迹与独立原生扩散同时出现",
+          "input": {
+            "maturity": "L0",
+            "liquidity_usd": 110000,
+            "volume_24h_usd": 42000,
+            "exit_slippage_pct": 4.2,
+            "fact_certainty": 16,
+            "economic_increment": 13,
+            "value_capture": 18,
+            "event_proximity": 14,
+            "price_unreacted": 13,
+            "risk_deduction": 7,
+            "risk_level": "medium"
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-identity-pending",
+      "title": "同名资产与官方关系未确认",
+      "caseType": "待核验",
+      "description": "验证身份冲突不能被高流动性掩盖。",
+      "expectedSequence": ["identity_pending"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "项目存在，但代币与官方主体关系不确定",
+          "input": {
+            "asset_verified": false,
+            "official_relation_verified": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-tradeability-pending",
+      "title": "行情存在但卖出数据不完整",
+      "caseType": "待核验",
+      "description": "验证仅有报价、没有滑点和权限核验时不能进入正式库。",
+      "expectedSequence": ["tradeability_pending"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "上游返回价格，但没有可验证的退出路径数据",
+          "input": {
+            "liquidity_usd": null,
+            "volume_24h_usd": null,
+            "exit_slippage_pct": null,
+            "contract_risk": "unknown"
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-trial-ready",
+      "title": "L2 标准交易性可试仓",
+      "caseType": "行动评估",
+      "description": "验证已降风险的 L2 候选可以进入普通可试仓评估。",
+      "expectedSequence": ["trial_ready"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "日期、价值捕获、流动性和退出路径均已核验",
+          "input": {
+            "maturity": "L2",
+            "fact_certainty": 18,
+            "economic_increment": 16,
+            "value_capture": 22,
+            "event_proximity": 17,
+            "price_unreacted": 12,
+            "risk_deduction": 6,
+            "risk_level": "low",
+            "ignition_proximity": "near"
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-sell-path-collapse",
+      "title": "正式候选失去卖出路径",
+      "caseType": "失效链路",
+      "description": "验证交易性失效会触发退出研究队列，而不是继续显示为可行动。",
+      "expectedSequence": ["active_embryo", "invalidated"],
+      "timeline": [
+        {
+          "at": "T-2",
+          "label": "卖出路径已核验",
+          "input": {}
+        },
+        {
+          "at": "T0",
+          "label": "充提暂停且池子无法模拟退出",
+          "input": {
+            "sell_path_verified": false,
+            "liquidity_usd": 30000,
+            "volume_24h_usd": 8000,
+            "exit_slippage_pct": 18
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-stale-archive",
+      "title": "长期无硬进展后归档",
+      "caseType": "归档链路",
+      "description": "验证失败线索不会静默删除，仍保留发现和归档记录。",
+      "expectedSequence": ["shadow_signal", "archived"],
+      "timeline": [
+        {
+          "at": "T-60",
+          "label": "只发现叙事线索",
+          "input": {
+            "hard_trace_count": 0
+          }
+        },
+        {
+          "at": "T0",
+          "label": "连续复核仍无硬进展，进入归档",
+          "input": {
+            "archive_requested": true
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-no-independent-diffusion",
+      "title": "只有项目方单一传播链",
+      "caseType": "负向过滤",
+      "description": "验证项目方宣传和同源转发不能算作独立扩散。",
+      "expectedSequence": ["shadow_signal"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "有官方公告，但外部内容均来自同一传播链",
+          "input": {
+            "independent_diffusion_count": 0,
+            "fact_certainty": 17
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-high-score-high-risk",
+      "title": "高错配分但风险仍高",
+      "caseType": "评分边界",
+      "description": "验证高分只提高研究优先级，不会绕过风险门槛自动生成试仓结论。",
+      "expectedSequence": ["active_embryo"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "事实与事件分很高，但团队和治理风险尚未降低",
+          "input": {
+            "maturity": "L2",
+            "fact_certainty": 19,
+            "economic_increment": 18,
+            "value_capture": 23,
+            "event_proximity": 18,
+            "price_unreacted": 13,
+            "risk_deduction": 8,
+            "risk_level": "high",
+            "ignition_proximity": "near"
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-l4-adoption",
+      "title": "L4 采用数据确认且凸性仍剩余",
+      "caseType": "行动评估",
+      "description": "验证成熟项目只有在剩余凸性仍成立时才保留行动价值。",
+      "expectedSequence": ["trial_ready"],
+      "timeline": [
+        {
+          "at": "T0",
+          "label": "收入与使用数据确认，价格仍未完全反应",
+          "input": {
+            "maturity": "L4",
+            "fact_certainty": 20,
+            "economic_increment": 18,
+            "value_capture": 23,
+            "event_proximity": 16,
+            "price_unreacted": 10,
+            "risk_deduction": 7,
+            "remaining_convexity": "medium",
+            "risk_level": "low"
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "scenario-event-cancelled",
+      "title": "核心事件取消",
+      "caseType": "失效链路",
+      "description": "验证催化剂取消会留下明确失效原因。",
+      "expectedSequence": ["priority_watch", "invalidated"],
+      "timeline": [
+        {
+          "at": "T-4",
+          "label": "事件临近，进入重点观察",
+          "input": {
+            "maturity": "L2",
+            "fact_certainty": 17,
+            "economic_increment": 14,
+            "value_capture": 18,
+            "event_proximity": 14,
+            "price_unreacted": 10,
+            "risk_deduction": 6,
+            "ignition_proximity": "near"
+          }
+        },
+        {
+          "at": "T0",
+          "label": "官方确认核心事件取消",
+          "input": {
+            "core_invalidated": true,
+            "remaining_convexity": "none"
+          }
+        }
+      ]
+    }
+  ]
+}

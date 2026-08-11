@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C1.1-03 四层自动筛选｜企鹅投研</title>
+    <link rel="stylesheet" href="styles.css?v=20260731-c1p6p06a" />
+  </head>
+  <body class="four-layer-page">
+    <header class="topbar workbench-topbar">
+      <a class="brand" href="workbench.html" aria-label="企鹅投研凸性工作台">
+        <span class="brand-mark">凸</span>
+        <span><strong>企鹅投研</strong><small>凸性工作台 C1.6-06</small></span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="product-nav" aria-label="凸性后台页面">
+          <a href="workbench.html">工作台总览</a>
+          <a href="gold-calibration.html">黄金校准</a>
+          <a class="active" href="four-layer-screening.html">四层筛选</a>
+          <a href="source-discovery.html">项目发现</a>
+          <a href="discovery-funnel.html">发现漏斗</a>
+          <a href="change-explanations.html">变化解释</a>
+          <a href="model-acceptance.html">模型验收</a>
+          <a href="update-center.html">更新中心</a>
+          <a href="scan-center.html">扫描中心</a>
+          <a href="manual-review.html">人工复核</a>
+          <a href="source-registry.html">信源库</a>
+        </nav>
+        <a class="workbench-return-link" href="candidate-pool.html">返回凸性机会中心</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="four-layer-hero">
+        <div>
+          <span>C1.1 凸性发现质量升级 · C1.1-03</span>
+          <h1>四层自动筛选模型</h1>
+          <p>把全部候选依次通过身份与交易性、硬事实、凸性结构和行动分层。每个结果都说明在哪一层被阻断，不用单一总分掩盖缺失证据。</p>
+        </div>
+        <aside>
+          <strong>模型边界</strong>
+          <p id="fourLayerBoundary">正在读取模型边界。</p>
+          <small id="fourLayerGeneratedAt">生成时间 --</small>
+        </aside>
+      </section>
+
+      <section class="four-layer-summary" aria-label="四层筛选概览">
+        <article><span>当前候选</span><strong id="fourLayerTotal">--</strong><small>不限制项目数量</small></article>
+        <article><span>普通建仓</span><strong id="fourLayerOrdinary">--</strong><small>降险后仍有凸性</small></article>
+        <article><span>极限试仓</span><strong id="fourLayerExtreme">--</strong><small>现货无杠杆且按归零</small></article>
+        <article><span>只观察</span><strong id="fourLayerObserve">--</strong><small>保留线索继续补证</small></article>
+        <article><span>黄金集复现</span><strong id="fourLayerAccuracy">--</strong><small id="fourLayerAccuracyMeta">14个独立案例</small></article>
+      </section>
+
+      <section id="fourLayerFlow" class="four-layer-flow" aria-label="四层筛选流程"></section>
+
+      <section class="four-layer-toolbar">
+        <div class="four-layer-mode" role="group" aria-label="数据范围">
+          <button class="active" type="button" data-screen-mode="live">当前候选</button>
+          <button type="button" data-screen-mode="goldCalibration">黄金集回放</button>
+        </div>
+        <label><span>搜索</span><input id="fourLayerSearch" type="search" placeholder="项目、代币或凸性来源" /></label>
+        <label><span>最终动作</span><select id="fourLayerAction"><option value="all">全部动作</option></select></label>
+        <label><span>停留层级</span><select id="fourLayerStop"><option value="all">全部层级</option></select></label>
+      </section>
+
+      <section class="four-layer-workspace">
+        <aside class="four-layer-list-panel">
+          <header>
+            <div><strong id="fourLayerListTitle">当前候选</strong><span id="fourLayerVisibleCount">--</span></div>
+            <small>点击项目查看逐层原因</small>
+          </header>
+          <div id="fourLayerCaseList" class="four-layer-case-list"></div>
+        </aside>
+        <article id="fourLayerDetail" class="four-layer-detail" aria-live="polite"></article>
+      </section>
+    </main>
+
+    <footer>
+      <span>企鹅投研 · 凸性工作台 C1.6-06</span>
+      <strong>C1.1-03 四层自动筛选模型</strong>
+    </footer>
+
+    <script src="four-layer-screening-snapshot.js"></script>
+    <script src="four-layer-screening.js"></script>
+    <script src="workbench-nav.js?v=20260731-c1p6p06a"></script>
+  </body>
+</html>

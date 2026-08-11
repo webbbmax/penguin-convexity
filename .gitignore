@@ -1,0 +1,62 @@
+# Public repository boundary: keep local state, credentials, generated output,
+# and user-specific research artifacts out of GitHub.
+
+# Local runtime state, databases, backups, archives, and reports
+runtime/
+data/
+backups/
+archive/
+reports/
+storage/*.db
+storage/*.db-*
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.jsonl
+*.log
+*.cache
+*.tmp
+*.lock
+*.bak
+
+# Python and other local build/test caches
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated UI/data snapshots; source files remain trackable.
+app/*-snapshot.js
+app/*-snapshot.json
+app/*-snapshot.html
+
+# Credentials and local environment files
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets/
+**/*credentials*.json
+**/*secret*.json
+
+# API resource catalogs may contain provider-specific operational details.
+config/shared-api-catalog.json
+config/strong-signal-resource-catalog.json
+
+# Internal-only working memory and migration notes
+AGENTS.md
+docs/PROJECT_MEMORY.md
+docs/SOURCE_THREAD_INDEX.md
+docs/DECISIONS.md
+docs/MIGRATION_MANIFEST.json
+docs/*_ACCEPTANCE_MANIFEST.json
+
+# Archives and packaged binaries
+*.zip
+*.7z
+*.rar
+*.exe
