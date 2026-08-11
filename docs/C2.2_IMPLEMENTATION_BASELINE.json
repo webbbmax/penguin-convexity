@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "c2.2-implementation-baseline-v1",
+  "release": "C2.2",
+  "capturedAt": "2026-08-11T13:48:23+08:00",
+  "purpose": "C2.2实现前唯一主干继承基线；只读采集，不改变产品、数据库、调度或用户设置。",
+  "git": {
+    "head": "c9941d2a9adcb728df6d5cb70afe4a14cd4f6926",
+    "worktreeWasDirty": true,
+    "userChangesPreserved": true,
+    "note": "基线捕获时保留已有C2.1维护改动，不使用清理、重置或覆盖。"
+  },
+  "databases": [
+    {
+      "path": "data/convexity.db",
+      "bytes": 498814976,
+      "sha256": "d301e24f9bf0a4d589a1d7a0ce4a52336aa2a6aaf458d60017e8b9e7a5816382",
+      "integrity": "ok",
+      "foreignKeyErrors": 0,
+      "coreCounts": {
+        "projects": 623,
+        "candidate_cases": 625,
+        "raw_events": 36052,
+        "normalized_events_v2": 36052,
+        "evidence_items": 3825,
+        "evidence_lineage": 122060,
+        "market_snapshots": 2399,
+        "contract_risks": 2149,
+        "tradeability_checks": 2149,
+        "tracking_task_runs": 976,
+        "runs": 48,
+        "run_errors": 10
+      },
+      "writePolicy": "C2.2 may only use explicit existing tracking writes or an approved migration; no startup write."
+    },
+    {
+      "path": "data/c2.1-pipeline.db",
+      "bytes": 3558342656,
+      "sha256": "71adf4864e57d5fd00164f0dc0894a2aa1faf904687bbdd9aaa673eee4290327",
+      "integrity": "ok",
+      "foreignKeyErrors": 0,
+      "coreCounts": {
+        "candidates": 4590214,
+        "candidate_pools": 11769,
+        "evaluations": 348,
+        "market_observations": 4877,
+        "risk_observations": 1709,
+        "source_cursors": 444,
+        "source_health": 253,
+        "snapshot_builds": 17,
+        "material_changes": 728
+      },
+      "writePolicy": "screening owns candidate and screening data; tracking reads a published candidate build."
+    }
+  ],
+  "activeSnapshots": [
+    {"path": "app/c2-1-front-snapshot.js", "bytes": 339830, "sha256": "81cbea4b24ed02f912e83760e26ab6bda0f370b1562fa457bae2caa1f7894e3a"},
+    {"path": "app/c2-1-admin-snapshot.js", "bytes": 299776, "sha256": "5a26c92a667b00c56b83539889bc62cb8536a9e752c764af0cc43dcda14e2dbf"},
+    {"path": "app/candidate-pool-snapshot.js", "bytes": 9949698, "sha256": "fbc7b76759e9fce1e5c58bbc731a55f4fa85daf4f05a0f304b86942631d1c273"},
+    {"path": "app/opportunity-center-snapshot.js", "bytes": 8160767, "sha256": "10b44dd7c36083db26f96bf3b891b950b5895aacc3fa85cd7fa7f5e35c5aa617"},
+    {"path": "app/project-detail-snapshot.js", "bytes": 45094021, "sha256": "47a9b927d9d7db529b6d17a24458e81b5db8ba82eb6a52cbd35e735a9ac35dfd"},
+    {"path": "app/tracking-task-snapshot.js", "bytes": 3097063, "sha256": "f87efd76a6a4cfd621393b3fb2a585fc4c4ff1dec87d10194a4ae4439dcb7746"}
+  ],
+  "routes": {
+    "appHtmlCount": 29,
+    "desktopEntry": "desktop/index.html",
+    "frontEntry": "app/candidate-pool.html",
+    "detailEntry": "app/project-detail.html",
+    "workbenchEntry": "app/workbench.html",
+    "updateCenterEntry": "app/update-center.html",
+    "separateScreeningEntry": "app/new-token-update.html",
+    "separateTrackingEntry": "app/update-center.html"
+  },
+  "tests": {
+    "pythonTestFileCount": 76,
+    "note": "开发前工作区已有测试和维护改动，实施后必须重新核对完整清单。"
+  },
+  "scheduler": {
+    "taskName": "PenguinConvexity-C1.8-Scheduler",
+    "state": "Ready",
+    "enabled": true,
+    "execute": "C:\\WINDOWS\\System32\\wscript.exe",
+    "arguments": "F:\\codex项目\\企鹅投研\\凸性\\scripts\\run-c2-1-update-hidden.vbs C:\\Python312\\python.exe",
+    "lastTaskResult": 0,
+    "newLongLivedSchedulerCount": 0
+  },
+  "userSettings": {
+    "c2_1Mode": "automatic",
+    "c2_1IntervalHours": 24,
+    "c2_1Paused": false,
+    "pauseCurrentRequested": false,
+    "settingsPreserved": true
+  },
+  "currentProductBoundary": {
+    "experienceRelease": "C2.1",
+    "c2_2RequirementsFrozen": true,
+    "c2_2ProductCodeStartedBeforeBaseline": false,
+    "gate0Rerun": false,
+    "mainDatabaseModifiedByBaseline": false
+  }
+}

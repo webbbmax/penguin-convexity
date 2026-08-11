@@ -11,6 +11,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from c2_1_enrichment import RETRYABLE_SOURCE_STAGES
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RUNTIME_ROOT = PROJECT_ROOT / "runtime" / "c2.1"
@@ -214,13 +216,17 @@ def is_due(now=None, config_path=DEFAULT_CONFIG_PATH, state_path=DEFAULT_STATE_P
     return now >= due
 
 
-def launch_hidden(trigger="manual", action="all"):
+def launch_hidden(trigger="manual", action="all", source_id=None):
+    if action == "retry_source" and source_id not in RETRYABLE_SOURCE_STAGES:
+        raise ValueError("单项更新缺少有效来源。")
     status = pipeline_status()
     if status.get("state") == "running":
         return {"status": "already_running", "message": "已有一条C2.1更新正在后台运行。", "pipeline": status}
     request_pause_current(False)
     DEFAULT_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     command = [sys.executable, str(DEFAULT_RUNNER), "--trigger", trigger, "--action", action]
+    if action == "retry_source":
+        command.extend(["--source-id", source_id])
     creationflags = 0
     startupinfo = None
     if os.name == "nt":

@@ -15,6 +15,7 @@ $appUrl = "http://127.0.0.1:8766/desktop/index.html"
 $opportunityUrl = "http://127.0.0.1:8766/candidate-pool.html"
 $healthUrl = "http://127.0.0.1:8766/api/health"
 $c18StatusUrl = "http://127.0.0.1:8766/api/c1-8/status"
+$c22StatusUrl = "http://127.0.0.1:8766/api/c2.2/status"
 $productTitle = "$([char]0x4F01)$([char]0x9E45)$([char]0x6295)$([char]0x7814)-$([char]0x51F8)$([char]0x6027)"
 . $windowStateScript
 $singleInstanceMutex = $null
@@ -26,21 +27,25 @@ function Test-ConvexityServer {
     $opportunityResponse = Invoke-WebRequest -Uri $opportunityUrl -UseBasicParsing -TimeoutSec 3
     $healthResponse = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 3
     $c18Response = Invoke-WebRequest -Uri $c18StatusUrl -UseBasicParsing -TimeoutSec 3
+    $c22Response = Invoke-WebRequest -Uri $c22StatusUrl -UseBasicParsing -TimeoutSec 3
     $health = $healthResponse.Content | ConvertFrom-Json
     $c18 = $c18Response.Content | ConvertFrom-Json
+    $c22 = $c22Response.Content | ConvertFrom-Json
     return (
       $appResponse.StatusCode -eq 200 -and
       $appResponse.Content -match "data-convexity-desktop-shell" -and
       $appResponse.Content -notmatch "RWA" -and
       $opportunityResponse.StatusCode -eq 200 -and
-      $opportunityResponse.Content -match "c2-1-front.js" -and
+      $opportunityResponse.Content -match "c2-2-front.js" -and
       $healthResponse.StatusCode -eq 200 -and
       $c18Response.StatusCode -eq 200 -and
+      $c22Response.StatusCode -eq 200 -and
       $health.product -eq $productTitle -and
       $health.migrationRelease -eq "M1.0" -and
       $health.convexityRelease -eq "C1.7" -and
-      $health.experienceRelease -eq "C2.1" -and
-      $c18.version -eq "C1.8"
+      $health.experienceRelease -eq "C2.2" -and
+      $c18.version -eq "C1.8" -and
+      $c22.schemaVersion -eq "c2.2-update-status-v1"
     )
   } catch {
     return $false

@@ -19,8 +19,8 @@
       pages: [["workbench.html", "工作台概览"]],
     },
     {
-      label: "更新与任务",
-      pages: [["update-center.html", "更新与任务"], ["change-explanations.html", "变化记录"], ["manual-review.html", "人工复核"]],
+      label: "更新中心",
+      pages: [["new-token-update.html", "90天新币筛选"], ["update-center.html", "凸性跟踪更新"], ["change-explanations.html", "变化记录"], ["manual-review.html", "人工复核"]],
     },
     {
       label: "项目管理",
@@ -47,7 +47,7 @@
   if (modelGroup) modelGroup.pages.unshift(["decision-quality.html", "判断质量"]);
   // These names remain in the route inventory for compatibility and auditing.
   const routeInventory = [
-    "candidate-pool.html", "change-explanations.html", "data-dictionary.html", "data-backbone.html", "discovery-funnel.html", "evidence-ledger.html", "source-adapter.html", "catalyst-paths.html", "four-layer-screening.html", "gold-calibration.html", "high-value-sources.html", "manual-review.html", "model-acceptance.html", "monitoring-infrastructure.html", "network-discovery.html", "project-detail.html", "project-master-pool.html", "real-case-calibration.html", "rules-replay.html", "scan-center.html", "screening-console.html", "source-discovery.html", "source-registry.html", "update-center.html", "weak-signal-inbox.html", "workbench.html", "action-gaps.html",
+    "candidate-pool.html", "change-explanations.html", "data-dictionary.html", "data-backbone.html", "discovery-funnel.html", "evidence-ledger.html", "source-adapter.html", "catalyst-paths.html", "four-layer-screening.html", "gold-calibration.html", "high-value-sources.html", "manual-review.html", "model-acceptance.html", "monitoring-infrastructure.html", "network-discovery.html", "new-token-update.html", "project-detail.html", "project-master-pool.html", "real-case-calibration.html", "rules-replay.html", "scan-center.html", "screening-console.html", "source-discovery.html", "source-registry.html", "update-center.html", "weak-signal-inbox.html", "workbench.html", "action-gaps.html",
   ];
   routeInventory.push("decision-quality.html");
   void routeInventory;
@@ -66,7 +66,7 @@
     const open = group.pages.some(([href]) => href === currentPage);
     return `<details class="c19-admin-group" ${open ? "open" : ""}><summary>${group.label}</summary><div class="c19-admin-subnav">${visiblePages.map(([href, label]) => `<a class="${href === currentPage ? "is-active" : ""}" href="${href === "change-explanations.html" ? "update-center.html#changeReview" : href}">${label}</a>`).join("")}</div></details>`;
   }).join("");
-  sidebar.innerHTML = `<a class="c19-workbench-brand" href="workbench.html"><img src="../desktop/assets/penguin-research-icon.png" alt=""><span><strong>企鹅投研-凸性</strong><small>凸性工作台</small></span></a><nav class="c19-admin-nav">${groupMarkup}</nav><div class="c19-admin-bottom"><strong>当前版本 C2.1</strong><small>用于维护数据、任务和运行状态</small></div>`;
+  sidebar.innerHTML = `<a class="c19-workbench-brand" href="workbench.html"><img src="../desktop/assets/penguin-research-icon.png" alt=""><span><strong>企鹅投研-凸性</strong><small>凸性工作台</small></span></a><nav class="c19-admin-nav">${groupMarkup}</nav><div class="c19-admin-bottom"><strong>当前版本 C2.2</strong><small>用于维护数据、任务和运行状态</small></div>`;
   document.body.insertBefore(sidebar, document.body.firstChild);
 
   const actions = topbar.querySelector(".topbar-actions") || topbar;

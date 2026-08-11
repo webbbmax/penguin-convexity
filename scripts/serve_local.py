@@ -76,10 +76,18 @@ from c1_8_runtime import (
 )
 from build_tracking_tasks_snapshot import load_js_payload as load_snapshot_payload
 from c2_1_runtime import (
+    RETRYABLE_SOURCE_STAGES,
     launch_hidden as launch_c21_hidden,
     request_pause_current as request_c21_pause,
     status_payload as c21_status_payload,
     update_config as update_c21_config,
+)
+from c2_2_runtime import (
+    JOB_CODES as C22_JOB_CODES,
+    launch_hidden as launch_c22_hidden,
+    request_pause_current as request_c22_pause,
+    status_payload as c22_status_payload,
+    update_config as update_c22_config,
 )
 
 
@@ -90,7 +98,7 @@ RUNTIME_ROOT = PROJECT_ROOT / "runtime"
 CACHE_ROOT = RUNTIME_ROOT / "cache"
 LOG_ROOT = RUNTIME_ROOT / "logs"
 CONVEXITY_RELEASE = "C1.7"
-EXPERIENCE_RELEASE = "C2.1"
+EXPERIENCE_RELEASE = "C2.2"
 MIGRATION_RELEASE = "M1.0"
 UPDATE_STATUS_LOCK = threading.Lock()
 UPDATE_STATUS = load_update_status()
@@ -104,6 +112,11 @@ STARTUP_REBUILD_STATE = {
 C21_STARTUP_SNAPSHOTS = (
     (APP_ROOT / "c2-1-front-snapshot.js", "window.PENGUIN_CONVEXITY_C21 = "),
     (APP_ROOT / "c2-1-admin-snapshot.js", "window.PENGUIN_CONVEXITY_C21_ADMIN = "),
+)
+C22_STARTUP_SNAPSHOTS = (
+    (APP_ROOT / "c2-2-front-snapshot.js", "window.PENGUIN_CONVEXITY_C22 = "),
+    (APP_ROOT / "c2-2-tracking-snapshot.js", "window.PENGUIN_CONVEXITY_C22_TRACKING = "),
+    (APP_ROOT / "c2-2-admin-snapshot.js", "window.PENGUIN_CONVEXITY_C22_ADMIN = "),
 )
 
 
@@ -432,6 +445,9 @@ class QuietHandler(SimpleHTTPRequestHandler):
         if request_path == "/api/c2.1/status":
             self.send_json(200, c21_status_payload())
             return
+        if request_path == "/api/c2.2/status":
+            self.send_json(200, c22_status_payload())
+            return
         super().do_GET()
 
     def do_POST(self):
@@ -447,6 +463,9 @@ class QuietHandler(SimpleHTTPRequestHandler):
             "/api/c2.1/scheduler",
             "/api/c2.1/run",
             "/api/c2.1/pause-current",
+            "/api/c2.2/scheduler",
+            "/api/c2.2/run",
+            "/api/c2.2/pause-current",
         }:
             self.send_json(404, {"error": "接口不存在"})
             return
@@ -467,15 +486,39 @@ class QuietHandler(SimpleHTTPRequestHandler):
             if self.path == "/api/c2.1/run":
                 payload = self.read_json()
                 action = str(payload.get("action") or "all")
-                if action not in {"all", "sync", "enrich", "evaluate", "snapshot"}:
+                if action not in {"all", "sync", "enrich", "evaluate", "snapshot", "retry_source"}:
                     raise ValueError("不支持的C2.1更新范围。")
-                result = launch_c21_hidden("manual", action)
+                source_id = str(payload.get("sourceId") or "").strip() or None
+                if action == "retry_source" and source_id not in RETRYABLE_SOURCE_STAGES:
+                    raise ValueError("单项更新缺少有效来源。")
+                result = launch_c21_hidden("manual", action, source_id)
                 self.send_json(202 if result.get("status") == "launched" else 200, {**result, "runtime": c21_status_payload()})
                 return
             if self.path == "/api/c2.1/pause-current":
                 payload = self.read_json()
                 paused = request_c21_pause(bool(payload.get("paused", True)))
                 self.send_json(200, {"status": "success", "pauseCurrentRequested": paused, "runtime": c21_status_payload()})
+                return
+            if self.path == "/api/c2.2/scheduler":
+                payload = self.read_json()
+                job_code = str(payload.get("jobCode") or "").strip()
+                changes = {key: payload[key] for key in ("mode", "intervalHours", "paused") if key in payload}
+                config = update_c22_config(job_code, changes)
+                self.send_json(200, {"status": "success", "config": config, "runtime": c22_status_payload()})
+                return
+            if self.path == "/api/c2.2/run":
+                payload = self.read_json()
+                job_code = str(payload.get("jobCode") or "").strip() or "all"
+                if job_code not in {*C22_JOB_CODES, "all"}:
+                    raise ValueError("不支持的C2.2更新范围。")
+                trigger = str(payload.get("trigger") or "manual")
+                result = launch_c22_hidden(job_code, trigger)
+                self.send_json(202 if result.get("status") == "launched" else 200, {**result, "runtime": c22_status_payload()})
+                return
+            if self.path == "/api/c2.2/pause-current":
+                payload = self.read_json()
+                paused = request_c22_pause(bool(payload.get("paused", True)))
+                self.send_json(200, {"status": "success", "pauseCurrentRequested": paused, "runtime": c22_status_payload()})
                 return
             if self.path == "/api/c1-8/scheduler":
                 payload = self.read_json()
@@ -608,27 +651,27 @@ def rebuild_startup_snapshots():
         finishedAt=None,
         error="",
     )
-    print("企鹅投研凸性：正在校验 C2.1 已发布快照。", flush=True)
+    print("企鹅投研凸性：正在校验 C2.1/C2.2 已发布快照。", flush=True)
     try:
         with QuietHandler.refresh_lock:
-            for snapshot_path, prefix in C21_STARTUP_SNAPSHOTS:
+            for snapshot_path, prefix in (*C21_STARTUP_SNAPSHOTS, *C22_STARTUP_SNAPSHOTS):
                 source = snapshot_path.read_text(encoding="utf-8").strip()
                 if not source.startswith(prefix) or not source.endswith(";"):
-                    raise ValueError(f"C2.1 快照格式无效：{snapshot_path.name}")
+                    raise ValueError(f"发布快照格式无效：{snapshot_path.name}")
                 json.loads(source[len(prefix):-1])
         set_startup_rebuild_state(
             state="success",
             finishedAt=iso_now(),
             error="",
         )
-        print("企鹅投研凸性：C2.1 已发布快照校验通过。", flush=True)
+        print("企鹅投研凸性：C2.1/C2.2 已发布快照校验通过。", flush=True)
     except Exception as error:
         set_startup_rebuild_state(
             state="failed",
             finishedAt=iso_now(),
             error=str(error),
         )
-        print(f"企鹅投研凸性：C2.1 已发布快照校验失败：{error}", flush=True)
+        print(f"企鹅投研凸性：C2.1/C2.2 已发布快照校验失败：{error}", flush=True)
 
 
 def main():

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "c2.2-freeze-draft-manifest-v1",
+  "release": "C2.2",
+  "status": "confirmed_and_formalized",
+  "confirmedAt": "2026-08-11T13:34:47+08:00",
+  "userAuthorization": "按冻结稿冻结C2.2",
+  "purpose": "保存用户在对话中确认的大白话范围；正式实现权威为C2.2需求锁。",
+  "hashAlgorithm": "SHA-256",
+  "file": {
+    "path": "docs/C2.2_FREEZE_DRAFT.md",
+    "sha256": "dd4565ddf15315bd0713a27c528bd5a30087c08d6c13bc761eed06f9e4a2900a",
+    "bytes": 5906
+  },
+  "requirementsLock": "docs/C2.2_REQUIREMENTS_LOCK.json",
+  "productCodeAuthorized": false
+}
+

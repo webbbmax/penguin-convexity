@@ -25,6 +25,7 @@ def main():
     assert "系统与模型" in html
     assert "workbenchRecommendationTitle" in html
     for page in (
+        "new-token-update.html",
         "update-center.html",
         "scan-center.html",
         "manual-review.html",
@@ -86,7 +87,8 @@ def main():
         ("source-discovery.html", "机器发现"),
         ("weak-signal-inbox.html", "弱线索"),
         ("manual-review.html", "可选人工复核"),
-        ("update-center.html", "更新中心"),
+        ("new-token-update.html", "90天新币筛选"),
+        ("update-center.html", "凸性跟踪更新"),
         ("source-registry.html", "信源状态"),
         ("evidence-ledger.html", "原始证据"),
     ):

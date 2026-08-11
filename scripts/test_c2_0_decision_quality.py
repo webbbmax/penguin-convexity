@@ -115,6 +115,7 @@ def test_snapshots() -> None:
 def test_db_and_routes() -> None:
     roles = json.loads((ROOT / "docs" / "C2.0_ROUTE_ROLES.json").read_text(encoding="utf-8"))["roles"]
     active = {path.name for path in APP.glob("*.html")}
+    active.discard("new-token-update.html")
     active.add("desktop/index.html")
     assert set(roles) == active
     assert roles["decision-quality.html"] == "admin"
@@ -159,7 +160,7 @@ def test_syntax() -> None:
     assert "decisionValue(signal.tradeabilityStatus)" in front_source
     assert "c2-detail-summary-grid" in front_source and "c2-detail-summary-grid" in css_source
     assert 'getElementById("c2QueueBody").addEventListener("click"' in quality_source
-    assert navigation_source.count("当前版本 C2.1") == 1
+    assert navigation_source.count("当前版本 C2.2") == 1
     assert all(not re.search(r"当前版本 C2\.\d+", (APP / name).read_text(encoding="utf-8")) for name in ("candidate-pool.html", "change-explanations.html", "project-detail.html"))
 
 

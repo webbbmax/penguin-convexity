@@ -1,6 +1,8 @@
 (function c19FrontExperience() {
   "use strict";
 
+  if (window.PENGUIN_CONVEXITY_C22?.schemaVersion === "c2.2-front-v1") return;
+
   const center = window.PENGUIN_CONVEXITY_OPPORTUNITY_CENTER || {};
   const candidates = window.PENGUIN_CONVEXITY_CANDIDATES || {};
   const changes = window.PENGUIN_CONVEXITY_CHANGE_EXPLANATIONS || {};

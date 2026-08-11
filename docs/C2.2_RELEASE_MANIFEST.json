@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "c2.2-release-manifest-v1",
+  "release": "C2.2",
+  "name": "主干继承与筛选—凸性跟踪闭环整合",
+  "status": "independent_full_acceptance_complete_released",
+  "releasedAt": "2026-08-11T15:44:22+08:00",
+  "requirementSetSha256": "e689e0177a83918e5075c03f524ab9220ae070d193dad7c580ca35ea91c87770",
+  "acceptance": {
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "manifest": "docs/C2.2_ACCEPTANCE_MANIFEST.json",
+    "manifestSha256": "600681bd1c732f75e487f30e805ec6217ac38624213bbeb2c1e875d3c97c9a97",
+    "report": "docs/C2.2_FINAL_ACCEPTANCE.md",
+    "reportSha256": "58dbe46bc54dce477d8c4d637ec60cfc2659971eccc6c25269481687109570e0"
+  },
+  "verification": {
+    "pythonTests": "73/73 passed",
+    "c22CoreAndRecoveryTests": "27/27 passed",
+    "c21InheritedAcceptanceTests": "7/7 passed",
+    "livePagesAndResources": "32/32 passed",
+    "javascriptSyntax": "passed",
+    "realDesktop": "cold_start_single_instance_window_restore_passed",
+    "databaseHashesMatchedImplementationBaseline": true,
+    "gate0Rerun": false
+  },
+  "builds": {
+    "front": "c22-front-3b2aba318da60eef",
+    "screening": "c22-screening-cbd15922e18904f4",
+    "tracking": "c22-tracking-b00d3bbdf405bad2",
+    "admin": "c22-admin-12ab43c11b717369"
+  },
+  "databases": {
+    "main": {"path": "data/convexity.db", "bytes": 498814976, "sha256": "d301e24f9bf0a4d589a1d7a0ce4a52336aa2a6aaf458d60017e8b9e7a5816382", "integrity": "ok", "foreignKeyErrors": 0, "projects": 623, "candidateCases": 625},
+    "pipeline": {"path": "data/c2.1-pipeline.db", "bytes": 3558342656, "sha256": "71adf4864e57d5fd00164f0dc0894a2aa1faf904687bbdd9aaa673eee4290327", "integrity": "ok", "foreignKeyErrors": 0, "candidates": 4590214, "evaluations": 348, "marketObservations": 4877}
+  },
+  "releaseBackup": "backups/c2.2-release-20260811T1544/manifest.json",
+  "releaseFiles": [
+    {"path": "docs/C2.2_PHASE.json", "sha256": "f04f1e00ad6cd2f75dc2a25f22ce4ef431ee9ce125fbfa41ad69f67b0d9506b0"},
+    {"path": "docs/STATUS.md", "sha256": "d218b651b5e7e4a376b458017e18ef50ef398c1e295a8dafb40bf1921b21e494"},
+    {"path": "docs/PROJECT_MEMORY.md", "sha256": "a2e49dff773445959bf06d7fc48f2a58aa3f220f7c2f0af55f83c2bb3e61bd45"},
+    {"path": "docs/DECISIONS.md", "sha256": "00b5b56a60ab8fc6aa2948c9c4930e937e166f80dfb4a5f7a1d2b9968c8c6dab"},
+    {"path": "docs/RUNBOOK.md", "sha256": "5b3c8603a898f3c88e5f157b0fb2fa35407d3fd3afff902ec0a82ceeb349ff8b"},
+    {"path": "docs/MIGRATION_MANIFEST.json", "sha256": "007a77cbd0a4c5b94a0f28a88325ec9c980c99c8d0b2329845b62298acd75e3b"},
+    {"path": "AGENTS.md", "sha256": "e56c54e9803727d018345aa5b9f879597f65190089e07a0340d0d72328d2067d"},
+    {"path": "scripts/c2_2_runtime.py", "sha256": "8f4bf05d92aac82b67284d3b13b4c19cf4898376e6cf69cd042f78a2fed0e488"},
+    {"path": "scripts/serve_local.py", "sha256": "3218a5325db4e93aa13b58ab724a9b0859ef04037ee1aa5590e08c5b91a05ba9"},
+    {"path": "scripts/launch-convexity.ps1", "sha256": "46463667a7befea7f0936eda7a4315a5c3ea0e537ad5a4ccad9e97c49fff4e99"},
+    {"path": "app/c2-2-front.js", "sha256": "43f39efa968e69faf1800dc44b03fc7a1fc844c4576b0199c46705a2fd46a72f"},
+    {"path": "app/c2-2-admin.js", "sha256": "29a1ecda59c3454c99491e5564868313b1e1994c920a861a1bad0ad4e931ca7f"},
+    {"path": "app/c2-2-detail-history.js", "sha256": "b0e941fedea32cdc77975a151a0185277ad1ceb891021f969a47c547f2b09322"},
+    {"path": "app/candidate-pool.html", "sha256": "a2e0567898991c5a10e42292bdd39fa54818246d083440948bbbed2469ad6e8d"},
+    {"path": "app/change-explanations.html", "sha256": "43b9a0ce34ab85e4711d9a05e8a868f8f01443b9c56949e6dc7319e1fbb51de5"},
+    {"path": "app/project-detail.html", "sha256": "3eff7d30d8d34d7c4c003cd962bfece225c3996befcf87965ff3129c7ec76615"}
+  ],
+  "remainingProductBoundary": {
+    "frontProjects": 11,
+    "relationshipClassC": 11,
+    "convexityClues": 0,
+    "calibrationStatus": "7/14/30 days each sample_insufficient",
+    "automaticParameterMutation": false
+  }
+}

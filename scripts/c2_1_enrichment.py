@@ -38,6 +38,37 @@ STABLE_OUTPUTS = {
     "bnb-mainnet": ("0x55d398326f99059ff775485246999027b3197955", 18, "USDT"),
     "solana-mainnet": ("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 6, "USDC"),
 }
+RETRYABLE_SOURCE_STAGES = {
+    "coingecko_new_pools": "incrementalDiscovery",
+    "dexscreener": "market",
+    "project_website_identity": "websiteIdentity",
+    "github": "github",
+    "goplus": "riskAndSupply",
+    "c2_1_path4": "path4",
+    "standard_sell_quote": "quotes",
+}
+
+
+def prepare_source_retry(connection, source_id):
+    """Release cooldown only for the selected source's recoverable failures."""
+    if source_id not in RETRYABLE_SOURCE_STAGES:
+        raise ValueError("不支持单独更新这个来源。")
+    pending = connection.execute(
+        """
+        SELECT COUNT(*) FROM source_cursors
+        WHERE source_id=? AND status IN ('source_failure','quota_limited')
+        """,
+        (source_id,),
+    ).fetchone()[0]
+    connection.execute(
+        """
+        UPDATE source_cursors SET next_retry_at=NULL,updated_at=?
+        WHERE source_id=? AND status IN ('source_failure','quota_limited')
+        """,
+        (utc_now(), source_id),
+    )
+    connection.commit()
+    return int(pending)
 
 
 def number(value):
@@ -827,7 +858,7 @@ def collect_quotes(connection, client=None, config_path=DEFAULT_CONFIG):
     return {"candidates": len(rows), "states": dict(states), "skippedCandidates": skipped}
 
 
-def run_enrichment(connection, *, include_quotes=True, client=None, progress=None, pause=None):
+def run_enrichment(connection, *, include_quotes=True, client=None, progress=None, pause=None, only_source_id=None):
     from c2_1_path4 import collect_path4
 
     client = client or JsonClient()
@@ -842,6 +873,11 @@ def run_enrichment(connection, *, include_quotes=True, client=None, progress=Non
     ]
     if include_quotes:
         stages.append(("quotes", "100美元标准卖出报价", lambda: collect_quotes(connection, client=client)))
+    if only_source_id is not None:
+        stage_key = RETRYABLE_SOURCE_STAGES.get(only_source_id)
+        if not stage_key:
+            raise ValueError("不支持单独更新这个来源。")
+        stages = [stage for stage in stages if stage[0] == stage_key]
     result = {}
     for index, (key, label, collect) in enumerate(stages, start=1):
         if pause:

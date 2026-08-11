@@ -67,6 +67,7 @@ def test_lock_and_roles() -> None:
     active = {path.name for path in APP.glob("*.html")}
     active.add("desktop/index.html")
     active.discard("decision-quality.html")
+    active.discard("new-token-update.html")
     assert set(roles) == active
     assert set(roles.values()) == {"front", "context-detail", "host-only", "admin"}
     assert roles["candidate-pool.html"] == "front"
@@ -106,12 +107,12 @@ def test_admin_boundary() -> None:
     navigation = (APP / "workbench-nav.js").read_text(encoding="utf-8")
     group_block = re.search(r"const groups = \[(.*?)\n  \];", navigation, flags=re.DOTALL)
     assert group_block and len(re.findall(r"\n\s*label:", group_block.group(1))) == 7
-    expected_version = "C2.1"
+    expected_version = "C2.2"
     assert navigation.count(f"当前版本 {expected_version}") == 1
     assert len(re.findall(r"当前版本 C\d+\.\d+", navigation)) == 1
     assert "c19-workbench-sidebar" in navigation
     assert "c1-9.css?v=c19" in navigation
-    for name in ("workbench.html", "update-center.html", "action-gaps.html"):
+    for name in ("workbench.html", "new-token-update.html", "update-center.html", "action-gaps.html"):
         html = without_comments((APP / name).read_text(encoding="utf-8"))
         assert "workbench-nav.js" in html, name
     host = without_comments((DESKTOP / "index.html").read_text(encoding="utf-8"))

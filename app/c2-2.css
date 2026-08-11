@@ -1,0 +1,28 @@
+.c22-history-panel{grid-column:1 / -1;margin-top:1rem}
+.c22-history-panel h3{margin:1.15rem 0 .55rem;font-size:1rem}
+.c22-history-facts{display:flex;flex-wrap:wrap;gap:.55rem;margin:.7rem 0;color:#475569;font-size:.88rem}
+.c22-history-facts span{padding:.35rem .6rem;border:1px solid #d7e1ea;border-radius:999px;background:#f8fbfd}
+.c22-history-table-wrap{overflow:auto;border:1px solid #dce5ec;border-radius:10px}
+.c22-history-table{width:100%;min-width:620px;border-collapse:collapse;font-size:.82rem}
+.c22-history-table th,.c22-history-table td{padding:.5rem .65rem;border-bottom:1px solid #e7edf2;text-align:left;white-space:nowrap}
+.c22-history-table th{background:#f4f8fb;color:#345267;font-weight:600}
+.c22-history-table tr:last-child td{border-bottom:0}
+.c22-admin{margin-bottom:1.25rem}
+.c22-job-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin:1rem 0}
+.c22-job{padding:.8rem 1rem;border:1px solid #d7e1ea;border-radius:10px;background:#f8fbfd;display:grid;gap:.35rem}
+.c22-job>div{display:flex;justify-content:space-between;gap:1rem}
+.c22-job small{color:#607487}
+.c22-schedule-controls{display:flex;align-items:end;flex-wrap:wrap;gap:.7rem;margin:1rem 0;padding:.85rem;border:1px solid #d7e1ea;border-radius:10px;background:#fbfdff}
+.c22-schedule-controls label{display:grid;gap:.28rem;font-size:.82rem;color:#516779}
+.c22-schedule-controls select{min-width:8rem;padding:.42rem .55rem;border:1px solid #c9d6df;border-radius:6px;background:#fff}
+.c22-source-details{margin-top:1rem}
+.c22-calibration{margin:1rem 0;padding:1rem;border:1px solid #d7e1ea;border-radius:10px;background:#fbfdff}
+.c22-calibration h3{margin:0 0 .35rem;font-size:1rem}
+.c22-calibration p{margin:.25rem 0 .7rem;color:#607487;font-size:.85rem}
+.c22-calibration-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem}
+.c22-calibration-grid>div{display:grid;gap:.2rem;padding:.65rem;border-radius:8px;background:#f1f7fa}
+.c22-calibration-grid span{color:#3d6178;font-size:.88rem}
+.c22-calibration-grid small{color:#607487}
+.c22-legacy-details{margin:1.25rem 0;border-top:1px solid #d7e1ea;padding-top:.8rem}
+.c22-legacy-details>summary{cursor:pointer;color:#3d6178;font-weight:600;padding:.35rem 0}
+@media (max-width:900px){.c22-job-grid{grid-template-columns:1fr}.c22-schedule-controls{align-items:stretch}.c22-schedule-controls .c21-button{width:100%}}

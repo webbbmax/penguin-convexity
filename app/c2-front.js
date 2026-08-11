@@ -3,6 +3,9 @@
 
   const signals = window.PENGUIN_CONVEXITY_DECISION_SIGNALS;
   if (!signals || signals.schemaVersion !== "c2.0-decision-signals-v1") return;
+  // C2.2 owns the composite front renderer. Do not attach legacy C2.0
+  // pageshow handlers after C2.2 has taken over the same shell.
+  if (window.PENGUIN_CONVEXITY_C22?.schemaVersion === "c2.2-front-v1") return;
 
   const detailsSnapshot = window.PENGUIN_CONVEXITY_PROJECT_DETAILS || {};
   const query = new URLSearchParams(window.location.search);

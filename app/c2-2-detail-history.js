@@ -1,0 +1,23 @@
+(function () {
+  "use strict";
+  const tracking = window.PENGUIN_CONVEXITY_C22_TRACKING;
+  if (!tracking || !tracking.items) return;
+  const params = new URLSearchParams(location.search);
+  const item = tracking.items.find((row) => row.assetId === params.get("assetId") || row.projectId === params.get("id"));
+  if (!item) return;
+  const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"}[char]));
+  const fmt = (value) => value == null ? "暂无" : new Intl.NumberFormat("zh-CN", {maximumFractionDigits: 2, notation: Math.abs(Number(value)) >= 1000000 ? "compact" : "standard"}).format(value);
+  const time = (value) => value ? String(value).replace("T", " ").replace("Z", "") : "暂无";
+  const market = item.marketHistory || {};
+  const liquidity = item.liquidityAndExit || {};
+  const supply = item.addressAndSupply || {};
+  const risk = item.riskAndAnomalies || {};
+  const mainFact = item.mainDatabaseFacts || {};
+  const rows = (market.series || []).slice(-10).map((row) => `<tr><td>${esc(time(row.observedAt))}</td><td>${esc(fmt(row.liquidityUsd))}</td><td>${esc(fmt(row.volumeUsd))}</td><td>${esc(fmt(row.transactionCount))}</td><td>${esc(row.sourceName || "暂无")}</td></tr>`).join("");
+  const supplyRows = (supply.history || []).slice(-10).map((row) => `<tr><td>${esc(time(row.observedAt))}</td><td>${esc(row.top10SharePct == null ? "暂无" : `${fmt(row.top10SharePct)}%`)}</td><td>${esc(row.holderHhi == null ? "暂无" : fmt(row.holderHhi))}</td><td>${esc(row.sourceName || "暂无")}</td></tr>`).join("");
+  const section = document.createElement("section");
+  section.className = "c21-panel c21-section c22-history-panel";
+  section.innerHTML = `<h2>跟踪历史与数据来源</h2><p class="c21-source-note">市场历史 ${market.series?.length || 0} 条 · 流动性/卖出报价 ${liquidity.series?.length || 0} 条 · 供应历史 ${supply.history?.length || 0} 条 · 风险历史 ${(risk.history || []).length} 条</p><div class="c22-history-facts"><span>动态后验实测指标：${esc(item.factorPosteriors?.measuredIndicatorCount ?? "暂无")}</span><span>主库精确资产匹配：${mainFact.matched ? "是" : "否"}</span></div>${rows ? `<h3>市场、成交与流动性（最近10条）</h3><div class="c22-history-table-wrap"><table class="c22-history-table"><thead><tr><th>观测时间</th><th>流动性 USD</th><th>成交额 USD</th><th>笔数</th><th>来源</th></tr></thead><tbody>${rows}</tbody></table></div>` : ""}${supplyRows ? `<h3>持仓与供应（最近10条）</h3><div class="c22-history-table-wrap"><table class="c22-history-table"><thead><tr><th>观测时间</th><th>Top10占比</th><th>HHI</th><th>来源</th></tr></thead><tbody>${supplyRows}</tbody></table></div>` : ""}<p class="c21-source-note">主库匹配仅按 assetId，不按名称、Symbol或数组顺序继承。数据到 ${esc(time(item.lastCompleteTrackingAt))}。</p>`;
+  const main = document.querySelector(".c21-detail-layout");
+  if (main) main.insertBefore(section, main.firstElementChild);
+})();

@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "c2.2-requirements-lock-v1",
+  "release": "C2.2",
+  "name": "主干继承与筛选—凸性跟踪闭环整合",
+  "status": "frozen",
+  "frozenAt": "2026-08-11T13:34:47+08:00",
+  "userAuthorization": "按冻结稿冻结C2.2",
+  "hashAlgorithm": "SHA-256",
+  "requirementSetCanonicalization": "按documents顺序，以path:lowercase_sha256逐行连接，行间使用LF，末尾无换行",
+  "requirementSetSha256": "e689e0177a83918e5075c03f524ab9220ae070d193dad7c580ca35ea91c87770",
+  "draftConfirmation": {
+    "plainLanguageDraft": "docs/C2.2_FREEZE_DRAFT.md",
+    "draftManifest": "docs/C2.2_FREEZE_DRAFT_MANIFEST.json",
+    "draftSha256": "dd4565ddf15315bd0713a27c528bd5a30087c08d6c13bc761eed06f9e4a2900a",
+    "formalizationPolicy": "把用户确认的产品范围拆为正式PRD、页面数据契约、桌面设计、用语、贝叶斯确定性规格、继承清单、验收和交接；不改变C2.1数值门槛，不授权产品编码。"
+  },
+  "documents": [
+    {
+      "path": "docs/C2.2_PRD.md",
+      "role": "正式产品范围、两阶段职责、数据边界与程序上限",
+      "bytes": 8417,
+      "sha256": "1e5ef8e9ed84d71119dfab4011204aaacc0316e0b6e99700c952b274aee112fc"
+    },
+    {
+      "path": "docs/C2.2_PAGE_DATA_CONTRACT.md",
+      "role": "筛选、跟踪、统一前台三份快照和字段所有权契约",
+      "bytes": 5591,
+      "sha256": "c41346719a470048c4edda3b43723ed46d5ecd1150de0fb96ed6c470533d4e15"
+    },
+    {
+      "path": "docs/C2.2_DESIGN_SPEC.md",
+      "role": "Windows桌面前后台、详情、更新中心和失败展示规格",
+      "bytes": 2894,
+      "sha256": "22c33a7b698b77c309b8f6124dd93218992be7ad2da6cadfe7de005e512a083a"
+    },
+    {
+      "path": "docs/C2.2_COPY_DICTIONARY.md",
+      "role": "生命周期、跟踪状态、贝叶斯、数据和投资边界固定用语",
+      "bytes": 2284,
+      "sha256": "70a155ef04621e3cdbeb059eded5cc9acabfaa573844658b8128c4314ae8dd59"
+    },
+    {
+      "path": "docs/C2.2_BAYES_SPEC.md",
+      "role": "动态分层经验贝叶斯、可信度和时间外校准确定性规格",
+      "bytes": 5377,
+      "sha256": "91451882971b6d52872252ad7b4b4d699c06dac54c21aae60a15ab4ac1454c87"
+    },
+    {
+      "path": "docs/C2.2_INHERITANCE_MANIFEST.json",
+      "role": "现有功能默认继承、批准替换、零批准删除和实现前基线",
+      "bytes": 4123,
+      "sha256": "fea28b431678efe1e100c8dd41ca18b1f8cdae0ddf2f2df2253a8977c9430203"
+    },
+    {
+      "path": "docs/C2.2_ACCEPTANCE_PLAN.md",
+      "role": "继承、两阶段闭环、贝叶斯、恢复、桌面和发布阻断验收",
+      "bytes": 6225,
+      "sha256": "30201120ee9f557a071c6597fb9030ec03a81b0c12273ddd6055c43645f62837"
+    },
+    {
+      "path": "docs/C2.2_HANDOFF.md",
+      "role": "实现顺序、长任务、禁区和独立终验交接",
+      "bytes": 2656,
+      "sha256": "bc12a86a4f949625331dba6a0196f5a85fffd0bf80c37ad3fd75daf3906e0d51"
+    }
+  ],
+  "inheritedFrozenDependencies": [
+    {
+      "path": "docs/C1.9_REQUIREMENTS_LOCK.json",
+      "sha256": "c52672e3a72d41e0122965069b2833990abe78d005c122e4e37f5fa4f20e6ce3",
+      "purpose": "前后台信息架构与桌面体验继承"
+    },
+    {
+      "path": "docs/C2.0_REQUIREMENTS_LOCK.json",
+      "sha256": "d383dad81fb0278c1da866f9cb69798d56d423d324aa5950ad98fbb43296d755",
+      "purpose": "可解释详情、变化链和原子快照继承"
+    },
+    {
+      "path": "docs/C2.1_REQUIREMENTS_LOCK.json",
+      "sha256": "eccbb1aa33665a87f8b40571765fc2a6d5726ea382801e313a4c7b755b640ee7",
+      "purpose": "90天筛选、T0、A/B/C/D和程序上限继承"
+    },
+    {
+      "path": "docs/C2.1_RULE_CONFIG.json",
+      "sha256": "fb813f71569f1a0a299b5e9f334b10da6b53b26cd7b55c97164242911e7e8df6",
+      "purpose": "宽硬门槛、强弱线索、四路径、护栏和防抖数值保持不变"
+    },
+    {
+      "path": "docs/C2.1_RULE_REGRESSION_MANIFEST.json",
+      "sha256": "30bc072059f34948fa1ffede6ef88f69ee0f50004275e1cd0db44c5953492c29",
+      "purpose": "真实能力样本和边界回归继承"
+    }
+  ],
+  "frozenProductChoices": {
+    "singleProductTrunk": true,
+    "defaultInheritance": true,
+    "approvedDeletionCount": 0,
+    "screeningAndTrackingAreIndependentJobs": true,
+    "singleWindowsScheduler": "PenguinConvexity-C1.8-Scheduler",
+    "stableJoinKey": "assetId",
+    "frontLifecycleDimensions": ["age_0_30", "age_31_90", "A", "B", "C"],
+    "frontTrackingStates": ["convexity_clue", "active_project", "observing", "awaiting_first_tracking"],
+    "frontDataLimitedCategory": false,
+    "allHardGatePassedFrontVisible": true,
+    "bayesModel": "deterministic_hierarchical_normal_empirical_bayes_evidence",
+    "bayesCanTriggerConvexityClueAlone": false,
+    "bayesAutoTunesRules": false,
+    "c2_1NumericThresholdChanges": 0,
+    "gate0FullBackfillRerun": false,
+    "windowsDesktopOnly": true,
+    "mobileInScope": false,
+    "dotNetWebViewMigrationInScope": false
+  },
+  "implementationAuthority": "等待用户另行明确开始C2.2开发；冻结动作本身不授权修改产品代码",
+  "finalAuthority": "完整独立验收通过后才能发布；实现报告不能替代终验",
+  "immutableBoundaries": [
+    "未获批准删除的已有功能必须继承",
+    "C2.1数值门槛和强路径不变",
+    "不新增第二个长期调度器",
+    "不重跑Gate 0已接受90天扫描",
+    "不使用名称或Symbol连接项目",
+    "不把来源失败写成项目证据下降或前台项目分类",
+    "不使用大模型生成业务数据或结论",
+    "不输出投资动作、仓位、收益概率或自动交易",
+    "不开发移动端或.NET/WebView2迁移",
+    "不读取或写入RWA及历史只读项目"
+  ]
+}
+

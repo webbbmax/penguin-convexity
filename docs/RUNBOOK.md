@@ -16,7 +16,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅�
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅投研\凸性\scripts\launch-convexity.ps1" -HealthCheck
 ```
 
-预期显示本软件已就绪，地址为 `http://127.0.0.1:8766/desktop/index.html`。也可访问 `http://127.0.0.1:8766/api/health`，应看到产品名、M1.0、C2.1 体验、端口 8766；C2.1 发布时主库为 620 个项目、622 个案例，实时数量需和数据库、`docs/C2.1_ACCEPTANCE_MANIFEST.json` 核对。访问 `http://127.0.0.1:8766/api/c2.1/status` 查看 C2.1 更新频率、暂停、当前阶段、最近完成和下次新周期；`existingTaskMigration` 应为 `released_same_task`。`startupRebuild.state` 为 `running` 时表示页面已经可用、后台正在只读重建页面快照；为 `success` 表示本轮完成；为 `failed` 时继续使用旧快照并先查看服务日志。
+预期显示本软件已就绪，地址为 `http://127.0.0.1:8766/desktop/index.html`。也可访问 `http://127.0.0.1:8766/api/health`，应看到产品名、M1.0、C2.2 体验、端口 8766；C2.2 发布时主库为 623 个项目、625 个案例，实时数量需和数据库、`docs/C2.2_ACCEPTANCE_MANIFEST.json` 核对。访问 `http://127.0.0.1:8766/api/c2.2/status` 查看“新币筛选”和“凸性跟踪”各自的频率、暂停、阶段、最近完成和下次周期。`startupRebuild.state=success` 表示启动只读校验 C2.1/C2.2 原子快照通过；失败时继续使用上一份完整快照并先查看服务日志。
 
 ## 3. 重要位置
 
@@ -40,6 +40,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅�
 - C2.1 运行日志：`runtime/c2.1/logs/update-runner.log`
 - C2.1 正式调度安装脚本：`scripts/install-c2.1-scheduler.ps1`
 - C2.1 零窗口启动器：`scripts/run-c2-1-update-hidden.vbs`
+- C2.2 双作业配置与状态：`runtime/c2.2/update-config.json`、`runtime/c2.2/scheduler-state.json`、`runtime/c2.2/jobs/`
+- C2.2 单入口与发布快照：`scripts/run_c2_2_update.py`、`app/c2-2-front-snapshot.js`、`app/c2-2-tracking-snapshot.js`、`app/c2-2-admin-snapshot.js`
 - C1.7 数据主干快照：`app/data-backbone-snapshot.js`
 - C1.7 基线备份：`backups/c1.7-00-baseline-20260801T042722Z/`
 - 公共 API 无密钥目录快照：`config/shared-api-catalog.json`
@@ -72,7 +74,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅�
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅投研\凸性\scripts\test-convexity-window-integration.ps1"
 ```
 
-全量 Python 测试需运行 `scripts/test_*.py`，C2.1 发布时为 75/75 个测试文件退出码 0。主库和 `data/c2.1-pipeline.db` 都必须执行 `PRAGMA integrity_check`与`PRAGMA foreign_key_check`；发布时主库为 620/622，C2.1 为 4,587,762 条候选、157 个当前评估对象、12/12 宽硬门槛通过并前台可见。还需运行 `scripts/test_c2_1_release.py`、`scripts/test_c2_1_acceptance.py`、`scripts/test_complete_user_flow.py --live` 与 `scripts/test_c1_9_experience.py --live`；当前 31/31 个本地页面/资源通过。
+全量 Python 使用 `python -m unittest discover -s scripts -p "test_*.py"`，C2.2 发布时为 73/73。主库和 `data/c2.1-pipeline.db` 都必须执行 `PRAGMA integrity_check` 与 `PRAGMA foreign_key_check`；C2.2 发布节点为主库 623/625、采集库 4,590,214 条候选记录、11/11 宽硬门槛通过并前台可见。还需运行 `scripts/test_c2_2_release.py`、`scripts/test_c2_2_acceptance.py`、`scripts/test_c2_1_acceptance.py`、`scripts/test_complete_user_flow.py --live` 与 `scripts/test_c1_9_experience.py --live`；当前 32/32 个本地页面/资源通过。`scripts/test_c2_1_release.py` 保留为 C2.1 历史发布节点精确快照测试，不用它否定后续合法增量后的 C2.2 现场数量。
 
 真实点击验收必须只读。普通用户路径：机会首页 → 全部机会筛选分页 → 项目详情 → 返回恢复筛选和页码 → 重要变化 → 我们如何判断。维护者路径：前台右上角管理工作台 → 工作台概览 → 更新中心 → 聚合失败 → 返回机会中心。不要点击会触发更新、扫描、复核、状态回写或重建的按钮。
 
@@ -98,7 +100,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅�
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅投研\凸性\scripts\install-c2.1-scheduler.ps1" -Uninstall
 ```
 
-也可在“凸性工作台 → 更新与任务”页顶部选择立即更新、仅手动、每小时、每3/6/12小时或每天，也可暂停自动更新或暂停当前任务。手动和自动使用同一数据库、游标、规则和原子快照。
+也可分别在“凸性工作台 → 更新中心 → 90天新币筛选”和“凸性跟踪更新”选择立即更新、仅手动、每小时、每3/6/12小时或每天，也可暂停自动更新或暂停当前任务。两页设置彼此独立，手动和自动使用同一入口、游标、规则和原子快照。
 
 回滚为旧 C1.8 入口属于有风险操作，必须先保留当前配置、状态、任务 XML 和数据库副本，并由用户明确授权后才可运行 `scripts/install-c1.8-scheduler.ps1 -Install`。
 
@@ -155,8 +157,8 @@ python "F:\codex项目\企鹅投研\凸性\scripts\data_backbone.py" --mode incr
 - 孤儿证据数量不为零：只表示暂时缺少可靠身份锚点，原始记录仍在；不得按名称猜测归属或删除原始记录。
 - 筛选丢失：检查机会中心自己的本地状态键与桌面壳状态是否相互独立。
 - 窗口跑到屏幕外：删除或修复 `runtime/window-state.json`；启动器会把无效位置收回当前显示器。
-- 第一次打开等待：先检查 `/api/health` 的 `startupRebuild`。C2.1 中该字段保留兼容名称，实际只校验已原子发布的 C2.1 前后台快照，不重建旧 C1.x/C2.0 快照，不运行旧守护恢复，不得写 `data/convexity.db`。
-- 桌面弹出“不能对 Null 值表达式调用方法”：检查 `scripts/launch-convexity.ps1` 是否按 `experienceRelease=C2.1` 和 `c2-1-front.js` 判定健康，并确认空 `server.stderr.log` 使用 `IsNullOrWhiteSpace` 处理；修复后必须从正式桌面 `.lnk` 重跑冷启动、单实例和窗口恢复，不得只跑脚本静态断言。
+- 第一次打开等待：先检查 `/api/health` 的 `startupRebuild`。C2.2 只校验已原子发布的 C2.1/C2.2 快照，不重建旧 C1.x/C2.0 快照，不运行旧守护恢复，不得因桌面启动写两个数据库。
+- 桌面弹出“不能对 Null 值表达式调用方法”或打开旧版本：检查 `scripts/launch-convexity.ps1` 是否同时核验 `experienceRelease=C2.2`、`/api/c2.2/status` 和 `c2-2-front.js`，并确认空 `server.stderr.log` 使用 `IsNullOrWhiteSpace` 处理；修复后必须从正式桌面 `.lnk` 重跑冷启动、单实例和窗口恢复，不得只跑静态断言。
 - 自动运行未安装：在更新中心看到“Windows 自动任务未安装”时，先运行第 7 节 C2.1 安装脚本的 `-Install -DryRun`，确认范围后再执行 `-Install`。用 `Get-ScheduledTask PenguinConvexity-C1.8-Scheduler` 验证状态为 Ready；不要把 dry-run 当作已安装。
 - 自动运行弹出标题为 Python 路径的黑框：这是任务动作直接执行 `python.exe`，不是产品窗口。先等待已经开始的任务结束，再重新运行 C2.1 `-Install`；随后任务动作应为 `wscript.exe`和 `run-c2-1-update-hidden.vbs`，不得按 Python 进程名批量关闭。
 - 15 分钟内反复启动更新：先检查 `runtime/c2.1/scheduler-state.json` 的 `nextRunAt` 和 `data/c2.1-pipeline.db` 中尚未被新完成结果覆盖的失败游标。已覆盖的旧失败不应触发；不得为了停止误触发而删除游标或失败记录。
@@ -164,14 +166,14 @@ python "F:\codex项目\企鹅投研\凸性\scripts\data_backbone.py" --mode incr
 
 ## 12. 版本阶段与模型选择
 
-C2.1 已发布，最终阶段保存在 `docs/C2.1_PHASE.json`，完整放行证据在 `docs/C2.1_ACCEPTANCE_MANIFEST.json` 和 `docs/C2.1_RELEASE_MANIFEST.json`。C2.0 继续作为上一冻结回滚基线。自 2026-08-10 起，使用什么模型、何时切换由用户决定；模型名称不再构成阶段门禁。
+C2.2 已发布，最终阶段保存在 `docs/C2.2_PHASE.json`，完整放行证据在 `docs/C2.2_ACCEPTANCE_MANIFEST.json`、`docs/C2.2_FINAL_ACCEPTANCE.md` 和 `docs/C2.2_RELEASE_MANIFEST.json`。C2.1 继续作为上一冻结回滚基线。自 2026-08-10 起，使用什么模型、何时切换由用户决定；模型名称不再构成阶段门禁。
 
 - 需求规划、正式冻结、产品实现、开发自测、独立终验和发布仍是不同阶段。
 - 用户明确冻结前不得开始产品编码；冻结后必须先核验需求锁哈希。
 - 开发自测不能代替独立完整终验；终验中修复缺陷后必须重跑受影响验收和完整发布门槛。
 - 任何阶段都不得借实现或修复扩大范围、改变评分/动作/L0-L5或擅自开始新版本。
 
-C1.8、C1.9、C2.0 和 C2.1 维护必须分别验证对应需求锁。哈希不一致时停止，等待用户明确解冻，不得按被修改的需求继续。
+C1.8、C1.9、C2.0、C2.1 和 C2.2 维护必须分别验证对应需求锁。哈希不一致时停止，等待用户明确解冻，不得按被修改的需求继续。
 
 ## 13. C2.0 上一冻结版本与兼容入口
 
@@ -201,3 +203,20 @@ C2.1 已完成 58/58 项独立验收并发布，阶段为 `independent_full_acce
 - 核对 `pipeline-status.json` 为完成、计划任务 LastTaskResult 为 0、候选增量和快照构建 ID 发生预期变化；无数据、额度受限、来源失败、不支持、缺配置和程序失败必须分开。
 - 任务失败时先保留旧快照和已提交游标；不得从 Gate 0 90 天起点重跑，不得删除失败记录来停止重试。
 - 回滚必须有用户明确授权。使用 `backups/c2.1-release-migration-20260810T2033` 前先备份当前 C2.1 数据库、配置、状态和任务 XML；不得为了哈希一致回滚真实数据。
+
+## 16. C2.2 正式运行边界
+
+C2.2 已完成第二轮独立终验并发布，阶段为 `independent_full_acceptance_complete_released`。需求锁为 `docs/C2.2_REQUIREMENTS_LOCK.json`，需求集 SHA-256 为 `e689e0177a83918e5075c03f524ab9220ae070d193dad7c580ca35ea91c87770`；维护前必须重算八份正式文件和五项继承依赖哈希。
+
+- 系统继续只有一个 `PenguinConvexity-C1.8-Scheduler`，内部管理“新币筛选”和“凸性跟踪”两个独立作业；配置、暂停、状态和失败彼此独立。
+- 两个作业通过稳定 `assetId`、`candidateBuildId` 和三份原子快照交接。筛选失败或跟踪失败时保留上一份完整结果，不能发布半组文件或让项目静默消失。
+- `data/c2.1-pipeline.db` 由筛选写入；既有 `data/convexity.db` 只由明确的凸性跟踪任务写入。桌面启动、页面读取、健康检查和发布验收不得写库。
+- 发布备份为 `backups/c2.2-release-20260811T1544`。回滚必须由用户明确授权，且恢复前先备份现场数据库。
+- 不重跑 Gate 0 全量 90 天扫描，不建立第二个长期任务，不改变 C2.1 数值门槛或四条强路径，不删除继承资产，不开发移动端或 .NET/WebView2 迁移。
+
+## 17. C2.2 发布后观察
+
+- 当前无需用户操作。只读观察第一轮自然 24 小时增量，确认两个作业分别更新并生成新的完整构建 ID。
+- 当前 11 个项目全部为 C 类，凸性线索为 0；这是现场真实结果，不得为了非零展示降低门槛。
+- 7/14/30 天时间外校准各只有 1 个可用结果，必须继续显示样本不足；程序不得自动调参。
+- 如果自然任务失败，先按 `no_data`、`quota_limited`、`source_failure`、`unsupported`、`configuration_missing`、`program_failure` 分类检查，并保留上一份完整前台，不从 90 天起点重跑。

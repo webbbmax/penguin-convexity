@@ -22,7 +22,7 @@ CORE_PAGES = (
 
 
 def main():
-    assert len(BACKEND_PAGES) == 25
+    assert len(BACKEND_PAGES) == 26
     action_gaps = (APP_ROOT / "action-gaps.html").read_text(encoding="utf-8")
     assert 'class="topbar opportunity-topbar"' in action_gaps
     assert "行动条件与缺口" in action_gaps
@@ -37,6 +37,8 @@ def main():
     navigation = (APP_ROOT / "workbench-nav.js").read_text(encoding="utf-8")
     positions = [navigation.index(f'["{page_name}"') for page_name in CORE_PAGES]
     assert positions == sorted(positions), "核心栏目顺序不稳定"
+    update_group = 'pages: [["new-token-update.html", "90天新币筛选"], ["update-center.html", "凸性跟踪更新"]'
+    assert update_group in navigation, "两类更新没有按独立页面顺序进入更新中心"
     for marker in (
         "pageStatus.classList.add",
         "main.insertBefore(pageStatus",

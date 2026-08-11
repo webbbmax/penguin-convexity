@@ -28,6 +28,7 @@ CONVEXITY_PAGES = {
     "model-acceptance.html",
     "monitoring-infrastructure.html",
     "network-discovery.html",
+    "new-token-update.html",
     "project-detail.html",
     "project-master-pool.html",
     "real-case-calibration.html",
@@ -115,6 +116,7 @@ def verify_static_routes():
 def verify_user_paths():
     workbench = (APP_ROOT / "workbench.html").read_text(encoding="utf-8")
     for href in (
+        "new-token-update.html",
         "update-center.html",
         "source-discovery.html",
         "manual-review.html",
@@ -185,7 +187,7 @@ def verify_live_routes(base_url):
     routes.extend(page for page in sorted(CONVEXITY_PAGES))
     for route in routes:
         fetch_page(urljoin(base_url, route))
-    assert len(routes) == 31
+    assert len(routes) == 32
     print(f"当前版本本地服务检查通过：{len(routes)} 个页面或资源均可访问。")
 
 

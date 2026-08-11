@@ -114,6 +114,7 @@ def test_snapshots_and_task_attribution():
 
 def test_static_entrypoints():
     update_html = (APP_ROOT / "update-center.html").read_text(encoding="utf-8")
+    new_token_html = (APP_ROOT / "new-token-update.html").read_text(encoding="utf-8")
     update_script = (APP_ROOT / "update-center.js").read_text(encoding="utf-8")
     source_html = (APP_ROOT / "source-registry.html").read_text(encoding="utf-8")
     source_script = (APP_ROOT / "source-registry.js").read_text(encoding="utf-8")
@@ -163,7 +164,11 @@ def test_static_entrypoints():
     assert "source-registry.html" in workbench
     assert "high-value-sources.html" in workbench
     assert "source-discovery.html" in workbench
-    assert '["update-center.html", "更新中心"]' in navigation
+    assert '["new-token-update.html", "90天新币筛选"]' in navigation
+    assert '["update-center.html", "凸性跟踪更新"]' in navigation
+    assert "c2-1-admin.js" in new_token_html
+    assert "update-center.js" not in new_token_html
+    assert "c2-1-admin.js" not in update_html
     assert '["source-registry.html", "信源状态"]' in navigation
     assert "/api/update-task" in local_server
     assert "/api/update-status" in local_server

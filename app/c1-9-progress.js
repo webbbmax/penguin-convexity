@@ -22,7 +22,7 @@
     const failures = failureCount(status);
     if (label === "正在运行") return "任务在后台继续运行，离开页面不会中断。";
     if (label === "可能卡住") return "长时间没有新进度；已完成的数据仍保留，请查看当前阶段和日志。";
-    if (label === "部分完成") return `成功数据已保留${failures ? `，${failures} 项未完成` : "，仍有未完成项"}；可在更新与任务中查看并单独重试。`;
+    if (label === "部分完成") return `成功数据已保留${failures ? `，${failures} 项未完成` : "，仍有未完成项"}；可在更新中心查看并单独重试。`;
     if (label === "失败") return "本轮更新未完成；上次有效结果和本轮已成功数据仍保留。";
     if (label === "已完成") return "本轮任务已经完成，结果和数据时间已保存。";
     return "当前没有任务运行；系统会按计划检查到期项目。";

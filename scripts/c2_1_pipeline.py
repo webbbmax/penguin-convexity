@@ -25,7 +25,7 @@ from c2_1_db import (
     utc_now,
 )
 from c2_1_rules import age_band, age_days, evaluate_candidate, load_rules, number, parse_utc, product_evidence_summary
-from c2_1_enrichment import run_enrichment
+from c2_1_enrichment import RETRYABLE_SOURCE_STAGES, prepare_source_retry, run_enrichment
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -1018,7 +1018,9 @@ def build_snapshots(connection, front_path=DEFAULT_FRONT_SNAPSHOT, backend_path=
     return {"buildId": build_id, "frontVisibleCount": front_visible, "hardGatePassedCount": hard_gate_passed, "frontSha256": front_hash, "backendSha256": backend_hash}
 
 
-def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, candidate_path=DEFAULT_CANDIDATE_PATH):
+def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, candidate_path=DEFAULT_CANDIDATE_PATH, retry_source_id=None):
+    if action == "retry_source" and retry_source_id not in RETRYABLE_SOURCE_STAGES:
+        raise ValueError("单项更新缺少有效来源。")
     initialize_database(db_path)
     run_id = "c21-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:6]
     started_at = utc_now()
@@ -1031,6 +1033,7 @@ def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, c
                 run_row(connection, run_id, trigger_kind, "running", "initializing", started_at=started_at, message="C2.1更新流水线已启动。")
                 connection.commit()
                 result = {}
+                completion_message = "C2.1本轮流水线已完成。"
                 if action in {"all", "import"}:
                     ensure_not_paused()
                     result["import"] = import_gate0_candidates(connection, run_id, trigger_kind, candidate_path)
@@ -1039,9 +1042,10 @@ def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, c
                     status_payload(state="running", stage="identity_mapping", runId=run_id, triggerKind=trigger_kind, message="正在只读同步项目身份、连续资产和产品证据。")
                     result["mapping"] = sync_main_mappings(connection)
                     result["legacyObservations"] = import_main_observations(connection)
-                if action in {"all", "enrich"}:
+                if action in {"all", "enrich", "retry_source"}:
                     ensure_not_paused()
-                    status_payload(state="running", stage="enrichment", runId=run_id, triggerKind=trigger_kind, message="正在分层采集市场、官方仓库和100美元标准卖出报价。")
+                    retry_pending = prepare_source_retry(connection, retry_source_id) if action == "retry_source" else None
+                    status_payload(state="running", stage="enrichment", runId=run_id, triggerKind=trigger_kind, message="正在单独更新所选来源。" if action == "retry_source" else "正在分层采集市场、官方仓库和100美元标准卖出报价。")
                     result["enrichment"] = run_enrichment(
                         connection,
                         progress=lambda completed, total, item: status_payload(
@@ -1050,21 +1054,34 @@ def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, c
                             message=f"正在采集：{item}。",
                         ),
                         pause=ensure_not_paused,
+                        only_source_id=retry_source_id if action == "retry_source" else None,
                     )
-                if action in {"all", "evaluate"}:
+                    if action == "retry_source":
+                        result["retrySource"] = {"sourceId": retry_source_id, "pendingScopes": retry_pending}
+                if action in {"all", "evaluate", "retry_source"}:
                     ensure_not_paused()
                     status_payload(state="running", stage="rules", runId=run_id, triggerKind=trigger_kind, message="正在按冻结规则计算宽硬门槛、四路径和五状态。")
                     result["evaluation"] = evaluate_all(connection)
-                if action in {"all", "snapshot"}:
+                if action in {"all", "snapshot", "retry_source"}:
                     ensure_not_paused()
                     set_source_health(connection, "c2_1_pipeline", "all", "success", plain_reason="C2.1本轮确定性处理成功。")
                     connection.commit()
                     status_payload(state="running", stage="snapshot", runId=run_id, triggerKind=trigger_kind, message="正在原子构建C2.1前后台快照。")
                     result["snapshot"] = build_snapshots(connection)
+                if action == "retry_source":
+                    remaining = connection.execute(
+                        "SELECT COUNT(*) FROM source_health WHERE source_id=? AND status IN ('source_failure','quota_limited')",
+                        (retry_source_id,),
+                    ).fetchone()[0]
+                    result["retrySource"]["remainingRecoverableScopes"] = int(remaining)
+                    completion_message = (
+                        f"单项更新已结束；{retry_source_id}仍有{remaining}个范围未完成，旧的成功数据继续保留。"
+                        if remaining else f"单项更新已完成；{retry_source_id}当前没有可恢复失败。"
+                    )
                 finished_at = utc_now()
-                run_row(connection, run_id, trigger_kind, "completed", "completed", finished_at=finished_at, message="C2.1本轮流水线已完成。")
+                run_row(connection, run_id, trigger_kind, "completed", "completed", finished_at=finished_at, message=completion_message)
                 connection.commit()
-            status_payload(state="completed", stage="completed", runId=run_id, triggerKind=trigger_kind, finishedAt=finished_at, completedUnits=1, totalUnits=1, currentItem="本轮全部阶段", message="C2.1本轮流水线已完成。", resumeAvailable=False)
+            status_payload(state="completed", stage="completed", runId=run_id, triggerKind=trigger_kind, finishedAt=finished_at, completedUnits=1, totalUnits=1, currentItem="单项来源" if action == "retry_source" else "本轮全部阶段", message=completion_message, resumeAvailable=False)
             return {"status": "completed", "runId": run_id, **result}
         except PipelinePaused as error:
             finished_at = utc_now()
@@ -1086,12 +1103,13 @@ def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, c
 
 def main():
     parser = argparse.ArgumentParser(description="C2.1可恢复生产流水线")
-    parser.add_argument("action", nargs="?", choices=("all", "import", "sync", "enrich", "evaluate", "snapshot"), default="all")
+    parser.add_argument("action", nargs="?", choices=("all", "import", "sync", "enrich", "evaluate", "snapshot", "retry_source"), default="all")
     parser.add_argument("--trigger", choices=("manual", "automatic", "resume", "development"), default="manual")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
     parser.add_argument("--candidate-path", type=Path, default=DEFAULT_CANDIDATE_PATH)
+    parser.add_argument("--source-id")
     args = parser.parse_args()
-    result = run_pipeline(args.action, args.trigger, args.db, args.candidate_path)
+    result = run_pipeline(args.action, args.trigger, args.db, args.candidate_path, args.source_id)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     raise SystemExit(0 if result["status"] in {"completed", "already_running"} else 1)
 

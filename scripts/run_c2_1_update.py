@@ -11,7 +11,7 @@ from c2_1_runtime import (
 )
 
 
-def run(action="all", trigger="automatic", force=False):
+def run(action="all", trigger="automatic", force=False, source_id=None):
     state = load_state()
     config = load_config()
     if trigger == "automatic" and not force:
@@ -25,7 +25,7 @@ def run(action="all", trigger="automatic", force=False):
             trigger = "resume"
     state.update(lastStartedAt=iso_time(utc_now()), lastStatus="running", lastTrigger=trigger, lastError="")
     save_state(state)
-    result = run_pipeline(action=action, trigger_kind=trigger)
+    result = run_pipeline(action=action, trigger_kind=trigger, retry_source_id=source_id) if source_id else run_pipeline(action=action, trigger_kind=trigger)
     finished = utc_now()
     state.update(
         lastFinishedAt=iso_time(finished), lastStatus=result.get("status", "failed"),
@@ -37,11 +37,12 @@ def run(action="all", trigger="automatic", force=False):
 
 def main():
     parser = argparse.ArgumentParser(description="企鹅投研-凸性 C2.1统一增量更新器")
-    parser.add_argument("--action", choices=("all", "import", "sync", "enrich", "evaluate", "snapshot"), default="all")
+    parser.add_argument("--action", choices=("all", "import", "sync", "enrich", "evaluate", "snapshot", "retry_source"), default="all")
     parser.add_argument("--trigger", choices=("manual", "automatic", "resume", "development"), default="automatic")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--source-id")
     args = parser.parse_args()
-    result = run(args.action, args.trigger, args.force)
+    result = run(args.action, args.trigger, args.force, args.source_id)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     raise SystemExit(0 if result.get("status") in {"completed", "already_running", "not_due", "paused"} else 1)
 

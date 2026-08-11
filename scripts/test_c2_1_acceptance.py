@@ -111,8 +111,8 @@ class C21IndependentAcceptanceTests(unittest.TestCase):
 
     def test_desktop_launcher_recognizes_c21_and_handles_empty_error_log(self):
         launcher = (ROOT / "scripts" / "launch-convexity.ps1").read_text(encoding="utf-8-sig")
-        self.assertIn('$opportunityResponse.Content -match "c2-1-front.js"', launcher)
-        self.assertIn('$health.experienceRelease -eq "C2.1"', launcher)
+        self.assertIn('$opportunityResponse.Content -match "c2-2-front.js"', launcher)
+        self.assertIn('$health.experienceRelease -eq "C2.2"', launcher)
         self.assertNotIn('$health.experienceRelease -eq "C2.0"', launcher)
         self.assertIn("[string]::IsNullOrWhiteSpace($stderrContent)", launcher)
 

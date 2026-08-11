@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "c2.2-inheritance-manifest-v1",
+  "release": "C2.2",
+  "status": "frozen_policy_preimplementation_baseline_required",
+  "defaultTreatment": "inherit_unless_explicitly_replaced_or_user_approved_for_deletion",
+  "approvedDeletions": [],
+  "mustInherit": [
+    {
+      "asset": "desktop_runtime",
+      "includes": ["desktop/index.html", "desktop single instance", "window memory", "desktop shortcut", "port 8766"],
+      "treatment": "inherit"
+    },
+    {
+      "asset": "front_information_architecture",
+      "includes": ["机会首页", "全部机会", "重要变化", "我们如何判断", "context project detail", "filter page and scroll return"],
+      "treatment": "inherit_and_extend"
+    },
+    {
+      "asset": "admin_information_architecture",
+      "includes": ["front admin separation", "seven admin groups", "version shown once in admin", "two update center pages"],
+      "treatment": "inherit_and_extend"
+    },
+    {
+      "asset": "c1_7_c1_8_data_trunk",
+      "includes": ["data/convexity.db", "raw and normalized events", "evidence and provenance", "source health and cursors", "market risk tradeability tracking catalyst assets"],
+      "treatment": "inherit_and_reconnect"
+    },
+    {
+      "asset": "c2_0_explainability",
+      "includes": ["atomic snapshots", "important change chain", "project detail explanation", "front safe and admin rich separation", "data quality audit"],
+      "treatment": "inherit_and_reconnect"
+    },
+    {
+      "asset": "c2_1_screening",
+      "includes": ["data/c2.1-pipeline.db", "accepted Gate 0 import", "T0", "A/B/C/D", "wide hard gates", "four strong paths numeric rules", "resumable collectors"],
+      "treatment": "inherit_without_threshold_change"
+    },
+    {
+      "asset": "single_scheduler",
+      "includes": ["PenguinConvexity-C1.8-Scheduler", "hidden launch", "single instance", "StartWhenAvailable", "checkpoint retry cooling"],
+      "treatment": "inherit_and_expand_to_two_jobs"
+    }
+  ],
+  "approvedReplacements": [
+    {
+      "old": "C2.1 front renderer overwrites C1.9 and C2.0 renderers",
+      "new": "one composite front renderer consuming screening and tracking snapshots"
+    },
+    {
+      "old": "fixed direction mapping and fixed weighted score",
+      "new": "C2.2 deterministic hierarchical empirical Bayes evidence update"
+    },
+    {
+      "old": "five mutually exclusive states mixing age signal and source health",
+      "new": "separate lifecycle labels and four tracking states"
+    },
+    {
+      "old": "front data_limited project category",
+      "new": "backend source errors plus front last complete result and data cutoff"
+    },
+    {
+      "old": "scheduler production entry runs only C2.1 screening",
+      "new": "one scheduler coordinates two independently recoverable due jobs"
+    },
+    {
+      "old": "screening checklist only project detail",
+      "new": "single combined screening and convexity tracking project detail"
+    }
+  ],
+  "retainedButInactive": [
+    "manual review historical pages routes APIs and records",
+    "legacy L0-L5 and investment action front semantics",
+    "legacy snapshot and renderer rollback assets",
+    "empty historical review outcome and decision tables"
+  ],
+  "forbiddenReintroductions": [
+    "manual per-project publishing gate",
+    "automatic investment action",
+    "mobile routes or layouts",
+    "RWA or legacy project runtime dependency",
+    "second long-lived Windows scheduler"
+  ],
+  "preImplementationBaseline": {
+    "required": true,
+    "mustRecord": [
+      "git commit and dirty worktree without modifying user changes",
+      "all active route roles and local resources",
+      "desktop shortcut and scheduler definitions",
+      "both database hashes sizes integrity foreign keys and live core counts",
+      "front and admin snapshot hashes and build ids",
+      "full test inventory and last result",
+      "user pause and frequency settings"
+    ]
+  },
+  "releaseReconciliation": {
+    "required": true,
+    "categories": ["inherited", "extended", "replaced", "deleted", "new"],
+    "unexpectedMissingAssetAllowed": false
+  }
+}
+

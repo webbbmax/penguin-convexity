@@ -9,7 +9,7 @@ APP_ROOT = PROJECT_ROOT / "app"
 
 def main():
     pages = sorted(APP_ROOT.glob("*.html"))
-    assert len(pages) == 28
+    assert len(pages) == 29
     for page in pages:
         html = page.read_text(encoding="utf-8")
         version = (

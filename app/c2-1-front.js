@@ -1,6 +1,7 @@
 (function c21Front(){
 "use strict";
 const data=window.PENGUIN_CONVEXITY_C21;if(!data||data.schemaVersion!=="c2.1-front-snapshot-v1")return;
+if(window.PENGUIN_CONVEXITY_C22?.schemaVersion==="c2.2-front-v1")return;
 const $=(s,r=document)=>r.querySelector(s),esc=(v)=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtTime=v=>{if(!v)return"尚无成功时间";const d=new Date(v);return Number.isNaN(d.valueOf())?String(v):new Intl.DateTimeFormat("zh-CN",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d)};
 const fmtNum=v=>v==null?"暂无":new Intl.NumberFormat("zh-CN",{maximumFractionDigits:2,notation:Math.abs(Number(v))>=1000000?"compact":"standard"}).format(v);
@@ -15,8 +16,7 @@ const main=$(".c19-front-main")||$(".c19-detail-main")||$(".c2-front-main")||$("
 document.querySelectorAll(".c19-front-nav a").forEach(a=>{a.classList.remove("is-active");if(a.dataset.frontMode==="changes")a.href="change-explanations.html";});
 const params=new URLSearchParams(location.search),path=location.pathname.split("/").pop(),mode=path==="project-detail.html"?"detail":path==="change-explanations.html"?"changes":params.get("view")||"home";
 const nav=document.querySelector(`[data-front-mode="${mode}"]`);if(nav)nav.classList.add("is-active");
-function health(){const h=data.sourceImpactSummary||{};if(!h.status||h.status==="healthy")return"";return `<aside class="c21-health is-${esc(h.status)}"><strong>${h.status==="interrupted"?"关键数据更新中断":"部分数据更新受限"}</strong><div>${esc(h.plainReason||"部分关键数据暂时无法更新。")}</div><small>最后成功：${esc(fmtTime(h.lastSuccessfulAt||data.sourceCutoffAt))}</small></aside>`}
-function head(kicker,title,intro){return `<header class="c21-page-head"><div><span class="c21-kicker">${esc(kicker)}</span><h1>${esc(title)}</h1><p class="c21-lead">${esc(intro)}</p><span class="c21-time">本页数据更新到 ${esc(fmtTime(data.sourceCutoffAt))}</span></div>${health()}</header>`}
+function head(kicker,title,intro){const shownKicker=kicker==="90天新发项目自动筛选"?"90天新币筛选":kicker;return `<header class="c21-page-head"><div><span class="c21-kicker">${esc(shownKicker)}</span><h1>${esc(title)}</h1><p class="c21-lead">${esc(intro)}</p><span class="c21-time">本页数据更新到 ${esc(fmtTime(data.sourceCutoffAt))}</span></div></header>`}
 function badge(item){return `<span class="c21-badge" data-state="${esc(item.displayState.code)}">${esc(item.displayState.label||stateLabel[item.displayState.code])}</span>`}
 function card(item){return `<a class="c21-card" href="${esc(item.detailUrl)}" data-detail-link><div class="c21-card-top"><div class="c21-name"><strong>${esc(item.canonicalName)}</strong><span>${esc(item.symbol)}</span></div>${badge(item)}</div><p class="c21-reason">${esc(item.displayState.reason)}</p><div class="c21-meta"><span>${esc(item.chainId)}</span><span>发行第 ${esc(item.ageDays)} 天</span><span>${esc(item.relationshipLabel)}</span><span>${esc(item.productEvidence.plainSummary)}</span></div><span class="c21-detail-cta">查看详情 →</span></a>`}
 function empty(){const blockers=Object.entries(data.blockerCounts||{}).sort((a,b)=>b[1]-a[1]).slice(0,6);return `<div class="c21-empty"><h2>当前没有项目通过全部前台观察门槛</h2><p>系统没有用模板项目补位。以下是后台真实阻断数量；额度或来源故障不会被写成“项目资料不足”。</p><div class="c21-blockers">${blockers.map(([k,v])=>`<div class="c21-blocker"><strong>${esc(v)}</strong><span>${esc(k)}</span></div>`).join("")||"<span>尚未生成阻断统计。</span>"}</div></div>`}
