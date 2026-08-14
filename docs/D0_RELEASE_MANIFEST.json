@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "d0-release-manifest-v1",
+  "release": "D0",
+  "name": "开发体系重置0",
+  "status": "released",
+  "releasedAt": "2026-08-14T13:19:09+08:00",
+  "userAuthorization": "发布 D0",
+  "currentProductReleaseRemains": "C2.4",
+  "releaseTag": "c2.4-reconstructed-baseline-d0",
+  "releaseCommitResolution": "git rev-parse refs/tags/c2.4-reconstructed-baseline-d0^{}",
+  "formalBranch": "main",
+  "remote": {
+    "name": "origin",
+    "url": "https://github.com/webbbmax/penguin-convexity.git",
+    "branch": "main"
+  },
+  "git": {
+    "preD0FormalMain": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+    "reconstructedBaselineCommit": "2aa3c200766382b031b4cb0f9de40efafe245533",
+    "reconstructedBaselineTree": "5b2f03180c8bb93f581e3189c339e51587d28ac0",
+    "acceptedCandidateCodeCommit": "f061bbf717a57849e2fb9b65079fa63264784e2c",
+    "acceptedEvidenceCommit": "7922fd550200a73283fe5d782e89320ff6ecbce2",
+    "formalMainClean": true,
+    "tagPointsToReleaseCommit": true,
+    "remoteMainMatches": true,
+    "rollbackRef": "2aa3c200766382b031b4cb0f9de40efafe245533"
+  },
+  "acceptance": {
+    "requirements": "48/48 passed",
+    "gateTests": "9/9 passed",
+    "releasePreflight": "passed",
+    "releaseGate": "passed",
+    "secretBoundary": "files=607 text=570 binary=37 forbidden=0 findings=0",
+    "realDesktop": "passed",
+    "codeRollbackRehearsal": "passed"
+  },
+  "coreArtifacts": [
+    {"path":"docs/D0_REQUIREMENTS_LOCK.json","bytes":4974,"sha256":"5dc989bbbfb4ec6ad03cb75f0996d56214381ff8bc57f13c4e3b0bf9a5c22dcb"},
+    {"path":"docs/D0_FREEZE_DRAFT.md","bytes":9687,"sha256":"f83bd2452b7be5a61897068c4af8916c0a273ca851c8692e60a21d02f5a117b6"},
+    {"path":"docs/D0_DEVELOPMENT_WORKFLOW.md","bytes":5170,"sha256":"2149177d648d5d79a89b59046a8fd360e139fd0e28e1bd7807697607c650698a"},
+    {"path":"docs/D0_ACCEPTANCE_PLAN.md","bytes":5362,"sha256":"d46150bc65d71719fa36c4f9ed9d1506fb2aed9264ff64245880c4e741ac3816"},
+    {"path":"docs/D0_TIER0_INDEPENDENT.json","bytes":1818,"sha256":"4b9e35d5e3248f8b76d34ab388a49241c41a0f531957f322956639be02c0c5d1"},
+    {"path":"docs/D0_DESKTOP_ACCEPTANCE.json","bytes":3580,"sha256":"3c066655598addf8d6c66e21fd8a32789e70f802c405742b8b6ac25b54d981d2"},
+    {"path":"docs/D0_ROLLBACK_REHEARSAL.json","bytes":1553,"sha256":"c3b34a059ccc80e7e890e3b7e1706eb8f8daf3e4669a77905eee5dcee868913f"},
+    {"path":"scripts/d0_gate.py","bytes":13612,"sha256":"63f68d8768fe196a1c28c19dac0d24f09e0ec9a949c86aaae0fea9e05fb42e3e"},
+    {"path":"scripts/test_d0_gate.py","bytes":9373,"sha256":"f8af99de6003a439ce960d6feac2ec12e55000a05d2c685654a8ddacf559563d"},
+    {"path":"desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe","bytes":433152,"sha256":"6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868"}
+  ],
+  "boundaries": {
+    "productCodeChangedByD0": false,
+    "businessRulesChangedByD0": false,
+    "businessDatabasesWrittenByD0": false,
+    "schedulerOrUserSettingsChangedByD0": false,
+    "desktopEntryChangedByD0": false,
+    "historicalFullTasksRerun": false,
+    "businessCorrectnessCertified": false
+  }
+}

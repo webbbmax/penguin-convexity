@@ -2,16 +2,17 @@
   "schemaVersion": "d0-independent-acceptance-manifest-v1",
   "release": "D0",
   "name": "开发体系重置0",
-  "status": "independent_acceptance_passed_waiting_release_authorization",
+  "status": "released_after_independent_acceptance",
   "currentProductReleaseRemains": "C2.4",
   "acceptedCandidateCodeCommit": "f061bbf717a57849e2fb9b65079fa63264784e2c",
+  "acceptedEvidenceCommit": "7922fd550200a73283fe5d782e89320ff6ecbce2",
   "acceptedCandidateBranch": "codex/d0-independent-acceptance",
   "reconstructedBaselineCommit": "2aa3c200766382b031b4cb0f9de40efafe245533",
   "formalMainAtAcceptance": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
   "originMainAtAcceptance": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
   "requirements": {
-    "passed": 45,
-    "pendingRelease": 3,
+    "passed": 48,
+    "pendingRelease": 0,
     "failed": 0,
     "total": 48
   },
@@ -32,10 +33,13 @@
     "historicalFullTasksRerun": false
   },
   "publication": {
-    "userAuthorized": false,
-    "formalMainMerged": false,
-    "formalTagCreated": false,
-    "githubPushed": false,
-    "nextGate": "release_preflight"
+    "userAuthorized": true,
+    "authorizationText": "发布 D0",
+    "formalMainMerged": true,
+    "formalTagCreated": true,
+    "githubPushed": true,
+    "releaseTag": "c2.4-reconstructed-baseline-d0",
+    "releaseGate": "passed",
+    "nextGate": "complete"
   }
 }

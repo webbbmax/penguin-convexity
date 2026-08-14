@@ -27,9 +27,9 @@
     {"id":"D01","requiredByStage":"implementation","status":"passed","summary":"重建提交明确标注reconstructed-baseline","evidence":["2aa3c200766382b031b4cb0f9de40efafe245533"]},
     {"id":"D02","requiredByStage":"implementation","status":"passed","summary":"正式源码与文档可由提交恢复","evidence":["docs/D0_IMPLEMENTATION_BASELINE.json:reconstructedBaseline","Git树5b2f03180c8bb93f581e3189c339e51587d28ac0"]},
     {"id":"D03","requiredByStage":"implementation","status":"passed","summary":"运行数据库和大体积产物未提交","evidence":["docs/D0_PUBLIC_BOUNDARY_SCAN_DEVELOPMENT.json","docs/D0_WORKSPACE_CLASSIFICATION.json:desktop-host generatedBoundary"]},
-    {"id":"D04","requiredByStage":"release","status":"pending","summary":"main合并后工作区干净","evidence":["等待独立终验与发布"]},
-    {"id":"D05","requiredByStage":"release","status":"pending","summary":"正式标签指向唯一发布提交并记录哈希","evidence":["等待用户发布授权"]},
-    {"id":"D06","requiredByStage":"release","status":"pending","summary":"远端提交与本地发布提交一致","evidence":["等待用户发布授权后推送核验"]},
+    {"id":"D04","requiredByStage":"release","status":"passed","summary":"main合并后工作区干净","evidence":["docs/D0_RELEASE_MANIFEST.json:git.formalMainClean","release门禁FORMAL_MAIN"]},
+    {"id":"D05","requiredByStage":"release","status":"passed","summary":"正式标签指向唯一发布提交并记录哈希","evidence":["refs/tags/c2.4-reconstructed-baseline-d0","docs/D0_RELEASE_MANIFEST.json"]},
+    {"id":"D06","requiredByStage":"release","status":"passed","summary":"远端提交与本地发布提交一致","evidence":["refs/remotes/origin/main","docs/D0_RELEASE_MANIFEST.json:git.remoteMainMatches"]},
     {"id":"D07","requiredByStage":"implementation","status":"passed","summary":"已知业务问题单独列出且未宣称全正确","evidence":["docs/D0_KNOWN_ISSUES.md","docs/CURRENT_STATE.md"]},
 
     {"id":"E01","requiredByStage":"implementation","status":"passed","summary":"当前真相约100行内回答关键状态","evidence":["docs/CURRENT_STATE.md"]},
@@ -63,9 +63,9 @@
     {"id":"H06","requiredByStage":"acceptance","status":"passed","summary":"没有重跑Gate0、459万或90天历史扫描","evidence":["docs/D0_DESKTOP_ACCEPTANCE.json:dataAndTaskBoundary"]}
   ],
   "acceptanceSummary": {
-    "passed": 45,
+    "passed": 48,
     "pendingIndependentAcceptance": 0,
-    "pendingRelease": 3,
+    "pendingRelease": 0,
     "failed": 0,
     "total": 48
   }
