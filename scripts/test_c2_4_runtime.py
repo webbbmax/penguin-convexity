@@ -4,12 +4,68 @@
 from __future__ import annotations
 
 import unittest
+from contextlib import nullcontext
+from pathlib import Path
 from unittest.mock import patch
 
 import run_c2_2_update as update
 
 
 class C24RuntimeTests(unittest.TestCase):
+    def test_changed_first_gate_contracts_are_rechecked_in_the_same_cycle(self):
+        connection = unittest.mock.MagicMock()
+        with (
+            patch("c2_1_db.open_pipeline_db", return_value=connection),
+            patch("candidate_production.changed_first_gate_contract_candidate_ids", return_value=[11, 12]) as changed,
+            patch("candidate_production.refresh_production_contracts", return_value=[11, 12]) as refresh,
+            patch("candidate_production.process_first_gate_candidates", return_value={"selected": 2, "evaluated": 2}) as recheck,
+        ):
+            result = update.recheck_changed_first_gate_contracts()
+
+        self.assertEqual(result["changed"], 2)
+        self.assertEqual(result["refreshed"], 2)
+        self.assertEqual(result["firstGateRechecked"], 2)
+        changed.assert_called_once_with(connection, limit=update.SCREENING_EVALUATION_BATCH_SIZE)
+        refresh.assert_called_once_with(connection, [11, 12])
+        recheck.assert_called_once_with(connection, candidate_ids=[11, 12], refresh_market=False)
+
+    def test_materialized_first_gate_backlog_is_drained_before_publication(self):
+        connection = unittest.mock.MagicMock()
+        with (
+            patch("c2_1_db.open_pipeline_db", return_value=connection),
+            patch("candidate_production.pending_first_gate_candidate_ids", side_effect=[[21, 22], [23], []]) as pending,
+            patch("candidate_production.process_first_gate_candidates", side_effect=[
+                {"selected": 2, "evaluated": 2},
+                {"selected": 1, "evaluated": 1},
+            ]) as recheck,
+        ):
+            result = update.drain_first_gate_backlog()
+
+        self.assertEqual(result, {"batches": 2, "processed": 3, "remaining": 0})
+        self.assertEqual(pending.call_count, 3)
+        self.assertEqual(recheck.call_count, 2)
+
+    def test_only_the_active_job_is_failed_when_an_exception_escapes(self):
+        with (
+            patch.object(update, "pipeline_lock", return_value=nullcontext(True)),
+            patch.object(update, "load_state", return_value={}),
+            patch.object(update, "save_state"),
+            patch.object(update, "pause_current_requested", return_value=False),
+            patch.object(update, "run_screening", side_effect=ValueError("reconciliation")),
+            patch.object(update, "run_tracking") as tracking,
+            patch.object(update, "set_status") as status,
+        ):
+            result = update.run("all", trigger="development")
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual([call.args[0] for call in status.call_args_list], ["screening"])
+        tracking.assert_not_called()
+
+    def test_hidden_scheduler_propagates_the_python_exit_code(self):
+        script = (Path(__file__).resolve().parent / "run-c2-1-update-hidden.vbs").read_text(encoding="utf-8")
+        self.assertIn("runnerExitCode = shell.Run(command, 0, True)", script)
+        self.assertIn("WScript.Quit runnerExitCode", script)
+
     def test_tracking_refresh_advances_distinct_batches_before_legacy_components(self):
         calls: list[set[int]] = []
 
@@ -33,9 +89,12 @@ class C24RuntimeTests(unittest.TestCase):
             patch.object(update, "set_status"),
             patch.object(update, "pause_current_requested", return_value=False),
             patch.object(update, "build_c22_snapshots", return_value={"tracking": {"buildId": "tracking"}}),
+            patch.object(update, "reconcile_c24_history"),
+            patch.object(update, "load_json", return_value={}),
             patch("candidate_production_runtime.pause_for_screening", return_value={"status": "idle", "resumeAfter": False}),
             patch("candidate_production_runtime.resume_after_screening"),
             patch("c2_2_candidate_tracking.run_candidate_tracking_batch", side_effect=batch) as tracker,
+            patch("c2_2_candidate_tracking.run_deep_structure_batch", return_value={"status": "completed", "hasMore": False}),
             patch("run_update_task.run_update_task", return_value={"status": "success"}) as legacy,
         ):
             result = update.run_tracking("development", "c24-test", False)
@@ -47,24 +106,30 @@ class C24RuntimeTests(unittest.TestCase):
         self.assertTrue(all(call.kwargs["refresh_completed"] for call in tracker.call_args_list))
         legacy.assert_called_once()
 
-    def test_partial_batch_stops_refresh_cycle_for_recoverable_retry(self):
+    def test_partial_batch_keeps_advancing_distinct_candidates_until_empty(self):
         partial = {
             "status": "partial_success", "candidateIds": [1, 2], "selected": 2,
             "completed": 1, "partial": 1,
+            "queue": {"completed": 2, "total": 10, "remaining": 8},
+        }
+        empty = {
+            "status": "completed", "candidateIds": [], "selected": 0,
+            "completed": 0, "partial": 0,
             "queue": {"completed": 2, "total": 10, "remaining": 8},
         }
         with (
             patch.object(update, "set_status"),
             patch.object(update, "pause_current_requested", return_value=False),
             patch.object(update, "build_c22_snapshots", return_value={"tracking": {"buildId": "tracking"}}),
+            patch.object(update, "reconcile_c24_history"),
             patch("candidate_production_runtime.pause_for_screening", return_value={"status": "idle", "resumeAfter": False}),
             patch("candidate_production_runtime.resume_after_screening"),
-            patch("c2_2_candidate_tracking.run_candidate_tracking_batch", return_value=partial) as tracker,
+            patch("c2_2_candidate_tracking.run_candidate_tracking_batch", side_effect=[partial, empty]) as tracker,
             patch("run_update_task.run_update_task", return_value={"status": "success"}),
         ):
             result = update.run_tracking("development", "c24-partial", False)
 
-        self.assertEqual(tracker.call_count, 1)
+        self.assertEqual(tracker.call_count, 2)
         self.assertEqual(result["candidateTracking"]["status"], "partial_success")
 
 

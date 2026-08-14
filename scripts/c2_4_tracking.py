@@ -253,6 +253,26 @@ def record_completed_public_history(connection, candidate_ids: list[int]) -> dic
             stopped += 1
             continue
         if baseline["passed"]:
+            qualified_while_new = bool(
+                history and int(history["last_public_age_days"]) <= 90
+            )
+            continued_after_day_90 = bool(
+                lifecycle and lifecycle["lifecycle_pool"] == "continued_91_plus"
+            )
+            if (
+                row["age_days"] is not None
+                and int(row["age_days"]) >= 91
+                and not qualified_while_new
+                and not continued_after_day_90
+            ):
+                if history:
+                    connection.execute(
+                        """UPDATE c2_4_public_history SET public_active=0,
+                        last_public_exit_reason='not_public_while_new_at_day91'
+                        WHERE candidate_id=?""",
+                        (row["candidate_id"],),
+                    )
+                continue
             state = _current_public_state(
                 connection,
                 int(row["candidate_id"]),
@@ -260,7 +280,6 @@ def record_completed_public_history(connection, candidate_ids: list[int]) -> dic
                 evidence_rows,
                 completed_at,
             )
-            qualified_while_new = bool(history and int(history["last_public_age_days"]) <= 90)
             connection.execute(
                 """INSERT INTO c2_4_public_history(candidate_id,asset_id,first_public_at,last_public_at,
                 last_public_age_days,last_public_state,last_evaluation_window_id,public_active,last_public_exit_reason)
@@ -333,6 +352,19 @@ def migrate_qualified_day91(connection) -> int:
 
     initialize_schema(connection)
     now = utc_now()
+    connection.execute(
+        """UPDATE c2_4_public_history AS ph SET public_active=0,
+        last_public_exit_reason='not_public_while_new_at_day91'
+        WHERE ph.public_active=1 AND ph.last_public_age_days>90
+          AND EXISTS(
+            SELECT 1 FROM c2_4_lifecycle_state l
+            WHERE l.candidate_id=ph.candidate_id AND l.lifecycle_pool='new_0_90'
+          )
+          AND EXISTS(
+            SELECT 1 FROM candidate_production_records p
+            WHERE p.candidate_id=ph.candidate_id AND p.age_days>=91
+          )"""
+    )
     cursor = connection.execute(
         """UPDATE c2_4_lifecycle_state AS l SET lifecycle_pool='continued_91_plus',
         continued_tracking_since=COALESCE(continued_tracking_since,?),updated_at=?

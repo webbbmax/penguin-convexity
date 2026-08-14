@@ -1,5 +1,5 @@
 Option Explicit
-Dim shell, fso, root, pythonPath, maintenance, maintenanceCommand, runner, command
+Dim shell, fso, root, pythonPath, maintenance, maintenanceCommand, runner, command, runnerExitCode
 Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 root = fso.GetParentFolderName(fso.GetParentFolderName(WScript.ScriptFullName))
@@ -14,4 +14,5 @@ maintenanceCommand = Chr(34) & pythonPath & Chr(34) & " " & Chr(34) & maintenanc
 shell.Run maintenanceCommand, 0, True
 runner = root & "\scripts\run_c2_2_update.py"
 command = Chr(34) & pythonPath & Chr(34) & " " & Chr(34) & runner & Chr(34) & " --job due --trigger automatic"
-shell.Run command, 0, True
+runnerExitCode = shell.Run(command, 0, True)
+WScript.Quit runnerExitCode

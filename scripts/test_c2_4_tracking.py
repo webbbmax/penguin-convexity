@@ -8,12 +8,16 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_ROOT))
 
 import candidate_production  # noqa: E402
+import build_c2_4_snapshots  # noqa: E402
+import run_c2_2_update  # noqa: E402
+from build_c2_4_snapshots import build_snapshots as build_c24_snapshots  # noqa: E402
 from c2_1_db import initialize_database, open_pipeline_db  # noqa: E402
 from c2_2_candidate_tracking import (  # noqa: E402
     _baseline_prerequisite_ids,
@@ -145,6 +149,103 @@ class C24TrackingDatabaseTests(unittest.TestCase):
         selected = {int(row["candidate_id"]) for row in _select_candidates(self.connection, 20)}
         self.assertIn(qualified, selected)
         self.assertNotIn(ordinary_old, selected)
+
+    def test_day_91_cannot_become_public_for_the_first_time(self):
+        candidate_id = self.add_candidate("latepublic", "A", 91)
+        self.connection.execute(
+            "INSERT INTO c2_4_first_gate_history VALUES(?,?,?,?,?,?)",
+            (candidate_id, "asset-latepublic", NOW, 90, "[]", "c2.4-first-gate-v1"),
+        )
+        self.connection.execute(
+            "INSERT INTO c2_4_lifecycle_state(candidate_id,asset_id,lifecycle_pool,updated_at) VALUES(?,?,'new_0_90',?)",
+            (candidate_id, "asset-latepublic", NOW),
+        )
+        self.connection.commit()
+        self.set_completed_window(candidate_id, "window-late", 1, 10)
+
+        result = record_completed_public_history(self.connection, [candidate_id])
+
+        self.assertEqual(result["public"], 0)
+        self.assertIsNone(self.connection.execute(
+            "SELECT 1 FROM c2_4_public_history WHERE candidate_id=?", (candidate_id,)
+        ).fetchone())
+
+    def test_invalid_late_public_history_is_deactivated_in_reconciliation(self):
+        candidate_id = self.add_candidate("latehistory", "A", 91)
+        self.connection.execute(
+            "INSERT INTO c2_4_first_gate_history VALUES(?,?,?,?,?,?)",
+            (candidate_id, "asset-latehistory", NOW, 90, "[]", "c2.4-first-gate-v1"),
+        )
+        self.connection.execute(
+            "INSERT INTO c2_4_lifecycle_state(candidate_id,asset_id,lifecycle_pool,updated_at) VALUES(?,?,'new_0_90',?)",
+            (candidate_id, "asset-latehistory", NOW),
+        )
+        self.connection.execute(
+            """INSERT INTO c2_4_public_history(
+              candidate_id,asset_id,first_public_at,last_public_at,last_public_age_days,
+              last_public_state,last_evaluation_window_id,public_active
+            ) VALUES(?,?,?,?,?,?,?,1)""",
+            (candidate_id, "asset-latehistory", NOW, NOW, 91, "observing", "window-late"),
+        )
+        self.connection.commit()
+
+        self.assertEqual(migrate_qualified_day91(self.connection), 0)
+        history = self.connection.execute(
+            "SELECT public_active,last_public_exit_reason FROM c2_4_public_history WHERE candidate_id=?",
+            (candidate_id,),
+        ).fetchone()
+        self.assertEqual(tuple(history), (0, "not_public_while_new_at_day91"))
+
+    def test_backlog_and_late_history_repairs_restore_snapshot_reconciliation(self):
+        pending_id = self.add_candidate("pendinghistory", "A", 10)
+        record_first_gate_history(self.connection, [pending_id])
+        self.connection.execute(
+            "UPDATE candidate_first_gate_queue SET state='pending',completed_at=NULL WHERE candidate_id=?",
+            (pending_id,),
+        )
+        late_id = self.add_candidate("lateinvalid", "A", 91)
+        self.connection.execute(
+            "INSERT INTO c2_4_first_gate_history VALUES(?,?,?,?,?,?)",
+            (late_id, "asset-lateinvalid", NOW, 90, "[]", "c2.4-first-gate-v1"),
+        )
+        self.connection.execute(
+            "INSERT INTO c2_4_lifecycle_state(candidate_id,asset_id,lifecycle_pool,updated_at) VALUES(?,?,'new_0_90',?)",
+            (late_id, "asset-lateinvalid", NOW),
+        )
+        self.connection.execute(
+            """INSERT INTO c2_4_public_history(
+              candidate_id,asset_id,first_public_at,last_public_at,last_public_age_days,
+              last_public_state,last_evaluation_window_id,public_active
+            ) VALUES(?,?,?,?,?,?,?,1)""",
+            (late_id, "asset-lateinvalid", NOW, NOW, 91, "observing", "window-late"),
+        )
+        self.connection.commit()
+
+        with patch("c2_1_db.open_pipeline_db", return_value=open_pipeline_db(self.database)):
+            drained = run_c2_2_update.drain_first_gate_backlog()
+        self.assertEqual(drained["processed"], 1)
+        self.assertEqual(migrate_qualified_day91(self.connection), 0)
+
+        test_root = Path(self.temp.name) / "project"
+        (test_root / "data").mkdir(parents=True)
+        (test_root / "docs").mkdir()
+        (test_root / "data" / "convexity.db").write_bytes(b"")
+        (test_root / "docs" / "C2.4_INHERITANCE_MANIFEST.json").write_text(
+            (SCRIPT_ROOT.parent / "docs" / "C2.4_INHERITANCE_MANIFEST.json").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        with patch.object(build_c2_4_snapshots, "PROJECT_ROOT", test_root):
+            payloads = build_c24_snapshots(
+                db_path=self.database,
+                output_dir=Path(self.temp.name) / "app",
+                write=False,
+            )
+        self.assertEqual(payloads["admin"]["reconciliation"]["differences"], {
+            "publicNotTracked": [],
+            "newTrackedNotQueued": [],
+            "trackedNotFirstGateHistory": [],
+            "continuedMissingHistory": [],
+        })
 
     def test_expensive_structure_layer_requires_public_baseline_prerequisites(self):
         eligible = self.add_candidate("eligible", "A")

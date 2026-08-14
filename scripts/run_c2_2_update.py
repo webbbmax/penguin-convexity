@@ -35,6 +35,7 @@ C21_ADMIN_PATH = PROJECT_ROOT / "app" / "c2-1-admin-snapshot.js"
 MAIN_DB_PATH = PROJECT_ROOT / "data" / "convexity.db"
 C22_TRACKING_TASK_ID = "c2_2_convexity_tracking_refresh"
 SCREENING_EVALUATION_BATCH_SIZE = 500
+FIRST_GATE_RECHECK_BATCH_SIZE = 500
 TRACKING_HANDOFF_BATCH_SIZE = 25
 TRACKING_HANDOFF_MAX_BATCHES = 36
 TRACKING_HANDOFF_TIME_BUDGET_SECONDS = 10 * 60
@@ -95,6 +96,61 @@ def reconcile_c24_history() -> dict:
         return reconcile_existing_tracking_history(connection)
 
 
+def recheck_changed_first_gate_contracts() -> dict:
+    """Refresh and complete changed first-gate contracts in the same cycle."""
+
+    from c2_1_db import open_pipeline_db
+    from candidate_production import (
+        changed_first_gate_contract_candidate_ids,
+        process_first_gate_candidates,
+        refresh_production_contracts,
+    )
+
+    with closing(open_pipeline_db()) as connection:
+        changed_ids = changed_first_gate_contract_candidate_ids(
+            connection, limit=SCREENING_EVALUATION_BATCH_SIZE
+        )
+        refreshed = refresh_production_contracts(connection, changed_ids)
+        rechecked = process_first_gate_candidates(
+            connection, candidate_ids=changed_ids, refresh_market=False
+        )
+    return {
+        "changed": len(changed_ids),
+        "refreshed": len(refreshed),
+        "firstGateRechecked": int(rechecked.get("evaluated") or 0),
+    }
+
+
+def drain_first_gate_backlog() -> dict:
+    """Finish the materialized local first-gate queue before C2.4 publication."""
+
+    from c2_1_db import open_pipeline_db
+    from candidate_production import (
+        pending_first_gate_candidate_ids,
+        process_first_gate_candidates,
+    )
+
+    batches = processed = 0
+    with closing(open_pipeline_db()) as connection:
+        while True:
+            candidate_ids = pending_first_gate_candidate_ids(
+                connection, limit=FIRST_GATE_RECHECK_BATCH_SIZE
+            )
+            if not candidate_ids:
+                break
+            result = process_first_gate_candidates(
+                connection, candidate_ids=candidate_ids, refresh_market=False
+            )
+            evaluated = int(result.get("evaluated") or 0)
+            if evaluated != len(candidate_ids):
+                raise RuntimeError(
+                    f"第一关本地复核未完整推进：{evaluated}/{len(candidate_ids)}"
+                )
+            batches += 1
+            processed += evaluated
+    return {"batches": batches, "processed": processed, "remaining": 0}
+
+
 def run_screening(trigger: str, run_id: str, dry_run: bool, source_id: str | None = None) -> dict:
     set_status("screening", state="running", stage="screening", message="正在单独更新筛选来源。" if source_id else "正在运行90天新币筛选。", trigger=trigger, run_id=run_id, total=6)
     if dry_run:
@@ -131,16 +187,7 @@ def _run_screening_with_exclusive_database(trigger: str, run_id: str, source_id:
     if result.get("status") not in {"completed", "already_running"}:
         set_status("screening", state="failed", stage="screening", message="新币筛选失败，上一份完整候选快照保留。", trigger=trigger, run_id=run_id, error_code="program_failure", error_detail=str(result), nextDueAt=None)
         return result
-    from candidate_production import changed_first_gate_contract_candidate_ids, refresh_production_contracts
-    from c2_1_db import open_pipeline_db
-
-    contract_reconciliation = {"changed": 0, "refreshed": 0}
-    with closing(open_pipeline_db()) as connection:
-        changed_ids = changed_first_gate_contract_candidate_ids(connection, limit=SCREENING_EVALUATION_BATCH_SIZE)
-        contract_reconciliation = {
-            "changed": len(changed_ids),
-            "refreshed": len(refresh_production_contracts(connection, changed_ids)),
-        }
+    contract_reconciliation = recheck_changed_first_gate_contracts()
     set_status("screening", state="running", stage="candidate_production", message="正在处理本轮新增候选与到期复查对象。", trigger=trigger, run_id=run_id, completed=3, total=6)
     from candidate_production import run_worker as run_candidate_production
 
@@ -156,6 +203,7 @@ def _run_screening_with_exclusive_database(trigger: str, run_id: str, source_id:
     if production.get("status") not in {"completed", "already_running"}:
         set_status("screening", state="failed", stage="candidate_production", message="新增候选处理失败，上一份完整快照保留。", trigger=trigger, run_id=run_id, completed=3, total=6, error_code="program_failure", error_detail=str(production), nextDueAt=None)
         return {"status": "failed", "screening": result, "candidateProduction": production}
+    first_gate_backlog = drain_first_gate_backlog()
     set_status("screening", state="running", stage="candidate_evaluation", message="正在把已完成资格批次交给硬门槛评估。", trigger=trigger, run_id=run_id, completed=4, total=6)
     publication = run_pipeline(
         action="evaluate_snapshot",
@@ -177,7 +225,7 @@ def _run_screening_with_exclusive_database(trigger: str, run_id: str, source_id:
         else "新币筛选和候选快照已完成。"
     )
     set_status("screening", state="completed", stage="snapshot_published", message=completion_message, trigger=trigger, run_id=run_id, completed=6, total=6, lastCompletedAt=now_iso(), nextDueAt=next_run_at("screening"))
-    return {"status": "completed", "screening": result, "contractReconciliation": contract_reconciliation, "candidateProduction": production, "publication": publication, "c24History": c24_history, "snapshot": snapshots["front"]["buildId"]}
+    return {"status": "completed", "screening": result, "contractReconciliation": contract_reconciliation, "firstGateBacklog": first_gate_backlog, "candidateProduction": production, "publication": publication, "c24History": c24_history, "snapshot": snapshots["front"]["buildId"]}
 
 
 def run_tracking(trigger: str, run_id: str, dry_run: bool, source_id: str | None = None) -> dict:
@@ -495,9 +543,11 @@ def run(job_code: str, trigger: str = "manual", dry_run: bool = False, source_id
             return {"status": "already_running", "message": "已有更新作业正在运行，未启动第二个写入者。", "runtime": status_payload()}
         state = load_state()
         save_state({**state, "lastStatus": "running", "lastStartedAt": now_iso(), "lastTrigger": trigger, "lastError": ""})
+        active_job = None
         try:
             result = {}
             if "screening" in selected_jobs:
+                active_job = "screening"
                 if pause_current_requested("screening"):
                     return {"status": "paused", "message": "新币筛选已被暂停请求拦截。"}
                 result["screening"] = run_screening(trigger, run_id, dry_run, source_id)
@@ -507,17 +557,20 @@ def run(job_code: str, trigger: str = "manual", dry_run: bool = False, source_id
                 if result["screening"].get("status") not in {"completed", "already_running"}:
                     save_state({**load_state(), "lastStatus": "failed", "lastFinishedAt": now_iso(), "lastError": "screening_failed"})
                     return {"status": "failed", "runId": run_id, **result}
+                active_job = None
             if "convexity_tracking" in selected_jobs:
+                active_job = "convexity_tracking"
                 if pause_current_requested("convexity_tracking"):
                     return {"status": "paused", "message": "凸性跟踪已被暂停请求拦截。"}
                 result["tracking"] = run_tracking(trigger, run_id, dry_run, source_id)
+                active_job = None
             final_status = "paused" if any(value.get("status") == "paused" for value in result.values()) else "completed" if all(value.get("status") in {"completed", "partial", "already_running"} for value in result.values()) else "failed"
             save_state({**load_state(), "lastStatus": final_status, "lastFinishedAt": now_iso(), "lastError": "" if final_status == "completed" else "job_failed"})
             return {"status": final_status, "runId": run_id, **result}
         except Exception as error:
             detail = f"{type(error).__name__}: {error}"
-            for code in selected_jobs:
-                set_status(code, state="failed", stage="failed", message="更新作业失败，上一份完整快照保留。", trigger=trigger, run_id=run_id, error_code="program_failure", error_detail=detail)
+            if active_job:
+                set_status(active_job, state="failed", stage="failed", message="更新作业失败，上一份完整快照保留。", trigger=trigger, run_id=run_id, error_code="program_failure", error_detail=detail)
             save_state({**load_state(), "lastStatus": "failed", "lastFinishedAt": now_iso(), "lastError": detail})
             return {"status": "failed", "runId": run_id, "errorCode": "program_failure", "error": detail}
 

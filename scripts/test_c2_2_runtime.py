@@ -217,6 +217,7 @@ class C22RuntimeTests(unittest.TestCase):
             patch.object(c22_update, "load_json", return_value={"schemaVersion": "c2.2-post-baseline-state-v1"}),
             patch.object(c22_update, "atomic_json"),
             patch.object(c22_update, "set_status") as set_status,
+            patch.object(c22_update, "reconcile_c24_history"),
             patch.object(c22_update, "build_c22_snapshots", return_value={
                 "front": {"buildId": "front"},
                 "tracking": {"buildId": "tracking"},
