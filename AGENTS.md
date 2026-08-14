@@ -63,6 +63,7 @@
 3. 每行改动应能追溯到产品要求；新改动造成的无用导入或孤立代码要清理。
 4. 优先写能复现问题的测试，再修复并循环到通过。
 5. 对业务数据的验收保持只读；真实点击测试不得触发更新、复核或写入操作。
+6. 每个不同结果或新的开发阶段使用独立任务；同一问题、同一阶段和同一候选继续原任务。新任务首句话必须说明目标、上下文、非范围和完成标准，并先读取项目当前真相。完整判断与模板见 `docs/NEW_TASK_CHAT_GUIDE.md`。
 
 ## 临时产物与磁盘保留
 
@@ -107,7 +108,7 @@
 ## 项目记忆读取顺序
 
 1. `AGENTS.md`
-   - D0 完成后，继续优先读取 `docs/CURRENT_STATE.md`、`docs/PRODUCT_BASELINE.md`、`docs/DEVELOPMENT_WORKFLOW.md` 和 `docs/HISTORY_INDEX.md`，再按下列原有顺序追溯历史；当前真相文件不删除或改写历史记录。
+   - D0 完成后，继续优先读取 `docs/CURRENT_STATE.md`、`docs/PRODUCT_BASELINE.md`、`docs/DEVELOPMENT_WORKFLOW.md`、`docs/NEW_TASK_CHAT_GUIDE.md` 和 `docs/HISTORY_INDEX.md`，再按下列原有顺序追溯历史；当前真相文件不删除或改写历史记录。
 2. `docs/C1.8_PHASE.json`（执行 C1.8 时）
 3. `docs/C1.8_REQUIREMENTS_LOCK.json`（执行 C1.8 时）
 4. `docs/STATUS.md`
