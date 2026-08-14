@@ -27,8 +27,19 @@
         "当前HEAD通过密钥与数据边界扫描"
       ]
     },
+    "release_preflight": {
+      "meaning": "任何合并、打正式标签或推送之前",
+      "required": [
+        "候选提交与独立终验通过提交一致",
+        "独立终验阶段需求追踪全部通过",
+        "Tier0和真实桌面验收通过",
+        "回滚提交存在",
+        "用户已经明确授权发布",
+        "当前HEAD通过密钥与数据边界扫描"
+      ]
+    },
     "release": {
-      "meaning": "正式发布开始前",
+      "meaning": "授权发布动作完成后的最终一致性核验",
       "required": [
         "正式根目录main干净",
         "候选提交终验提交发布提交完全一致",
@@ -36,13 +47,14 @@
         "Tier0和真实桌面验收通过",
         "用户明确授权发布",
         "正式标签指向发布提交",
+        "远端跟踪提交与发布提交一致",
         "回滚提交存在",
         "当前HEAD通过密钥与数据边界扫描"
       ]
     }
   },
   "inputFields": {
-    "stage": "development | acceptance | release",
+    "stage": "development | acceptance | release_preflight | release",
     "repoRoot": "本阶段正在检查的Git工作区绝对路径",
     "formalRoot": "F:\\codex项目\\企鹅投研\\凸性",
     "authorizedWorktreeRoot": "F:\\codex项目\\企鹅投研\\凸性-worktrees",
@@ -58,7 +70,9 @@
     "traceability": "默认docs/D0_REQUIREMENT_TRACEABILITY.json",
     "desktopEvidence": "状态为passed的真实桌面JSON相对路径",
     "userReleaseAuthorized": "只有用户明确授权后才可为true",
-    "releaseTag": "必须已经指向发布提交的正式标签"
+    "releaseTag": "必须已经指向发布提交的正式标签",
+    "remoteName": "默认origin",
+    "remoteBranch": "默认main；release阶段必须已经fetch并与发布提交一致"
   },
   "negativeTests": {
     "F01": "脏main阻断开发",

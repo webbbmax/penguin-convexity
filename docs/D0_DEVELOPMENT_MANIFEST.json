@@ -37,7 +37,7 @@
   "selfTest": {
     "status": "passed",
     "inventory": "154/154 classified, unknown 0, deletion 0",
-    "gateTests": "8/8 passed",
+    "gateTests": "9/9 passed after independent acceptance preflight repair",
     "secretBoundary": "passed",
     "fullHistoricalRegression": "not_run_not_required"
   },

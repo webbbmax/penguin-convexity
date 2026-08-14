@@ -1,13 +1,13 @@
 {
   "schemaVersion": "d0-gate-self-test-v1",
   "release": "D0",
-  "executedAt": "2026-08-14T12:26:51+08:00",
+  "executedAt": "2026-08-14T12:47:43+08:00",
   "entrypoint": "python scripts/test_d0_gate.py",
   "status": "passed",
-  "testsRun": 8,
-  "passed": 8,
+  "testsRun": 9,
+  "passed": 9,
   "failed": 0,
-  "durationSeconds": 11.335,
+  "durationSeconds": 15.284,
   "cases": [
     {"id":"F01","test":"test_f01_dirty_main_blocks_development","result":"passed"},
     {"id":"F02","test":"test_f02_bad_lock_blocks_development","result":"passed"},
@@ -16,7 +16,8 @@
     {"id":"F05","test":"test_f05_candidate_mismatch_blocks_acceptance","result":"passed"},
     {"id":"F06","test":"test_f06_missing_desktop_rollback_and_authorization_block_release","result":"passed"},
     {"id":"F07","test":"test_f07_secret_or_data_blocks_acceptance","result":"passed"},
-    {"id":"F08","test":"test_f08_complete_release_state_passes","result":"passed"}
+    {"id":"F08","test":"test_f08_complete_release_state_passes","result":"passed"},
+    {"id":"release_preflight","test":"test_release_preflight_complete_state_passes","result":"passed"}
   ],
   "scope": "临时Git仓库和worktree，不访问正式数据库、桌面入口、调度器或外部网络。"
 }

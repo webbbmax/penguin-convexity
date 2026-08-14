@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""D0 stage gate: reject ambiguous development, acceptance, or release state."""
+"""D0 stage gate for development, acceptance, release preflight, and closure."""
 
 from __future__ import annotations
 
@@ -199,8 +199,8 @@ def run_secret_scan(repo: Path, checks: list[dict[str, object]]) -> None:
 
 def evaluate(config: dict[str, Any]) -> dict[str, Any]:
     stage = config.get("stage")
-    if stage not in {"development", "acceptance", "release"}:
-        raise ValueError("stage must be development, acceptance, or release")
+    if stage not in {"development", "acceptance", "release_preflight", "release"}:
+        raise ValueError("stage must be development, acceptance, release_preflight, or release")
 
     repo = Path(config["repoRoot"]).resolve()
     formal = Path(config["formalRoot"]).resolve()
@@ -213,7 +213,7 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
     add_check(checks, "ROLLBACK_REF", bool(rollback_ref and rollback and rollback.returncode == 0), "回滚提交存在" if rollback_ref and rollback and rollback.returncode == 0 else "回滚提交缺失")
 
     branch = git(repo, "branch", "--show-current").stdout.strip()
-    if stage in {"development", "acceptance"}:
+    if stage in {"development", "acceptance", "release_preflight"}:
         add_check(checks, "WORKTREE", within(repo, authorized_root), "开发目录位于授权 worktree 根目录" if within(repo, authorized_root) else "开发目录不在授权 worktree 根目录")
         prefix = str(config.get("allowedBranchPrefix", "codex/"))
         add_check(checks, "BRANCH", branch.startswith(prefix), f"分支为 {branch}" if branch.startswith(prefix) else f"分支 {branch} 不符合 {prefix} 前缀")
@@ -229,9 +229,11 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
         add_check(checks, "FORMAL_MAIN", formal_branch == main_branch and formal_clean, "正式 main 干净" if formal_branch == main_branch and formal_clean else "正式 main 不干净或分支错误")
 
     head = git(repo, "rev-parse", "HEAD").stdout.strip()
-    if stage in {"acceptance", "release"}:
+    if stage in {"acceptance", "release_preflight", "release"}:
         candidate = str(config.get("candidateCommit", ""))
         matches = bool(candidate and candidate == head)
+        if stage == "release_preflight":
+            matches = matches and config.get("acceptedCommit") == head
         if stage == "release":
             matches = matches and config.get("acceptedCommit") == head and config.get("releaseCommit") == head
         add_check(checks, "CANDIDATE_FIXED", matches, "验收与发布候选提交一致" if matches else "候选、验收或发布提交不一致")
@@ -241,20 +243,27 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
         validate_traceability(
             repo,
             str(config.get("traceability", "docs/D0_REQUIREMENT_TRACEABILITY.json")),
-            "implementation" if stage == "acceptance" else "release",
+            "implementation" if stage == "acceptance" else "acceptance" if stage == "release_preflight" else "release",
             checks,
         )
+
+    if stage in {"release_preflight", "release"}:
+        validate_evidence(repo, config.get("desktopEvidence"), "DESKTOP", "真实桌面验收证据", checks)
+        authorized = config.get("userReleaseAuthorized") is True
+        add_check(checks, "USER_AUTH", authorized, "已有用户发布授权" if authorized else "缺少用户发布授权")
 
     if stage == "release":
         formal_clean = not git(formal, "status", "--porcelain=v1").stdout.strip()
         add_check(checks, "FORMAL_MAIN", formal_clean, "正式 main 干净" if formal_clean else "正式 main 不干净")
-        validate_evidence(repo, config.get("desktopEvidence"), "DESKTOP", "真实桌面验收证据", checks)
-        authorized = config.get("userReleaseAuthorized") is True
-        add_check(checks, "USER_AUTH", authorized, "已有用户发布授权" if authorized else "缺少用户发布授权")
         tag = str(config.get("releaseTag", ""))
         tag_result = git(repo, "rev-list", "-n", "1", tag, check=False) if tag else None
         tag_commit = tag_result.stdout.strip() if tag_result and tag_result.returncode == 0 else ""
         add_check(checks, "RELEASE_TAG", bool(tag and tag_commit == head), "正式标签指向发布提交" if tag and tag_commit == head else "正式标签缺失或指向错误")
+        remote = str(config.get("remoteName", "origin"))
+        remote_branch = str(config.get("remoteBranch", "main"))
+        remote_result = git(repo, "rev-parse", f"refs/remotes/{remote}/{remote_branch}", check=False)
+        remote_commit = remote_result.stdout.strip() if remote_result.returncode == 0 else ""
+        add_check(checks, "REMOTE_COMMIT", remote_commit == head, "远端跟踪提交与发布提交一致" if remote_commit == head else "远端跟踪提交缺失或不一致")
 
     run_secret_scan(repo, checks)
     failed = [row["id"] for row in checks if not row["passed"]]

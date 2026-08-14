@@ -34,6 +34,10 @@ class D0GateFixture:
         self.run(self.formal, "add", ".")
         self.run(self.formal, "commit", "-m", "baseline")
         self.rollback = self.rev(self.formal)
+        self.remote = root / "remote.git"
+        subprocess.check_output(("git", "init", "--bare", str(self.remote)), stderr=subprocess.STDOUT)
+        self.run(self.formal, "remote", "add", "origin", str(self.remote))
+        self.run(self.formal, "push", "-u", "origin", "main")
         self.run(self.formal, "worktree", "add", "-b", "codex/test", str(self.worktree))
         self._write_evidence()
         self.run(self.worktree, "add", ".")
@@ -130,11 +134,15 @@ class D0GateFixture:
             "desktopEvidence": "docs/desktop.json",
             "userReleaseAuthorized": True,
             "releaseTag": "d0-test",
+            "remoteName": "origin",
+            "remoteBranch": "main",
         }
 
     def prepare_release(self) -> dict[str, object]:
         self.run(self.formal, "merge", "--ff-only", self.candidate)
         self.run(self.formal, "tag", "d0-test", self.candidate)
+        self.run(self.formal, "push", "origin", "main")
+        self.run(self.formal, "fetch", "origin", "main")
         return self.config("release", self.formal)
 
 
@@ -171,6 +179,7 @@ class D0GateTests(unittest.TestCase):
     def test_f04_failed_tier0_blocks_acceptance(self) -> None:
         self.fixture.write(self.fixture.worktree / "docs/tier0.json", '{"status":"failed"}\n')
         self.assert_failed(evaluate(self.fixture.config("acceptance")), "TIER0")
+        self.assert_failed(evaluate(self.fixture.config("release_preflight")), "TIER0")
 
     def test_f05_candidate_mismatch_blocks_acceptance(self) -> None:
         config = self.fixture.config("acceptance")
@@ -178,7 +187,7 @@ class D0GateTests(unittest.TestCase):
         self.assert_failed(evaluate(config), "CANDIDATE_FIXED")
 
     def test_f06_missing_desktop_rollback_and_authorization_block_release(self) -> None:
-        config = self.fixture.prepare_release()
+        config = self.fixture.config("release_preflight")
         config["desktopEvidence"] = "docs/missing-desktop.json"
         config["rollbackRef"] = "deadbeef"
         config["userReleaseAuthorized"] = False
@@ -198,6 +207,10 @@ class D0GateTests(unittest.TestCase):
 
     def test_f08_complete_release_state_passes(self) -> None:
         result = evaluate(self.fixture.prepare_release())
+        self.assertTrue(result["passed"], result)
+
+    def test_release_preflight_complete_state_passes(self) -> None:
+        result = evaluate(self.fixture.config("release_preflight"))
         self.assertTrue(result["passed"], result)
 
 
