@@ -33,7 +33,14 @@ C22_ADMIN_PREFIX = "window.PENGUIN_CONVEXITY_C22_ADMIN = "
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_tracking_tasks_snapshot import load_js_payload  # noqa: E402
 from build_c2_2_calibration import build_calibration_payload, write_calibration_payload  # noqa: E402
-from c2_2_tracking import build_bayes_evidence, load_main_database_facts, load_tracking_catalog  # noqa: E402
+from c2_2_tracking import (  # noqa: E402
+    build_bayes_evidence,
+    build_tracking_cohort_index,
+    load_main_database_facts,
+    load_tracking_candidates,
+    load_tracking_catalog,
+)
+from c2_2_candidate_tracking import load_tracking_records  # noqa: E402
 
 
 ALLOWED_RELATIONSHIPS = {"A", "B", "C"}
@@ -51,6 +58,30 @@ ALLOWED_CHANGE_TYPES = {
     "exit_90_days",
 }
 
+SOURCE_JOB_OWNERS = {
+    "c2_1_pipeline": "screening",
+    "gate0_accepted_candidates": "screening",
+    "coingecko_new_pools": "screening",
+    "project_website_identity": "screening",
+    "github": "screening",
+    "standard_sell_quote": "convexity_tracking",
+    "c2_1_path4": "convexity_tracking",
+    "robinhood_official_assets": "convexity_tracking",
+    "goplus": "convexity_tracking",
+    "convexity_main_readonly": "convexity_tracking",
+    "dexscreener": "shared",
+}
+RETRYABLE_SOURCE_IDS = {
+    "coingecko_new_pools",
+    "dexscreener",
+    "project_website_identity",
+    "github",
+    "goplus",
+    "c2_1_path4",
+    "standard_sell_quote",
+    "robinhood_official_assets",
+}
+
 
 def _sha(payload: Any) -> str:
     encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -59,6 +90,30 @@ def _sha(payload: Any) -> str:
 
 def _safe_text(value: Any) -> str:
     return str(value or "").strip()
+
+
+def _source_health_with_ownership(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    output = []
+    for source in rows:
+        row = dict(source)
+        source_id = _safe_text(row.get("source_id"))
+        owner = SOURCE_JOB_OWNERS.get(source_id, "shared")
+        row["owner"] = owner
+        row["affectedJobs"] = (
+            ["screening", "convexity_tracking"] if owner == "shared" else [owner]
+        )
+        row["sourceRetrySupported"] = source_id in RETRYABLE_SOURCE_IDS
+        row["rawStatus"] = row.get("status")
+        if (
+            source_id == "project_website_identity"
+            and row.get("status") == "configuration_missing"
+            and row.get("http_status") in {401, 403}
+        ):
+            row["status"] = "unsupported"
+            row["reason_code"] = "website_access_restricted"
+            row["plain_reason"] = "项目网站拒绝自动访问，当前无法核验官方仓库链路；不按系统配置故障处理。"
+        output.append(row)
+    return output
 
 
 def _candidate_id(project_id: Any) -> int | None:
@@ -126,8 +181,13 @@ def _tracking_item(
     *,
     catalog_record: dict[str, Any] | None = None,
     main_database_fact: dict[str, Any] | None = None,
+    tracking_record: dict[str, Any] | None = None,
+    require_tracking_record: bool = False,
 ) -> dict[str, Any]:
-    state = _tracking_state(item)
+    first_tracking_complete = bool((tracking_record or {}).get("state") == "completed")
+    state = _tracking_state(item) if first_tracking_complete or not require_tracking_record else "awaiting_first_tracking"
+    if first_tracking_complete and state == "awaiting_first_tracking":
+        state = "observing"
     market = item.get("marketSnapshot")
     history = item.get("observationHistory") or {}
     confidence = item.get("dataConfidence")
@@ -250,9 +310,61 @@ def _tracking_item(
         ],
         "materialChanges": [_public_change_record(item.get("latestMaterialChange"))] if item.get("latestMaterialChange") else [],
         "confidenceComponents": (confidence or {}).get("components") if isinstance(confidence, dict) else None,
-        "lastCompleteTrackingAt": history.get("lastSuccessfulAt") or source_cutoff,
+        "lastCompleteTrackingAt": (
+            (tracking_record or {}).get("completedAt") or history.get("lastSuccessfulAt") or source_cutoff
+            if state != "awaiting_first_tracking"
+            else None
+        ),
+        "firstTracking": {
+            "state": (tracking_record or {}).get("state") or ("legacy_complete" if not require_tracking_record and state != "awaiting_first_tracking" else "pending"),
+            "sourceStates": (tracking_record or {}).get("sourceStates") or {},
+            "lastAttemptAt": (tracking_record or {}).get("lastAttemptAt"),
+            "completedAt": (tracking_record or {}).get("completedAt"),
+        },
         "candidateBuildId": candidate_build_id,
     }
+
+
+def _tracking_source_with_evaluation(
+    item: dict[str, Any],
+    record: dict[str, Any],
+) -> dict[str, Any]:
+    """Attach real completed tracking observations to a backend handoff item."""
+
+    if not record:
+        return item
+    output = dict(item)
+    evaluation = record.get("evaluation") or {}
+    series = record.get("series") or {}
+    market_series = list(series.get("market") or [])
+    risk_series = list(series.get("risk") or [])
+    latest_market = evaluation.get("marketSnapshot") or (market_series[-1] if market_series else None)
+    if not output.get("marketSnapshot") and latest_market:
+        output["marketSnapshot"] = latest_market
+    if not output.get("evidencePaths") and evaluation.get("evidencePaths"):
+        output["evidencePaths"] = evaluation["evidencePaths"]
+    if not output.get("factorDirections") and evaluation.get("factorDirections"):
+        output["factorDirections"] = evaluation["factorDirections"]
+    if not output.get("dataConfidence") and evaluation.get("dataConfidence"):
+        output["dataConfidence"] = evaluation["dataConfidence"]
+    if not output.get("thresholdContext") and evaluation.get("thresholdContext"):
+        output["thresholdContext"] = evaluation["thresholdContext"]
+    if not output.get("hardGate") and evaluation.get("hardGate"):
+        output["hardGate"] = evaluation["hardGate"]
+    if market_series and not output.get("observationHistory"):
+        success_rows = [row for row in market_series if row.get("sourceStatus") == "success"]
+        valid_days = len({str(row.get("observedAt") or "")[:10] for row in success_rows if row.get("observedAt")})
+        output["observationHistory"] = {
+            "backfilledDays": valid_days,
+            "validHistoryDays": valid_days,
+            "lastSuccessfulAt": max((str(row.get("observedAt") or "") for row in success_rows), default=None),
+        }
+    if risk_series and not output.get("riskSummary"):
+        output["riskSummary"] = {
+            "status": "no_confirmed_hard_block" if not any(row.get("hardTradeBlock") for row in risk_series) else "confirmed_hard_block",
+            "history": risk_series,
+        }
+    return output
 
 
 def _screening_item(item: dict[str, Any], screening_build_id: str) -> dict[str, Any]:
@@ -334,12 +446,14 @@ def build_payloads(
     c21_admin: dict[str, Any],
     *,
     tracking_catalog: dict[int, dict[str, Any]] | None = None,
+    tracking_candidates: list[dict[str, Any]] | None = None,
     previous_tracking: dict[str, Any] | None = None,
     main_database_facts: dict[str, dict[str, Any]] | None = None,
+    tracking_records: dict[int, dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     source_items = list(c21_front.get("items") or [])
-    generated_at = c21_front.get("generatedAt") or c21_admin.get("generatedAt") or ""
-    source_cutoff = c21_front.get("sourceCutoffAt") or generated_at
+    screening_generated_at = c21_front.get("generatedAt") or c21_admin.get("generatedAt") or ""
+    screening_source_cutoff = c21_front.get("sourceCutoffAt") or screening_generated_at
     eligible = [
         item for item in source_items
         if (item.get("hardGate") or {}).get("status") == "pass"
@@ -349,22 +463,74 @@ def build_payloads(
     screening_build_id = f"c22-screening-{_sha({'source': c21_front.get('buildId'), 'items': [item.get('assetId') for item in eligible]})[:16]}"
     screening_items = [_screening_item(item, screening_build_id) for item in sorted(eligible, key=lambda row: str(row.get("assetId") or ""))]
     by_asset = {item.get("assetId"): item for item in eligible if item.get("assetId")}
+    handoff_by_asset = {
+        item.get("assetId"): dict(item)
+        for item in (tracking_candidates or [])
+        if item.get("assetId")
+    }
+    for item in eligible:
+        asset_id = item.get("assetId")
+        if not asset_id:
+            continue
+        handoff_by_asset[asset_id] = {
+            **handoff_by_asset.get(asset_id, {}),
+            **item,
+        }
+    handoff_items = sorted(
+        handoff_by_asset.values(),
+        key=lambda row: (str(row.get("assetId") or ""), int(row.get("_candidateId") or 0)),
+    )
+    tracking_source_items = sorted(
+        (handoff_by_asset[item["assetId"]] for item in eligible),
+        key=lambda row: str(row.get("assetId") or ""),
+    )
+    qualification_batch_ids = sorted(
+        {
+            str(item.get("_qualificationBatchId"))
+            for item in handoff_items
+            if item.get("_qualificationBatchId")
+        }
+    )
+    tracking_times = [
+        _safe_text(screening_generated_at),
+        _safe_text(screening_source_cutoff),
+        *(_safe_text(item.get("qualifiedAt")) for item in handoff_items),
+        *(_safe_text(item.get("evaluatedAt")) for item in (tracking_catalog or {}).values()),
+    ]
+    tracking_generated_at = max((value for value in tracking_times if value), default=screening_generated_at)
+    tracking_source_cutoff = tracking_generated_at
+    tracking_candidate_build_id = (
+        screening_build_id
+        if tracking_candidates is None
+        else f"c22-tracking-input-{_sha({'items': [[item.get('assetId'), item.get('_qualificationBatchId')] for item in handoff_items]})[:16]}"
+    )
     previous_by_asset = {row.get("assetId"): row for row in (previous_tracking or {}).get("items", [])}
+    cohort_index = build_tracking_cohort_index(tracking_catalog or {})
     tracking_items = []
-    for item in sorted(eligible, key=lambda row: str(row.get("assetId") or "")):
-        candidate_id = _candidate_id(item.get("projectId"))
+    require_tracking_record = tracking_records is not None
+    for source_item in tracking_source_items:
+        candidate_id = int(source_item.get("_candidateId") or 0) or _candidate_id(source_item.get("projectId"))
         record = (tracking_catalog or {}).get(candidate_id or -1, {})
-        bayes = build_bayes_evidence(item, tracking_catalog or {}, (previous_by_asset.get(item.get("assetId")) or {}).get("factorPosteriors")) if tracking_catalog else None
+        tracking_record = (tracking_records or {}).get(candidate_id or -1, {})
+        item = _tracking_source_with_evaluation(source_item, record)
+        bayes = build_bayes_evidence(
+            item,
+            tracking_catalog or {},
+            (previous_by_asset.get(item.get("assetId")) or {}).get("factorPosteriors"),
+            cohort_index,
+        ) if record else None
         main_asset_id = record.get("mainAssetId") or item.get("assetId")
         main_fact = (main_database_facts or {}).get(main_asset_id) or (main_database_facts or {}).get(item.get("assetId"))
         tracking_items.append(
             _tracking_item(
                 item,
-                screening_build_id,
-                source_cutoff,
+                tracking_candidate_build_id,
+                tracking_source_cutoff,
                 bayes,
                 catalog_record=record,
                 main_database_fact=main_fact,
+                tracking_record=tracking_record,
+                require_tracking_record=require_tracking_record,
             )
         )
     tracking_by_asset = {item.get("assetId"): item for item in tracking_items}
@@ -372,8 +538,8 @@ def build_payloads(
     screening = {
         "schemaVersion": "c2.2-screening-v1",
         "buildId": screening_build_id,
-        "generatedAt": generated_at,
-        "sourceCutoffAt": source_cutoff,
+        "generatedAt": screening_generated_at,
+        "sourceCutoffAt": screening_source_cutoff,
         "ruleVersion": c21_front.get("ruleVersion"),
         "ruleConfigHash": c21_front.get("ruleConfigHash"),
         "candidateCount": len(screening_items),
@@ -386,13 +552,13 @@ def build_payloads(
             "mainDatabaseMode": "read_only_supplementary_lineage",
         },
     }
-    tracking_build_id = f"c22-tracking-{_sha({'candidateBuildId': screening_build_id, 'items': tracking_items})[:16]}"
+    tracking_build_id = f"c22-tracking-{_sha({'candidateBuildId': tracking_candidate_build_id, 'items': tracking_items})[:16]}"
     tracking = {
         "schemaVersion": "c2.2-tracking-v1",
         "buildId": tracking_build_id,
-        "candidateBuildId": screening_build_id,
-        "generatedAt": generated_at,
-        "sourceCutoffAt": source_cutoff,
+        "candidateBuildId": tracking_candidate_build_id,
+        "generatedAt": tracking_generated_at,
+        "sourceCutoffAt": tracking_source_cutoff,
         "modelVersion": "c2.2-deterministic-hierarchical-eb-v1",
         "bayesSpecHash": _sha({"spec": "docs/C2.2_BAYES_SPEC.md", "version": "c2.2-bayes-v1"}),
         "database": {
@@ -402,6 +568,35 @@ def build_payloads(
         },
         "items": tracking_items,
         "stateCounts": _state_counts(tracking_items),
+        "inputSummary": {
+            "candidateCount": len(handoff_items),
+            "evaluatedCandidateCount": sum(
+                (int(item.get("_candidateId") or 0) or _candidate_id(item.get("projectId"))) in (tracking_catalog or {})
+                for item in handoff_items
+            ),
+            "ruleEvaluatedCandidateCount": sum(
+                (int(item.get("_candidateId") or 0) or _candidate_id(item.get("projectId"))) in (tracking_catalog or {})
+                for item in handoff_items
+            ),
+            "detailedPublicItemCount": len(tracking_items),
+            "completedQualificationBatchCount": len(qualification_batch_ids),
+            "completedQualificationBatchIds": qualification_batch_ids,
+            "publicCandidateCount": len(screening_items),
+            "completedFirstTrackingCount": sum(
+                item.get("trackingState") != "awaiting_first_tracking" for item in tracking_items
+            ),
+            "partialFirstTrackingCount": sum(
+                ((tracking_records or {}).get(int(item.get("_candidateId") or 0) or _candidate_id(item.get("projectId")) or -1) or {}).get("state") == "partial"
+                for item in handoff_items
+                if item.get("relationshipClass") in ALLOWED_RELATIONSHIPS
+            ),
+            "pendingFirstTrackingCount": sum(
+                item.get("trackingState") == "awaiting_first_tracking" for item in tracking_items
+            ),
+            "backendIdentityPendingCount": sum(
+                item.get("relationshipClass") == "D" for item in handoff_items
+            ),
+        },
         "sourceImpactSummary": c21_front.get("sourceImpactSummary") or {},
     }
     front_items = []
@@ -414,34 +609,48 @@ def build_payloads(
         "schemaVersion": "c2.2-front-v1",
         "buildId": f"c22-front-{_sha({'candidateBuildId': screening_build_id, 'trackingBuildId': tracking_build_id})[:16]}",
         "candidateBuildId": screening_build_id,
+        "trackingCandidateBuildId": tracking_candidate_build_id,
         "trackingBuildId": tracking_build_id,
-        "generatedAt": generated_at,
-        "sourceCutoffAt": source_cutoff,
+        "generatedAt": tracking_generated_at,
+        "sourceCutoffAt": tracking_source_cutoff,
         "coverageSummary": {
             **(c21_front.get("coverageSummary") or {}),
             "frontVisibleCount": len(front_items),
         },
         "lifecycleCounts": _lifecycle_counts(screening_items),
-        "trackingStateCounts": _state_counts(tracking_items),
+        "trackingStateCounts": _state_counts(front_items),
         "items": front_items,
         "changes": changes,
     }
     admin = {
         "schemaVersion": "c2.2-admin-v1",
         "buildId": f"c22-admin-{_sha({'front': front['buildId'], 'tracking': tracking_build_id})[:16]}",
-        "generatedAt": generated_at,
-        "sourceCutoffAt": source_cutoff,
+        "generatedAt": tracking_generated_at,
+        "sourceCutoffAt": tracking_source_cutoff,
         "screening": screening,
         "tracking": tracking,
-        "jobs": _jobs(c21_admin, generated_at),
+        "trackingQualification": {
+            "buildId": tracking_candidate_build_id,
+            "candidateCount": len(handoff_items),
+            "evaluatedCandidateCount": tracking["inputSummary"]["evaluatedCandidateCount"],
+            "ruleEvaluatedCandidateCount": tracking["inputSummary"]["ruleEvaluatedCandidateCount"],
+            "completedFirstTrackingCount": tracking["inputSummary"]["completedFirstTrackingCount"],
+            "partialFirstTrackingCount": tracking["inputSummary"]["partialFirstTrackingCount"],
+            "detailedPublicItemCount": len(tracking_items),
+            "completedQualificationBatchCount": len(qualification_batch_ids),
+            "completedQualificationBatchIds": qualification_batch_ids,
+            "pendingFirstTrackingCount": tracking["inputSummary"]["pendingFirstTrackingCount"],
+            "backendIdentityPendingCount": tracking["inputSummary"]["backendIdentityPendingCount"],
+        },
+        "jobs": _jobs(c21_admin, tracking_generated_at),
         "config": _runtime_config(),
-        "sourceHealth": c21_admin.get("sourceHealth") or [],
+        "sourceHealth": _source_health_with_ownership(c21_admin.get("sourceHealth") or []),
         "cursors": c21_admin.get("cursors") or [],
         "runs": c21_admin.get("runs") or [],
         "quality": c21_admin.get("quality") or {},
         "inheritance": {
             "screeningSource": "c2.1-front-snapshot",
-            "trackingSource": "c2.1-front-tracking-fields",
+            "trackingSource": "completed-candidate-qualification-batches-plus-c2.1-tracking-fields",
             "joinKey": "assetId",
             "dataLimitedFrontStateRemoved": True,
         },
@@ -603,14 +812,24 @@ def _runtime_config() -> dict[str, Any]:
 
 
 def _validate_payloads(front: dict[str, Any], tracking: dict[str, Any], admin: dict[str, Any]) -> None:
-    front_assets = {row.get("assetId") for row in front.get("items") or []}
-    tracking_assets = {row.get("assetId") for row in tracking.get("items") or []}
-    if None in front_assets or None in tracking_assets or front_assets != tracking_assets:
-        raise ValueError("C2.2前台与跟踪项目集合不一致，拒绝发布")
-    if tracking.get("candidateBuildId") != front.get("candidateBuildId"):
-        raise ValueError("C2.2跟踪引用的candidateBuildId不一致，拒绝发布")
+    front_rows = front.get("items") or []
+    tracking_rows = tracking.get("items") or []
+    front_assets = {row.get("assetId") for row in front_rows}
+    tracking_assets = {row.get("assetId") for row in tracking_rows}
+    if None in front_assets or None in tracking_assets:
+        raise ValueError("C2.2快照存在缺少assetId的对象，拒绝发布")
+    if len(front_assets) != len(front_rows) or len(tracking_assets) != len(tracking_rows):
+        raise ValueError("C2.2快照存在重复assetId，拒绝发布")
+    if not front_assets.issubset(tracking_assets):
+        raise ValueError("C2.2公开候选没有完整进入后台跟踪，拒绝发布")
+    if tracking.get("candidateBuildId") != front.get("trackingCandidateBuildId"):
+        raise ValueError("C2.2跟踪资格批次版本不一致，拒绝发布")
     if (admin.get("screening") or {}).get("buildId") != front.get("candidateBuildId"):
         raise ValueError("C2.2后台筛选快照与统一前台候选版本不一致，拒绝发布")
+    if (admin.get("trackingQualification") or {}).get("buildId") != tracking.get("candidateBuildId"):
+        raise ValueError("C2.2后台跟踪资格摘要与跟踪快照版本不一致，拒绝发布")
+    if (tracking.get("inputSummary") or {}).get("detailedPublicItemCount") != len(tracking_rows):
+        raise ValueError("C2.2公开跟踪详情数量与跟踪快照不一致，拒绝发布")
     if not all(payload.get("schemaVersion") for payload in (front, tracking, admin)):
         raise ValueError("C2.2快照缺少schemaVersion，拒绝发布")
 
@@ -682,7 +901,10 @@ def build_snapshots(
             previous_tracking = load_js_payload(previous_path, C22_TRACKING_PREFIX)
         except (OSError, ValueError, json.JSONDecodeError):
             previous_tracking = None
-    tracking_catalog = load_tracking_catalog(tracking_db_path or (PROJECT_ROOT / "data" / "c2.1-pipeline.db"))
+    candidate_database = tracking_db_path or (PROJECT_ROOT / "data" / "c2.1-pipeline.db")
+    tracking_catalog = load_tracking_catalog(candidate_database)
+    tracking_candidates = load_tracking_candidates(candidate_database)
+    tracking_records = load_tracking_records(candidate_database)
     main_ids = {str(item.get("assetId")) for item in c21_front.get("items") or [] if item.get("assetId")}
     for record in tracking_catalog.values():
         if record.get("mainAssetId"):
@@ -692,6 +914,8 @@ def build_snapshots(
         c21_front,
         c21_admin,
         tracking_catalog=tracking_catalog,
+        tracking_candidates=tracking_candidates,
+        tracking_records=tracking_records,
         previous_tracking=previous_tracking,
         main_database_facts=main_database_facts,
     )

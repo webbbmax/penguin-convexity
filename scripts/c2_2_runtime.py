@@ -23,6 +23,11 @@ DEFAULT_LOG_PATH = RUNTIME_ROOT / "logs" / "update-runner.log"
 DEFAULT_RUNNER = PROJECT_ROOT / "scripts" / "run_c2_2_update.py"
 JOB_CODES = ("screening", "convexity_tracking")
 ALLOWED_INTERVALS = {1, 3, 6, 12, 24}
+# The Windows scheduler checks every 15 minutes.  A positive delay can land a
+# few seconds after the next tick and silently postpone a resumable checkpoint
+# by another full interval.  Mark continuations due immediately; the existing
+# single-writer lock still prevents overlap with a live run.
+PARTIAL_RESUME_DELAY_MINUTES = 0
 
 
 def utc_now() -> datetime:
@@ -86,7 +91,7 @@ def load_config(path: Path = DEFAULT_CONFIG_PATH) -> dict:
 
 def validate_config(config: dict) -> bool:
     if config.get("timezone") != "Asia/Shanghai":
-        raise ValueError("C2.2当前只支持Asia/Shanghai时区。")
+        raise ValueError("当前更新中心只支持Asia/Shanghai时区。")
     for code in JOB_CODES:
         job = config.get("jobs", {}).get(code, {})
         if job.get("mode") not in {"manual", "automatic"}:
@@ -98,7 +103,7 @@ def validate_config(config: dict) -> bool:
 
 def update_config(job_code: str, changes: dict, path: Path = DEFAULT_CONFIG_PATH) -> dict:
     if job_code not in JOB_CODES:
-        raise ValueError("没有找到这个C2.2作业。")
+        raise ValueError("没有找到这个更新作业。")
     unknown = set(changes) - {"mode", "intervalHours", "paused"}
     if unknown:
         raise ValueError("包含不支持的更新设置。")
@@ -133,7 +138,7 @@ def save_state(state: dict, path: Path = DEFAULT_STATE_PATH) -> dict:
 
 def job_status(job_code: str) -> dict:
     if job_code not in JOB_CODES:
-        raise ValueError("没有找到这个C2.2作业。")
+        raise ValueError("没有找到这个更新作业。")
     path = RUNTIME_ROOT / "jobs" / f"{job_code}.json"
     return load_json(path, {"schemaVersion": "c2.2-job-status-v1", "jobCode": job_code, "state": "not_started", "stage": "not_started", "message": "尚未运行。", "progress": {"completed": 0, "total": 0}})
 
@@ -142,20 +147,41 @@ def save_job_status(payload: dict) -> dict:
     return atomic_json(RUNTIME_ROOT / "jobs" / f"{payload['jobCode']}.json", payload) and payload
 
 
-def pause_current_requested() -> bool:
-    return bool(load_json(DEFAULT_PAUSE_PATH, {}).get("requested"))
+def pause_current_request() -> dict:
+    return load_json(DEFAULT_PAUSE_PATH, {})
 
 
-def request_pause_current(requested: bool) -> bool:
-    atomic_json(DEFAULT_PAUSE_PATH, {"requested": bool(requested), "updatedAt": iso_time(utc_now())})
-    return pause_current_requested()
+def pause_current_requested(job_code: str | None = None) -> bool:
+    request = pause_current_request()
+    requested_for = request.get("jobCode")
+    return bool(request.get("requested")) and (not job_code or not requested_for or requested_for == job_code)
 
 
-def next_run_at(job_code: str, from_time: datetime | None = None) -> str | None:
+def request_pause_current(requested: bool, job_code: str | None = None) -> bool:
+    if job_code is not None and job_code not in JOB_CODES:
+        raise ValueError("没有找到这个更新作业。")
+    atomic_json(
+        DEFAULT_PAUSE_PATH,
+        {"requested": bool(requested), "jobCode": job_code, "updatedAt": iso_time(utc_now())},
+    )
+    return pause_current_requested(job_code)
+
+
+def next_run_at(
+    job_code: str,
+    from_time: datetime | None = None,
+    *,
+    continuation: bool = False,
+) -> str | None:
     config = load_config()["jobs"][job_code]
     if config.get("mode") != "automatic" or config.get("paused"):
         return None
-    return iso_time((from_time or utc_now()) + timedelta(hours=int(config["intervalHours"])))
+    delay = (
+        timedelta(minutes=PARTIAL_RESUME_DELAY_MINUTES)
+        if continuation
+        else timedelta(hours=int(config["intervalHours"]))
+    )
+    return iso_time((from_time or utc_now()) + delay)
 
 
 def is_due(job_code: str, now: datetime | None = None) -> bool:
@@ -164,6 +190,17 @@ def is_due(job_code: str, now: datetime | None = None) -> bool:
         return False
     status = job_status(job_code)
     due = parse_time(status.get("nextDueAt"))
+    if status.get("state") == "partial":
+        checkpoint_at = parse_time(
+            status.get("lastHeartbeatAt")
+            or status.get("lastCompletedAt")
+            or status.get("updatedAt")
+        )
+        if checkpoint_at is None:
+            return True
+        continuation_due = checkpoint_at + timedelta(minutes=PARTIAL_RESUME_DELAY_MINUTES)
+        if due is None or continuation_due < due:
+            due = continuation_due
     if due is None:
         return True
     return (now or utc_now()) >= due
@@ -222,15 +259,25 @@ def pipeline_lock(path: Path = DEFAULT_LOCK_PATH):
             path.unlink(missing_ok=True)
 
 
-def launch_hidden(job_code: str, trigger: str = "manual") -> dict:
+def launch_hidden(job_code: str, trigger: str = "manual", source_id: str | None = None) -> dict:
     if job_code not in JOB_CODES and job_code != "all":
-        raise ValueError("没有找到这个C2.2作业。")
+        raise ValueError("没有找到这个更新作业。")
+    if source_id and job_code not in JOB_CODES:
+        raise ValueError("单项来源更新必须指定一个作业。")
     statuses = [job_status(code) for code in JOB_CODES]
     if any(status.get("state") == "running" for status in statuses):
-        return {"status": "already_running", "message": "已有C2.2作业在隐藏后台运行。", "jobs": statuses}
+        return {"status": "already_running", "message": "已有更新作业在隐藏后台运行。", "jobs": statuses}
     request_pause_current(False)
+    try:
+        from c2_1_runtime import request_pause_current as request_c21_pause
+
+        request_c21_pause(False)
+    except Exception:
+        pass
     DEFAULT_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     command = [sys.executable, str(DEFAULT_RUNNER), "--job", job_code, "--trigger", trigger]
+    if source_id:
+        command.extend(["--source-id", source_id])
     creationflags = 0
     startupinfo = None
     if os.name == "nt":
@@ -242,18 +289,32 @@ def launch_hidden(job_code: str, trigger: str = "manual") -> dict:
         process = subprocess.Popen(command, cwd=str(PROJECT_ROOT), stdin=subprocess.DEVNULL, stdout=log, stderr=log, creationflags=creationflags, startupinfo=startupinfo, close_fds=True)
     state = load_state()
     save_state({**state, "lastStartedAt": iso_time(utc_now()), "lastStatus": "launched", "lastTrigger": trigger, "lastError": "", "lastLaunchedPid": process.pid})
-    return {"status": "launched", "pid": process.pid, "message": "C2.2更新已在隐藏后台启动；关闭产品窗口不会中断。"}
+    return {"status": "launched", "pid": process.pid, "message": "更新已在隐藏后台启动；关闭产品窗口不会中断。"}
 
 
 def status_payload() -> dict:
     config = load_config()
+    try:
+        from candidate_production_runtime import status_payload as candidate_production_status
+
+        production = candidate_production_status()
+    except Exception as error:
+        production = {
+            "schemaVersion": "c2.2-candidate-production-status-v1",
+            "state": "program_failure",
+            "errorCode": "program_failure",
+            "errorDetail": f"{type(error).__name__}: {error}",
+            "formalHistoricalScanAuthorized": False,
+        }
     return {
         "schemaVersion": "c2.2-update-status-v1",
         "config": config,
         "scheduler": load_state(),
         "jobs": {code: job_status(code) for code in JOB_CODES},
         "pauseCurrentRequested": pause_current_requested(),
+        "pauseCurrentJob": pause_current_request().get("jobCode"),
         "normalDesktopConsoleWindows": 0,
         "runtimeBoundary": "关闭窗口或Codex后继续；关机/休眠时停止，下一次Windows登录后由同一任务恢复。",
         "singleWindowsTask": "PenguinConvexity-C1.8-Scheduler",
+        "candidateProduction": production,
     }

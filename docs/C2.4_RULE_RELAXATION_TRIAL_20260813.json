@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "c2.4-rule-relaxation-trial-v1",
+  "status": "user_authorized_active_trial",
+  "authorizedAt": "2026-08-13",
+  "purpose": "先恢复真实项目召回，让后续动态贝叶斯排序有足够对象；本试行不等于安全、质量或买入结论。",
+  "frozenBaseline": {
+    "requirementsLock": "docs/C2.4_REQUIREMENTS_LOCK.json",
+    "requirementsLockSha256": "9c41e39b4311bef4cfcc3111cabda16c0f43e87129ac5fe4089688d58546d447",
+    "ruleConfig": "docs/C2.4_RULE_CONFIG.json",
+    "ruleConfigSha256": "775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988",
+    "note": "冻结文件保留不改；本文件记录用户在发布后明确授权的活跃试行覆盖。"
+  },
+  "activeOverrides": {
+    "publicBaseline": [
+      "100美元标准卖出报价成功即可；报价损失比例只记录",
+      "风险来源缺失不冒充安全，也不直接淘汰",
+      "只有已确认冻结、黑名单、蜜罐或无法卖出等硬交易阻断才立即停止",
+      "项目证据可程序归属、稳定身份与A/B/C关系仍是公开必要条件"
+    ],
+    "strongEvidence": [
+      "100美元标准卖出报价成功即可形成流动性与退出质量路径",
+      "交易需求、供应结构和全池活动路径继续按各自真实输入独立计算"
+    ],
+    "disabledAsGates": [
+      "sell_quote_loss_pct_lte_10_or_15",
+      "sell_quote_loss_pct_gte_20_immediate_exit",
+      "liquidity_drop_pct_gte_80_path_invalidation",
+      "supply_decimals_or_unit_change_path_invalidation",
+      "cross_source_price_deviation_pct_gte_25_path_pause",
+      "sell_tax_pct_gte_20_as_hard_block"
+    ]
+  },
+  "dataBoundary": [
+    "所有被取消的百分比与单位字段继续保存为原始证据，不删除历史",
+    "单位变化时按各历史区块返回的decimals分别换算后再比较，不把变化本身当作失败",
+    "报价只是只读路由估算，不代表其他金额、未来时点或极端行情一定可退出",
+    "试行可能明显增加凸性线索数量；数量增加不证明投资质量提高"
+  ]
+}

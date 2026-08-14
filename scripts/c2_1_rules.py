@@ -225,27 +225,19 @@ def evaluate_paths(candidate, market, risks, product_usage, supply, pool_window,
     quote_loss = number((market or {}).get("standardSellQuoteLossPct"))
     values = ((volume, thresholds["volumeP60"]), (transactions, thresholds["transactionsP60"]), (ratio, thresholds["ratioP60"]))
     passing = sum(value is not None and value >= threshold for value, threshold in values)
-    quote_available = quote_state == "success" and quote_loss is not None
+    quote_available = quote_state == "success"
     market_available = (market or {}).get("sourceStatus") == "success"
-    path1_formed = all((
-        market_available,
-        liquidity is not None and liquidity >= max(thresholds["liquidityFloor"], thresholds["liquidityP60"]),
-        number((market or {}).get("observedBuys")) is not None and number((market or {}).get("observedBuys")) >= 1,
-        number((market or {}).get("observedSells")) is not None and number((market or {}).get("observedSells")) >= 1,
-        passing >= 2,
-        quote_available and quote_loss <= 10,
-        not severe,
-    ))
+    path1_formed = market_available and quote_available and not severe
     if not market_available or quote_state in {"no_data", "unsupported", "quota_limited", "source_failure", "configuration_missing", "program_failure", None}:
         path1_status = "unavailable"
         path1_reason = "市场或100美元标准卖出报价暂不可用，不能补零或冒充通过。"
     else:
         path1_status = "formed" if path1_formed else "not_formed"
-        path1_reason = "流动性、买卖、同组需求指标和100美元卖出报价同时满足冻结规则。" if path1_formed else "当前完整数据没有同时满足流动性、需求指标和卖出报价护栏。"
+        path1_reason = "100美元标准卖出报价成功，且没有已确认的硬交易阻断；比例指标只记录。" if path1_formed else "卖出报价可用，但存在已确认的硬交易阻断。"
     path1 = path("trade_liquidity_formation", path1_status, path1_reason, [
         {"label": "流动性", "value": liquidity, "threshold": max(thresholds["liquidityFloor"], thresholds["liquidityP60"]), "unit": "USD"},
         {"label": "达到P60的需求指标", "value": passing, "threshold": 2, "unit": "项"},
-        {"label": "100美元卖出估算损失", "value": quote_loss, "threshold": 10, "unit": "%"},
+        {"label": "100美元卖出估算损失", "value": quote_loss, "threshold": None, "unit": "%"},
     ], unknowns=[] if quote_available else ["100美元标准卖出报价不可用"], evidence_ids=(market or {}).get("evidenceIds"), formed_at=observed_at if path1_formed else None)
 
     usage = product_usage or {}
@@ -254,7 +246,7 @@ def evaluate_paths(candidate, market, risks, product_usage, supply, pool_window,
     path2 = path("verified_product_usage_expansion", "formed" if usage_formed else "not_formed" if usage_ready else "unavailable", "确定映射的产品使用在两个等长完整窗口达到绝对值与增幅门槛。" if usage_formed else "真实产品使用序列完整但未达到冻结门槛。" if usage_ready else "没有确定映射的真实产品使用时间序列。", usage.get("supportingMetrics"), unknowns=[] if usage_ready else ["真实产品使用历史不可用"], evidence_ids=usage.get("evidenceIds"), formed_at=observed_at if usage_formed else None)
 
     supply = supply or {}
-    supply_ready = supply.get("historyState") == "success" and supply.get("unitScaleStable") is True and supply.get("marketActivityVsP50") is not None
+    supply_ready = supply.get("historyState") == "success" and supply.get("marketActivityVsP50") is not None
     top10_change = (number(supply.get("previousTop10SharePct")), number(supply.get("currentTop10SharePct")))
     hhi_change = (number(supply.get("previousHolderHhi")), number(supply.get("currentHolderHhi")))
     supply_change = number(supply.get("supplyChangePct"))
@@ -268,7 +260,7 @@ def evaluate_paths(candidate, market, risks, product_usage, supply, pool_window,
 
     pool = pool_window or {}
     pool_state = pool.get("sourceStatus")
-    pool_ready = pool_state == "success" and pool.get("indexedPoolCount") == pool.get("ohlcvSuccessCount") and pool.get("supplyHistorySuccess") and pool.get("unitScaleStable") is True and number(pool.get("relativeExpansion")) is not None and number(pool.get("riskAdjustedSurplus")) is not None
+    pool_ready = pool_state == "success" and pool.get("indexedPoolCount") == pool.get("ohlcvSuccessCount") and pool.get("supplyHistorySuccess") and number(pool.get("relativeExpansion")) is not None and number(pool.get("riskAdjustedSurplus")) is not None
     comparison_formed = pool.get("comparisonWindowComplete") is True
     path4_formed = pool_ready and comparison_formed and number(pool.get("relativeExpansion")) >= thresholds["relativeExpansionP60"] and number(pool.get("riskAdjustedSurplus")) > 0 and not severe
     if pool_state in {"quota_limited", "source_failure", "unsupported", "configuration_missing", "program_failure", "no_data", None}:
@@ -304,10 +296,9 @@ def factor_and_confidence(market, supply, product_usage, pool_window, risks, pro
             return "improving" if passing >= 2 else "stable"
         if code == "L":
             liquidity = number(market.get("liquidityUsd"))
-            quote_loss = number(market.get("standardSellQuoteLossPct"))
-            return "improving" if liquidity is not None and quote_loss is not None and liquidity >= max(thresholds["liquidityFloor"], thresholds["liquidityP60"]) and quote_loss <= 10 else "weakening"
+            return "improving" if market.get("standardSellQuoteState") == "success" else "weakening"
         if code == "S":
-            return "weakening" if supply.get("unitScaleStable") is False else "stable"
+            return "stable"
         if code == "G":
             return "improving" if pool_window and number(pool_window.get("riskAdjustedSurplus")) is not None and number(pool_window.get("riskAdjustedSurplus")) > 0 else "stable"
         return "weakening" if any(row.get("severeAnomaly") for row in risks) else "stable"
@@ -375,13 +366,7 @@ def evaluate_candidate(candidate, *, market=None, risks=None, product_usage=None
     directions, confidence, sort_score, observed_factor_count = factor_and_confidence(market or {}, supply or {}, product_usage or {}, pool_window or {}, risks, product, history, source_impact, thresholds)
     formed_paths = [row["pathCode"] for row in paths if row["status"] == "formed"]
     source_types = set(candidate.get("independentSourceTypes") or [])
-    immediate_path_invalidation = any((
-        number((market or {}).get("liquidityDrawdownPct")) is not None and number((market or {}).get("liquidityDrawdownPct")) >= 80,
-        number((market or {}).get("standardSellQuoteLossPct")) is not None and number((market or {}).get("standardSellQuoteLossPct")) >= 20,
-        supply is not None and supply.get("unitScaleStable") is False,
-        pool_window is not None and pool_window.get("unitScaleStable") is False,
-    ))
-    clue = hard_gate["status"] == "pass" and observed_factor_count >= 3 and "trade_liquidity_formation" in formed_paths and len(formed_paths) >= 2 and len(source_types) >= 2 and not any(row.get("severeAnomaly") for row in risks) and not immediate_path_invalidation
+    clue = hard_gate["status"] == "pass" and observed_factor_count >= 3 and "trade_liquidity_formation" in formed_paths and len(formed_paths) >= 2 and len(source_types) >= 2 and not any(row.get("severeAnomaly") for row in risks)
     active_market = market and number(market.get("observedBuys")) is not None and number(market.get("observedBuys")) >= 1 and number(market.get("observedSells")) is not None and number(market.get("observedSells")) >= 1 and any(((number(market.get("volumeUsd")) or -1) >= thresholds["volumeP70"], (number(market.get("transactionCount")) or -1) >= thresholds["transactionsP70"], (number(market.get("volumeLiquidityRatio")) or -1) >= thresholds["ratioP70"]))
     github = product["github"]
     recent_commit = parse_utc(github.get("lastCommitAt"))
@@ -411,7 +396,7 @@ def evaluate_candidate(candidate, *, market=None, risks=None, product_usage=None
 
     window_id = evaluation_window_id(candidate.get("effectiveT0"), as_of, band_code)
     misses = 0
-    if previous and previous.get("displayState", {}).get("code") in {"convexity_clue", "active_project"} and display_state not in {"data_limited", previous.get("displayState", {}).get("code")} and hard_gate["status"] == "pass" and not any(row.get("severeAnomaly") for row in risks) and not immediate_path_invalidation:
+    if previous and previous.get("displayState", {}).get("code") in {"convexity_clue", "active_project"} and display_state not in {"data_limited", previous.get("displayState", {}).get("code")} and hard_gate["status"] == "pass" and not any(row.get("severeAnomaly") for row in risks):
         previous_window = previous.get("evaluationWindowId")
         misses = int(previous.get("consecutiveCompletedMisses") or 0) + (window_id != previous_window)
         if misses < 2:

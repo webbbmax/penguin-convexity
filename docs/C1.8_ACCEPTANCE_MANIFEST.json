@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "c1.8-sol-acceptance-v1",
+  "release": "C1.8",
+  "product": "企鹅投研-凸性",
+  "acceptedAt": "2026-08-02T11:00:30+08:00",
+  "authority": "Sol",
+  "status": "accepted",
+  "requirementsLock": {
+    "status": "matched",
+    "prdSha256": "b1408060892b365107872083f718881c912db3fd8b52a33a69543956699cb63f",
+    "acceptancePlanSha256": "6c543d4eb73d8e27c7aadcabb16e27b385c43f9da23dce2862502b99d4721459",
+    "handoffSha256": "ab6ab52b507da7124f18b8289a8f63b950cf3e728df9a511313bebd8cabe4d6b"
+  },
+  "baseline": {
+    "manifest": "docs/C1.8_BASELINE_MANIFEST.json",
+    "manifestSha256": "0d308ec7640ea899f1dc82297fcbe0f1dc81ab0e197d802ee14f62d7daeac12b",
+    "database": "backups/c1.8-implementation-baseline-20260802T011943Z/data/convexity.db",
+    "activeSnapshots": 27,
+    "projectFiles": "backups/c1.7-00-baseline-20260801T042722Z/project-inventory.json",
+    "olderBaselinesPreserved": [
+      "backups/c1.7-00-baseline-20260801T042722Z",
+      "backups/m1-source-baseline"
+    ]
+  },
+  "database": {
+    "path": "data/convexity.db",
+    "bytes": 220913664,
+    "sha256AfterFinalRuntimeOpen": "51f92767c0dfaa143c75360024ae9c070cfd6a795e340850982d9a8513df82dd",
+    "integrityCheck": "ok",
+    "foreignKeyErrors": 0,
+    "tableCount": 54,
+    "counts": {
+      "projects": 589,
+      "candidateCases": 590,
+      "rawEvents": 16191,
+      "normalizedEventsV2": 16191,
+      "evidenceItems": 2977,
+      "evidenceLineage": 58166,
+      "trackingTaskRuns": 0,
+      "catalystTradePaths": 966,
+      "publishedCatalystTradePaths": 590,
+      "monitoringTargets": 4285,
+      "publishedMonitoringTargets": 2793
+    }
+  },
+  "automatedScheduler": {
+    "taskName": "PenguinConvexity-C1.8-Scheduler",
+    "taskState": "Ready",
+    "lastNaturalRunAt": "2026-08-02T11:00:01+08:00",
+    "lastNaturalRunResult": 0,
+    "nextRunAt": "2026-08-02T12:00:00+08:00",
+    "startWhenAvailable": true,
+    "batteryAllowed": true,
+    "multipleInstances": "IgnoreNew",
+    "executionTimeLimit": "PT55M",
+    "closedDesktopIsolatedEvidence": "runtime/cache/s18-20260802T104001",
+    "closedDesktopIsolatedResult": "Windows task woke, isolated dry-run completed, database unchanged",
+    "dueSelection": "live database time comparison",
+    "statusesVerified": [
+      "not_due",
+      "queued",
+      "running",
+      "no_change",
+      "completed",
+      "partial",
+      "failed",
+      "paused",
+      "quota_delayed"
+    ]
+  },
+  "verification": {
+    "pythonTests": {"total": 57, "passed": 57, "failed": 0},
+    "liveRoutesAndResources": {"legacy": 29, "new": 1, "total": 30, "passed": 30, "failed": 0},
+    "javascriptSyntax": {"passed": true},
+    "coldStart": {
+      "desktopReadySeconds": 4.7,
+      "backgroundRebuildSeconds": 17.95,
+      "backgroundRebuildStatus": "success"
+    },
+    "windowsDesktop": {
+      "launch": "passed",
+      "singleInstance": "passed",
+      "windowPositionSave": "passed",
+      "windowPositionRestore": "passed",
+      "legacyShortcutCoexists": "passed"
+    },
+    "realClick": {
+      "homeFourModules": "passed",
+      "homeMaximumFiveItems": "passed",
+      "actionGapsAndHubble": "passed",
+      "changeFiltersAndPagination": "passed",
+      "catalystFiveStepsAndPagination": "passed",
+      "projectLibraryAndReturnMemory": "passed",
+      "schedulerStatusReadability": "passed"
+    },
+    "isolatedBusinessDataRestore": {
+      "backup": "runtime/cache/sol-c1.8-release-20260802T104807",
+      "databaseRestored": true,
+      "activeSnapshotsRestored": 27,
+      "snapshotHashDifferences": 0
+    }
+  },
+  "acceptanceMatrix": {
+    "A01": "passed",
+    "A02": "passed",
+    "A03": "passed",
+    "A04": "passed",
+    "A05": "passed",
+    "A06": "passed",
+    "A07": "passed",
+    "A08": "passed",
+    "A09": "passed",
+    "A10": "passed",
+    "A11": "passed",
+    "A12": "passed",
+    "A13": "passed",
+    "A14": "passed",
+    "A15": "passed",
+    "A16": "passed"
+  },
+  "boundaries": {
+    "scoringChanged": false,
+    "actionRulesChanged": false,
+    "l0ToL5Changed": false,
+    "automaticTradingAdded": false,
+    "runtimeReferencesToRwaOrLegacyProjects": 0,
+    "plaintextSecretsFound": 0
+  },
+  "remainingRisks": [
+    "Windows计划任务使用当前用户的交互式登录令牌；关闭软件窗口后可以运行，但Windows用户完全退出登录时不会运行。",
+    "市场、流动性、治理、部署和监管事实会变化，正式行动前仍需按页面时间重新采集。",
+    "历史孤儿证据和尚待判断来源继续保留，不用猜测或合成数据填平。"
+  ],
+  "nextVersion": {
+    "name": "未定义",
+    "status": "waiting_for_user_confirmation",
+    "implemented": false
+  }
+}

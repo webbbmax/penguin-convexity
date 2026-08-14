@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "c2.3-implementation-status-v1",
+  "release": "C2.3",
+  "name": "稳定桌面容器与浏览器隔离",
+  "status": "independent_full_acceptance_complete_released",
+  "implemented": true,
+  "published": true,
+  "completedAt": "2026-08-12T11:39:46+08:00",
+  "requirementSetSha256": "82057a667611285c8486008145ac105fa7549f4e56eeb9dcfcf68b9333008746",
+  "sdk": {
+    "dotnet": "10.0.400",
+    "installRoot": "F:/DevTools/dotnet",
+    "nugetCache": "F:/DevTools/nuget-packages",
+    "webView2Sdk": "1.0.3537.50",
+    "webView2EvergreenObserved": "151.0.4129.72"
+  },
+  "artifact": {
+    "runtime": "win-x64",
+    "selfContained": true,
+    "path": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "trackedByGit": false,
+    "buildScript": "scripts/build-c2.3-desktop.ps1"
+  },
+  "implementation": {
+    "wpfContainer": true,
+    "webView2IsolatedUserData": "runtime/webview2/user-data",
+    "singleInstanceMutexAndPipe": true,
+    "healthIdentityCheck": true,
+    "exactOwnedServicePid": true,
+    "externalServicePreserved": true,
+    "windowStateAtomic": "runtime/window-state-c2.3.json",
+    "legacyWindowStateImport": "runtime/window-state.json",
+    "fivePlainLanguageFaultStates": true,
+    "localHttpBusinessChannelOnly": true,
+    "cSharpBusinessDatabaseWrites": false,
+    "secondScheduler": false
+  },
+  "developmentVerification": {
+    "dotnetBuildWarnings": 0,
+    "dotnetBuildErrors": 0,
+    "dotnetTestsPassed": 8,
+    "dotnetTestsFailed": 0,
+    "contractTest": "passed",
+    "liveRoutesPassed": 32,
+    "nativeWindowShownMs": 710,
+    "productPageReadyMs": 982,
+    "duplicateActivationMs": 127,
+    "realVisiblePaths": [
+      "机会首页",
+      "全部机会",
+      "项目详情",
+      "返回原列表",
+      "管理工作台",
+      "90天新币筛选",
+      "凸性跟踪更新"
+    ],
+    "manualUpdateClicks": 0,
+    "ordinaryBrowserWindowChanges": 0,
+    "projectWebViewOrphansAfterClose": 0,
+    "mainDatabaseQuickCheck": "ok",
+    "mainDatabaseForeignKeyErrors": 0,
+    "appTreeSha256Unchanged": "0e768fea7291843d49d9aa050ba06d6a48a24f0630176d120a8c653de35f06ed",
+    "desktopWebTreeSha256Unchanged": "c9f45e60672ba4a54b3a13c377ad70e4a2756e1b9862395faa1f774c7da4ef3d"
+  },
+  "runtimeIsolationAfterVerification": {
+    "candidateProductionPid": 4160,
+    "candidateProductionRunId": "candidate-production-20260812T015104Z-96c732",
+    "candidateProductionState": "running",
+    "candidateLocalScannedCount": 2458897,
+    "localServicePid": 43568,
+    "officialShortcutUsesC23DesktopContainer": true,
+    "schedulerUnchanged": "PenguinConvexity-C1.8-Scheduler"
+  },
+  "independentAcceptanceRequired": false,
+  "independentAcceptance": {
+    "status": "passed",
+    "acceptedAt": "2026-08-12T12:03:25+08:00",
+    "checksPassed": 38,
+    "checksFailed": 0,
+    "manifest": "docs/C2.3_ACCEPTANCE_MANIFEST.json",
+    "report": "docs/C2.3_FINAL_ACCEPTANCE.md"
+  },
+  "releaseBlockedUntilIndependentAcceptance": false,
+  "formalShortcutChanged": true,
+  "releaseManifest": "docs/C2.3_RELEASE_MANIFEST.json"
+}

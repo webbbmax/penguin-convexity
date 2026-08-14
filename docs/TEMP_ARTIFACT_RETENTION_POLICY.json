@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "convexity-temp-artifact-retention-policy-v1",
+  "effectiveAt": "2026-08-13",
+  "managedRoot": "runtime/temp-artifacts",
+  "automaticSweep": {
+    "scheduler": "PenguinConvexity-C1.8-Scheduler",
+    "newWindowsTask": false,
+    "minimumIntervalHours": 24,
+    "hidden": true,
+    "businessJobsContinueWhenSweepFails": true
+  },
+  "registration": {
+    "marker": ".retention.json",
+    "requiredFields": [
+      "artifactId",
+      "relativePath",
+      "ownerTask",
+      "purpose",
+      "ownerPid",
+      "registeredAt",
+      "deleteAfter",
+      "state"
+    ],
+    "defaultRetentionAfterFinishHours": 24,
+    "maximumRetentionHours": 720
+  },
+  "automaticDeleteRequires": [
+    "direct child of runtime/temp-artifacts",
+    "valid registration marker whose path matches the directory",
+    "deleteAfter has passed",
+    "owner process is not running or artifact is sealed",
+    "no reparse point or symbolic link",
+    "sealed payload has not changed after sealing"
+  ],
+  "neverAutoDelete": [
+    "data",
+    "backups",
+    "desktop-host/publish",
+    "runtime/gate0-shadow",
+    "runtime/c2.1",
+    "runtime/c2.2",
+    "runtime/c2.3-acceptance",
+    "runtime/cache",
+    "runtime/locks",
+    "any unregistered path"
+  ],
+  "producerRule": "Large development or acceptance copies must be created through scripts/temp_artifact_retention.py or managed_temp_artifact; writing new full-database copies elsewhere is prohibited.",
+  "releaseCheck": "Before reporting implementation or acceptance complete, run status and confirm no overdue registered artifact remains blocked without an explicit reason."
+}

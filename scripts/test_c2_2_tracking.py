@@ -1,10 +1,31 @@
 #!/usr/bin/env python3
 import unittest
 
-from c2_2_tracking import build_bayes_evidence
+from c2_2_bayes import metric_z
+from c2_2_tracking import _PreparedMetricCohort, build_bayes_evidence
 
 
 class C22TrackingTests(unittest.TestCase):
+    def test_prepared_cohort_is_numerically_identical_to_frozen_metric_transform(self):
+        cases = [
+            ([0, 0, 1, 2, 2, 10, 100], "nonnegative", "positive"),
+            ([0.01, 0.1, 0.1, 0.5, 0.9, 1.0], "proportion", "negative"),
+            ([-3, -1, 0, 2, 8], "raw", "positive"),
+        ]
+        for values, kind, direction in cases:
+            prepared = _PreparedMetricCohort(values, kind, direction)
+            for value in [*values, 0.3, 50]:
+                self.assertAlmostEqual(
+                    prepared.z(value, include_current=False),
+                    metric_z(value, values, kind=kind, direction=direction),
+                    places=12,
+                )
+                self.assertAlmostEqual(
+                    prepared.z(value, include_current=True),
+                    metric_z(value, [*values, value], kind=kind, direction=direction),
+                    places=12,
+                )
+
     def test_catalog_metrics_feed_bayes_without_reallocating_missing_indicators(self):
         metrics = {
             "volume": 1000,

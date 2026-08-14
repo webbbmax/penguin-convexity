@@ -16,12 +16,20 @@ import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_DOWN
+from html.parser import HTMLParser
 from pathlib import Path
 
 from c2_1_db import json_text, utc_now
 from c2_1_resilience import commit_cursor, cursor_decision, day_window, hour_window
 from c2_1_rules import age_days
 from contract_tradeability import user_environment
+from robinhood_readonly_quote import (
+    NATIVE_CURRENCY as ROBINHOOD_NATIVE_CURRENCY,
+    USDG as ROBINHOOD_USDG,
+    WETH as ROBINHOOD_WETH,
+    quote_pool as quote_robinhood_pool,
+    token_decimals as robinhood_token_decimals,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -38,6 +46,9 @@ STABLE_OUTPUTS = {
     "bnb-mainnet": ("0x55d398326f99059ff775485246999027b3197955", 18, "USDT"),
     "solana-mainnet": ("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 6, "USDC"),
 }
+ROBINHOOD_OFFICIAL_ASSETS_URL = "https://api.robinhood.com/rhj/assets"
+ROBINHOOD_OFFICIAL_ASSETS_DOC = "https://docs.robinhood.com/chain/stock-token-apis/"
+ROBINHOOD_PUBLIC_RPC = "https://rpc.mainnet.chain.robinhood.com"
 RETRYABLE_SOURCE_STAGES = {
     "coingecko_new_pools": "incrementalDiscovery",
     "dexscreener": "market",
@@ -90,9 +101,10 @@ def parse_time(value):
 
 
 class JsonClient:
-    def __init__(self, timeout=35, sleep=time.sleep):
+    def __init__(self, timeout=35, sleep=time.sleep, retry_delays=RETRY_DELAYS):
         self.timeout = timeout
         self.sleep = sleep
+        self.retry_delays = tuple(retry_delays) or (0,)
         self.last_request_at = defaultdict(float)
         self.circuit = {}
 
@@ -104,7 +116,7 @@ class JsonClient:
         if elapsed < minimum_interval:
             self.sleep(minimum_interval - elapsed)
         attempts = []
-        for attempt, delay in enumerate(RETRY_DELAYS, start=1):
+        for attempt, delay in enumerate(self.retry_delays, start=1):
             if delay:
                 self.sleep(delay)
             started = time.monotonic()
@@ -122,26 +134,27 @@ class JsonClient:
             except urllib.error.HTTPError as error:
                 state = "quota_limited" if error.code == 429 else "configuration_missing" if error.code in {401, 403} else "no_data" if error.code in no_data_http else "source_failure"
                 attempts.append({"attempt": attempt, "state": state, "httpStatus": error.code, "latencyMs": round((time.monotonic() - started) * 1000)})
-                if state in {"configuration_missing", "no_data"} or attempt == len(RETRY_DELAYS):
+                if state in {"configuration_missing", "no_data"} or attempt == len(self.retry_delays):
                     if state in {"quota_limited", "source_failure"}:
                         self.circuit[source] = (state, error.code)
                     return state, {}, error.code, attempts
             except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
                 attempts.append({"attempt": attempt, "state": "source_failure", "errorType": type(error).__name__, "latencyMs": round((time.monotonic() - started) * 1000)})
-                if attempt == len(RETRY_DELAYS):
+                if attempt == len(self.retry_delays):
                     self.circuit[source] = ("source_failure", None)
                     return "source_failure", {}, None, attempts
         return "program_failure", {}, None, attempts
 
-    def text(self, source, url, *, minimum_interval=0):
-        if source in self.circuit:
-            state, http_status = self.circuit[source]
+    def text(self, source, url, *, minimum_interval=0, circuit_key=None):
+        circuit_key = circuit_key or source
+        if circuit_key in self.circuit:
+            state, http_status = self.circuit[circuit_key]
             return state, "", http_status, [{"attempt": 0, "state": state, "reason": "provider_circuit_open_for_this_run"}]
         elapsed = time.monotonic() - self.last_request_at[source]
         if elapsed < minimum_interval:
             self.sleep(minimum_interval - elapsed)
         attempts = []
-        for attempt, delay in enumerate(RETRY_DELAYS, start=1):
+        for attempt, delay in enumerate(self.retry_delays, start=1):
             if delay:
                 self.sleep(delay)
             request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/html"})
@@ -153,16 +166,16 @@ class JsonClient:
                     attempts.append({"attempt": attempt, "state": "success", "httpStatus": response.status})
                     return ("success" if "html" in content_type.lower() or body else "no_data"), body, response.status, attempts
             except urllib.error.HTTPError as error:
-                state = "quota_limited" if error.code == 429 else "configuration_missing" if error.code in {401, 403} else "no_data" if error.code in {404, 410, 422} else "source_failure"
+                state = "quota_limited" if error.code == 429 else "unsupported" if error.code in {401, 403} else "no_data" if error.code in {404, 410, 422} else "source_failure"
                 attempts.append({"attempt": attempt, "state": state, "httpStatus": error.code})
-                if state in {"configuration_missing", "no_data"} or attempt == len(RETRY_DELAYS):
+                if state in {"unsupported", "no_data"} or attempt == len(self.retry_delays):
                     if state in {"quota_limited", "source_failure"}:
-                        self.circuit[source] = (state, error.code)
+                        self.circuit[circuit_key] = (state, error.code)
                     return state, "", error.code, attempts
             except (urllib.error.URLError, TimeoutError) as error:
                 attempts.append({"attempt": attempt, "state": "source_failure", "errorType": type(error).__name__})
-                if attempt == len(RETRY_DELAYS):
-                    self.circuit[source] = ("source_failure", None)
+                if attempt == len(self.retry_delays):
+                    self.circuit[circuit_key] = ("source_failure", None)
                     return "source_failure", "", None, attempts
         return "program_failure", "", None, attempts
 
@@ -347,7 +360,16 @@ def collect_incremental_new_pools(connection, client=None, config_path=DEFAULT_C
     return {"newCandidates": inserted, "poolRows": pool_rows, "networkStates": dict(states), "skippedScopes": skipped}
 
 
-def market_candidates(connection):
+def market_candidates(connection, candidate_ids=None):
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    if selected_ids:
+        placeholders = ",".join("?" for _ in selected_ids)
+        return connection.execute(
+            f"""SELECT * FROM candidates
+            WHERE continuity_status='candidate_asset' AND candidate_id IN ({placeholders})
+            ORDER BY network_id,candidate_id""",
+            tuple(selected_ids),
+        ).fetchall()
     return connection.execute(
         """
         SELECT c.* FROM candidates c
@@ -361,12 +383,12 @@ def market_candidates(connection):
     ).fetchall()
 
 
-def collect_market(connection, client=None, config_path=DEFAULT_CONFIG):
+def collect_market(connection, client=None, config_path=DEFAULT_CONFIG, candidate_ids=None):
     payload, networks = config(config_path)
     source = payload["sources"]["dexscreener"]
     client = client or JsonClient()
     by_network = defaultdict(list)
-    for row in market_candidates(connection):
+    for row in market_candidates(connection, candidate_ids=candidate_ids):
         by_network[row["network_id"]].append(row)
     collected = 0
     states = defaultdict(int)
@@ -500,59 +522,168 @@ def safe_public_web_url(value):
         return None
 
 
+class _GithubAnchorParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.hrefs = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() != "a":
+            return
+        for key, value in attrs:
+            if key.lower() == "href" and value:
+                self.hrefs.append(value)
+
+
+def canonical_github_repository(value):
+    value = str(value or "").strip()
+    if value.startswith("//"):
+        value = "https:" + value
+    target = github_target(value)
+    if not target or not target["repository"]:
+        return None
+    return f"https://github.com/{target['owner']}/{target['repository']}"
+
+
 def github_links_from_html(html):
+    """Only accept explicit repository anchors, never URLs embedded in scripts."""
+    parser = _GithubAnchorParser()
+    try:
+        parser.feed(html or "")
+    except (ValueError, TypeError):
+        return []
     links = []
-    for value in re.findall(r"https?://(?:www\.)?github\.com/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)?", html or "", flags=re.IGNORECASE):
-        clean = value.rstrip("/).,'\"<> ")
-        if github_target(clean) and clean not in links:
-            links.append(clean)
+    for value in parser.hrefs:
+        repository = canonical_github_repository(value)
+        if repository and repository not in links:
+            links.append(repository)
     return links
 
 
-def collect_website_identity(connection, client=None):
+def _downgrade_relationship_without_product_evidence(connection, candidate_id, observed_at):
+    has_other_evidence = connection.execute(
+        """SELECT 1 FROM product_evidence
+           WHERE candidate_id=? AND status='qualifying' LIMIT 1""",
+        (candidate_id,),
+    ).fetchone()
+    if not has_other_evidence:
+        connection.execute(
+            """UPDATE candidates SET relationship_class='D',
+               relationship_reason='当前没有可归属且达到冻结要求的项目证据。',updated_at=?
+               WHERE candidate_id=? AND relationship_class='C'""",
+            (observed_at, candidate_id),
+        )
+
+
+def collect_website_identity(connection, client=None, candidate_ids=None, *, force_recheck=False):
     client = client or JsonClient()
-    rows = connection.execute(
-        """
-        SELECT candidate_id,website_domain FROM candidates
-        WHERE continuity_status='candidate_asset' AND COALESCE(website_domain,'')!='' AND COALESCE(official_repo,'')=''
-          AND julianday(?) - julianday(effective_t0) BETWEEN 0 AND 90
-        ORDER BY candidate_id
-        """,
-        (utc_now(),),
-    ).fetchall()
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    if selected_ids:
+        placeholders = ",".join("?" for _ in selected_ids)
+        rows = connection.execute(
+            f"""
+            SELECT candidate_id,website_domain,official_repo FROM candidates
+            WHERE continuity_status='candidate_asset' AND COALESCE(website_domain,'')!=''
+              AND candidate_id IN ({placeholders})
+              AND NOT EXISTS(SELECT 1 FROM product_evidence e
+                WHERE e.candidate_id=candidates.candidate_id AND e.evidence_id LIKE 'c21-main-repo-%')
+              AND julianday(?) - julianday(effective_t0) BETWEEN 0 AND 90
+            ORDER BY candidate_id
+            """,
+            (*selected_ids, utc_now()),
+        ).fetchall()
+    else:
+        rows = connection.execute(
+            """
+            SELECT candidate_id,website_domain,official_repo FROM candidates
+            WHERE continuity_status='candidate_asset' AND COALESCE(website_domain,'')!=''
+              AND NOT EXISTS(SELECT 1 FROM product_evidence e
+                WHERE e.candidate_id=candidates.candidate_id AND e.evidence_id LIKE 'c21-main-repo-%')
+              AND julianday(?) - julianday(effective_t0) BETWEEN 0 AND 90
+            ORDER BY candidate_id
+            """,
+            (utc_now(),),
+        ).fetchall()
     found = 0
     states = defaultdict(int)
     skipped = 0
+    retracted = 0
     window_key = day_window()
     for row in rows:
         scope = str(row["candidate_id"])
-        if cursor_decision(connection, "project_website_identity", scope, "identity", window_key)["action"] != "run":
+        if not force_recheck and cursor_decision(connection, "project_website_identity", scope, "identity", window_key)["action"] != "run":
             skipped += 1
             continue
         url = safe_public_web_url(row["website_domain"])
+        direct_repository = canonical_github_repository(url)
         if github_target(url):
-            state, links, http, attempts = "success", [url], None, []
+            state, links, http, attempts = (
+                ("success", [direct_repository], None, [])
+                if direct_repository
+                else ("no_data", [], None, [])
+            )
         elif url:
-            state, html, http, attempts = client.text("project_website", url, minimum_interval=0.15)
+            state, html, http, attempts = client.text(
+                "project_website",
+                url,
+                minimum_interval=0.15,
+                circuit_key=f"project_website:{row['candidate_id']}",
+            )
             links = github_links_from_html(html) if state == "success" else []
             if state == "success" and not links:
                 state = "no_data"
         else:
             state, links, http, attempts = "unsupported", [], None, []
         states[state] += 1
+        observed_at = utc_now()
         if links:
+            if str(row["official_repo"] or "").rstrip("/").lower() != links[0].rstrip("/").lower():
+                connection.execute(
+                    """UPDATE product_evidence SET status='non_qualifying',observed_at=?,
+                       boundary_note='项目网站当前不再公开指向这条仓库证据，原归属已撤回。'
+                       WHERE candidate_id=? AND evidence_type='github'""",
+                    (observed_at, row["candidate_id"]),
+                )
             connection.execute(
                 """
                 UPDATE candidates SET official_repo=?,identity_status='market_matched',local_stage='repository_mapped',
                   local_reason='market_project_website_links_repository',updated_at=? WHERE candidate_id=?
                 """,
-                (links[0], utc_now(), row["candidate_id"]),
+                (links[0], observed_at, row["candidate_id"]),
             )
             found += 1
-        set_health(connection, "project_website_identity", str(row["candidate_id"]), state, "项目市场资料指向的网站与代码仓库链路已核验。" if links else "当前网站未形成可核验的官方代码仓库链路。", 1, http)
+        elif state == "no_data" and row["official_repo"]:
+            connection.execute(
+                """UPDATE product_evidence SET status='non_qualifying',observed_at=?,
+                   boundary_note='项目网站当前未公开指向可归属的具体代码仓库，原归属已撤回。'
+                   WHERE candidate_id=? AND evidence_type='github'""",
+                (observed_at, row["candidate_id"]),
+            )
+            connection.execute(
+                """UPDATE candidates SET official_repo='',local_stage='repository_unmapped',
+                   local_reason='website_has_no_explicit_github_repository',updated_at=?
+                   WHERE candidate_id=?""",
+                (observed_at, row["candidate_id"]),
+            )
+            _downgrade_relationship_without_product_evidence(connection, row["candidate_id"], observed_at)
+            retracted += 1
+        reason = (
+            "项目市场资料指向的网站与代码仓库链路已核验。"
+            if links
+            else "项目网站拒绝自动访问，属于来源能力边界；重复更新不会改变。"
+            if state == "unsupported" and http in {401, 403}
+            else "项目网站本次连接失败；系统会只重试这个网站，不影响其他网站。"
+            if state == "source_failure"
+            else "当前网站未形成可核验的官方代码仓库链路。"
+        )
+        set_health(connection, "project_website_identity", str(row["candidate_id"]), state, reason, 1, http)
         connection.commit()
-        commit_cursor(connection, "project_website_identity", scope, "identity", window_key, state, {"candidateId": row["candidate_id"]})
-    return {"websites": len(rows), "repositoryLinksFound": found, "states": dict(states), "skippedCandidates": skipped}
+        commit_cursor(connection, "project_website_identity", scope, "identity", window_key, state, {
+            "candidateId": row["candidate_id"],
+            "repositoryLinks": links,
+            "evidenceMethod": "explicit_anchor_or_direct_repository",
+        })
+    return {"websites": len(rows), "repositoryLinksFound": found, "retractedMappings": retracted, "states": dict(states), "skippedCandidates": skipped}
 
 
 def documentation_only(files):
@@ -572,25 +703,28 @@ def resolve_github_repository(client, target, headers):
     if target["repository"]:
         state, repo, http, attempts = client.request("github", f"https://api.github.com/repos/{owner}/{target['repository']}", headers=headers, minimum_interval=0.08)
         return state, repo, http, attempts
-    for endpoint in ("orgs", "users"):
-        state, repos, http, attempts = client.request("github", f"https://api.github.com/{endpoint}/{owner}/repos?per_page=100&sort=pushed", headers=headers, minimum_interval=0.08)
-        if state == "success" and isinstance(repos, list):
-            candidates = [repo for repo in repos if not repo.get("fork") and not repo.get("archived") and number(repo.get("size")) and number(repo.get("size")) > 0]
-            return ("success", max(candidates, key=lambda repo: repo.get("pushed_at") or "", default={}), http, attempts) if candidates else ("no_data", {}, http, attempts)
-        if state not in {"no_data"}:
-            return state, {}, http, attempts
-    return "no_data", {}, None, []
+    return "no_data", {}, None, [{"attempt": 0, "state": "no_data", "reason": "github_profile_is_not_a_specific_repository"}]
 
 
-def collect_github(connection, client=None):
+def collect_github(connection, client=None, candidate_ids=None, *, force_recheck=False):
     client = client or JsonClient()
     token = user_environment("BUYI_GITHUB_TOKEN")
     headers = {"X-GitHub-Api-Version": "2022-11-28"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    candidate_rows = connection.execute(
-        "SELECT candidate_id,mapped_project_id,official_repo,identity_status FROM candidates WHERE continuity_status='candidate_asset' AND COALESCE(official_repo,'')!=''"
-    ).fetchall()
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    if selected_ids:
+        placeholders = ",".join("?" for _ in selected_ids)
+        candidate_rows = connection.execute(
+            f"""SELECT candidate_id,mapped_project_id,official_repo,identity_status FROM candidates
+            WHERE continuity_status='candidate_asset' AND COALESCE(official_repo,'')!=''
+              AND candidate_id IN ({placeholders})""",
+            tuple(selected_ids),
+        ).fetchall()
+    else:
+        candidate_rows = connection.execute(
+            "SELECT candidate_id,mapped_project_id,official_repo,identity_status FROM candidates WHERE continuity_status='candidate_asset' AND COALESCE(official_repo,'')!=''"
+        ).fetchall()
     projects = defaultdict(list)
     for candidate in candidate_rows:
         projects[candidate["official_repo"]].append(candidate)
@@ -600,7 +734,7 @@ def collect_github(connection, client=None):
     window_key = day_window()
     for official_repo, candidates in projects.items():
         scope = hashlib.sha256(official_repo.encode()).hexdigest()[:24]
-        if cursor_decision(connection, "github", scope, "official_repository", window_key)["action"] != "run":
+        if not force_recheck and cursor_decision(connection, "github", scope, "official_repository", window_key)["action"] != "run":
             skipped += len(candidates)
             continue
         target = github_target(official_repo)
@@ -619,12 +753,20 @@ def collect_github(connection, client=None):
                 state = commit_state if commit_state != "success" else "no_data"
                 http = commit_http
         own_commit = bool(latest_commit) and not bool(repo.get("fork"))
-        is_qualifying = state == "success" and bool(repo) and not repo.get("fork") and not repo.get("archived") and number(repo.get("size")) is not None and number(repo.get("size")) > 0 and own_commit
+        repository_qualifying = state == "success" and bool(repo) and not repo.get("fork") and not repo.get("archived") and number(repo.get("size")) is not None and number(repo.get("size")) > 0 and own_commit
         states[state] += 1
         observed_at = utc_now()
         commit_data = latest_commit.get("commit") or {}
         last_commit_at = ((commit_data.get("committer") or {}).get("date") or (commit_data.get("author") or {}).get("date") or repo.get("pushed_at"))
         for candidate in candidates:
+            identity_qualifying = candidate["identity_status"] in {"verified", "market_matched"}
+            is_qualifying = repository_qualifying and identity_qualifying
+            evidence_status = (
+                "qualifying" if is_qualifying
+                else "pending" if repository_qualifying
+                else "non_qualifying" if state in {"success", "no_data"}
+                else state
+            )
             evidence_id = "c21-github-" + hashlib.sha256(f"{candidate['candidate_id']}|{official_repo}".encode()).hexdigest()[:22]
             payload = {
                 "organization": (repo.get("owner") or {}).get("login") or (target or {}).get("owner", ""),
@@ -644,11 +786,13 @@ def collect_github(connection, client=None):
                   source_name=excluded.source_name,source_url=excluded.source_url,observed_at=excluded.observed_at,
                   payload_json=excluded.payload_json,boundary_note=excluded.boundary_note
                 """,
-                (evidence_id, candidate["candidate_id"], "qualifying" if is_qualifying else "non_qualifying" if state in {"success", "no_data"} else state, candidate["identity_status"], repo.get("html_url") or official_repo, observed_at, json_text(payload), "目前只确认代码仓库，不证明产品部署、用户采用或投资价值。"),
+                (evidence_id, candidate["candidate_id"], evidence_status, candidate["identity_status"], repo.get("html_url") or official_repo, observed_at, json_text(payload), "目前只确认代码仓库，不证明产品部署、用户采用或投资价值。身份未闭环时只保留待确认状态。"),
             )
             if is_qualifying:
                 connection.execute("UPDATE candidates SET relationship_class='C',relationship_reason='官方合格代码仓库已自动核验；项目新旧关系仍不猜测。',updated_at=? WHERE candidate_id=?", (observed_at, candidate["candidate_id"]))
                 qualifying += 1
+            elif evidence_status == "non_qualifying":
+                _downgrade_relationship_without_product_evidence(connection, candidate["candidate_id"], observed_at)
         set_health(connection, "github", official_repo, state, "官方仓库自动核验已完成。" if state == "success" else "官方仓库来源暂时未完成。", len(candidates), http)
         connection.commit()
         commit_cursor(connection, "github", scope, "official_repository", window_key, state, {"repository": official_repo, "candidateIds": [row["candidate_id"] for row in candidates]})
@@ -697,20 +841,38 @@ def holder_metrics(token):
     return (sum(shares[:10]) if shares else None, sum((value / 100) ** 2 for value in shares) if shares else None)
 
 
-def collect_risk_and_supply(connection, client=None, config_path=DEFAULT_CONFIG):
+def collect_risk_and_supply(
+    connection,
+    client=None,
+    config_path=DEFAULT_CONFIG,
+    candidate_ids=None,
+    *,
+    include_supply=True,
+    cursor_stage="risk_supply",
+):
     payload, networks = config(config_path)
     source = payload["sources"]["goplus"]
     client = client or JsonClient()
     access_token, access_mode = goplus_access_token(client, source)
     headers = {"Authorization": f"Bearer {access_token}"} if access_token else {}
-    rows = connection.execute(
-        """
-        SELECT * FROM candidates WHERE continuity_status='candidate_asset' AND identity_status IN ('verified','market_matched')
-          AND relationship_class IN ('A','B','C') AND julianday(?) - julianday(effective_t0) BETWEEN 0 AND 90
-        ORDER BY network_id,candidate_id
-        """,
-        (utc_now(),),
-    ).fetchall()
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    if selected_ids:
+        placeholders = ",".join("?" for _ in selected_ids)
+        rows = connection.execute(
+            f"""SELECT * FROM candidates
+            WHERE continuity_status='candidate_asset' AND candidate_id IN ({placeholders})
+            ORDER BY network_id,candidate_id""",
+            tuple(selected_ids),
+        ).fetchall()
+    else:
+        rows = connection.execute(
+            """
+            SELECT * FROM candidates WHERE continuity_status='candidate_asset' AND identity_status IN ('verified','market_matched')
+              AND relationship_class IN ('A','B','C') AND julianday(?) - julianday(effective_t0) BETWEEN 0 AND 90
+            ORDER BY network_id,candidate_id
+            """,
+            (utc_now(),),
+        ).fetchall()
     by_network = defaultdict(list)
     for row in rows:
         by_network[row["network_id"]].append(row)
@@ -725,13 +887,13 @@ def collect_risk_and_supply(connection, client=None, config_path=DEFAULT_CONFIG)
             set_health(connection, "goplus", network_id, "unsupported", "该链当前不在GoPlus已接入范围内。", len(candidates))
             connection.commit()
             commit_cursor(
-                connection, "goplus", network_id, "risk_supply", window_key, "unsupported",
+                connection, "goplus", network_id, cursor_stage, window_key, "unsupported",
                 {"candidateIds": [row["candidate_id"] for row in candidates], "reason": "unsupported_chain"},
             )
             continue
         for batch in chunks(candidates, int(source["tokenBatchSize"])):
             scope = f"{network_id}:{batch[0]['candidate_id']}-{batch[-1]['candidate_id']}"
-            if cursor_decision(connection, "goplus", scope, "risk_supply", window_key)["action"] != "run":
+            if cursor_decision(connection, "goplus", scope, cursor_stage, window_key)["action"] != "run":
                 skipped += len(batch)
                 continue
             encoded = urllib.parse.quote(",".join(row["token_address"] for row in batch), safe=",")
@@ -750,18 +912,16 @@ def collect_risk_and_supply(connection, client=None, config_path=DEFAULT_CONFIG)
                     hard_codes.append("confirmed_honeypot")
                 if affirmative(token.get("cannot_sell_all")):
                     hard_codes.append("confirmed_cannot_sell_all")
-                if sell_tax is not None and sell_tax >= 0.20:
-                    hard_codes.append("confirmed_sell_tax_ge_20pct")
                 risk_id = "c21-goplus-risk-" + hashlib.sha256(f"{candidate['candidate_id']}|{observed_at[:13]}".encode()).hexdigest()[:22]
                 connection.execute(
                     """
                     INSERT OR REPLACE INTO risk_observations(observation_id,candidate_id,source_name,source_status,observed_at,
                       hard_trade_block,severe_anomaly,reason_codes_json,payload_json) VALUES(?,?,'GoPlus',?,?,?,?,?,?)
                     """,
-                    (risk_id, candidate["candidate_id"], item_state, observed_at, int(bool(hard_codes)), int(bool(hard_codes)), json_text(hard_codes), json_text({"accessMode": access_mode, "sellTax": sell_tax, "attempts": attempts, "boundary": "explicit_returned_flags_not_general_safety_claim"})),
+                    (risk_id, candidate["candidate_id"], item_state, observed_at, int(bool(hard_codes)), int(bool(hard_codes)), json_text(hard_codes), json_text({"accessMode": access_mode, "sellTax": sell_tax, "sellTaxUse": "informational_only_not_a_current_gate", "attempts": attempts, "boundary": "explicit_returned_flags_not_general_safety_claim"})),
                 )
                 risk_count += 1
-                if token:
+                if token and include_supply:
                     top10, hhi = holder_metrics(token)
                     supply_id = "c21-goplus-supply-" + hashlib.sha256(f"{candidate['candidate_id']}|{observed_at[:10]}".encode()).hexdigest()[:22]
                     connection.execute(
@@ -776,10 +936,173 @@ def collect_risk_and_supply(connection, client=None, config_path=DEFAULT_CONFIG)
                         (supply_id, candidate["candidate_id"], "supply:" + observed_at[:10], observed_at, str(token.get("total_supply")) if token.get("total_supply") is not None else None, None, top10, hhi, json_text({"holderCount": token.get("holder_count"), "reportedHolderRows": len(token.get("holders") or []), "boundary": "current_provider_holder_snapshot_includes_contract_entities"})),
                     )
                     supply_count += 1
-            set_health(connection, "goplus", network_id, state, "显性风险和当前供应快照已完成。" if state == "success" else "GoPlus本批次未完成，缺失不记零。", len(batch), http)
+            completed_reason = "显性风险和当前供应快照已完成。" if include_supply else "第一关只完成显性硬交易阻断核验；供应历史留给凸性跟踪。"
+            set_health(connection, "goplus", network_id, state, completed_reason if state == "success" else "GoPlus本批次未完成，缺失不记零。", len(batch), http)
             connection.commit()
-            commit_cursor(connection, "goplus", scope, "risk_supply", window_key, state, {"candidateIds": [row["candidate_id"] for row in batch]})
+            commit_cursor(connection, "goplus", scope, cursor_stage, window_key, state, {"candidateIds": [row["candidate_id"] for row in batch], "includeSupply": bool(include_supply)})
     return {"candidates": len(rows), "riskObservations": risk_count, "supplyObservations": supply_count, "states": dict(states), "skippedCandidates": skipped}
+
+
+def collect_robinhood_official_assets(
+    connection,
+    client=None,
+    candidate_ids=None,
+    *,
+    force_recheck=False,
+):
+    """Map exact Robinhood Stock Token contracts to official old-project/new-asset evidence."""
+
+    client = client or JsonClient()
+    selected_ids = {int(value) for value in (candidate_ids or [])}
+    window_key = day_window()
+    scope = "robinhood-mainnet"
+    if not force_recheck and cursor_decision(
+        connection,
+        "robinhood_official_assets",
+        scope,
+        "official_registry",
+        window_key,
+    )["action"] != "run":
+        return {"state": "skipped", "officialAssets": 0, "matchedCandidates": 0, "candidateIds": []}
+
+    state, response, http, attempts = client.request(
+        "robinhood_official_assets",
+        ROBINHOOD_OFFICIAL_ASSETS_URL,
+        minimum_interval=0.05,
+    )
+    assets = response.get("assets") or [] if isinstance(response, dict) else []
+    if state == "success" and not isinstance(assets, list):
+        state = "no_data"
+        assets = []
+    matched_ids = []
+    active_count = 0
+    observed_at = utc_now()
+    if state == "success":
+        for asset in assets:
+            if not isinstance(asset, dict):
+                continue
+            deployment = next(
+                (
+                    item
+                    for item in (asset.get("deployments") or [])
+                    if str((item or {}).get("chainId") or "") == "4663"
+                    and str((item or {}).get("contractAddress") or "").strip()
+                ),
+                None,
+            )
+            if not deployment:
+                continue
+            address = str(deployment["contractAddress"]).strip().lower()
+            candidate = connection.execute(
+                """SELECT candidate_id FROM candidates
+                WHERE network_id='robinhood-mainnet' AND token_address_normalized=?""",
+                (address,),
+            ).fetchone()
+            if not candidate or selected_ids and int(candidate["candidate_id"]) not in selected_ids:
+                continue
+            candidate_id = int(candidate["candidate_id"])
+            uid = str(asset.get("id") or address).strip().lower()
+            symbol = str(asset.get("tokenSymbol") or "").strip()
+            name = str(asset.get("tokenName") or symbol).strip()
+            asset_status = str(asset.get("status") or "ASSET_STATUS_UNSPECIFIED")
+            is_active = asset_status == "ASSET_STATUS_ACTIVE"
+            active_count += int(is_active)
+            project_id = "robinhood-underlier-" + hashlib.sha256(uid.encode("utf-8")).hexdigest()[:20]
+            connection.execute(
+                """UPDATE candidates SET
+                  mapped_project_id=CASE WHEN COALESCE(mapped_project_id,'')='' THEN ? ELSE mapped_project_id END,
+                  canonical_name=CASE WHEN ?!='' THEN ? ELSE canonical_name END,
+                  symbol=CASE WHEN ?!='' THEN ? ELSE symbol END,
+                  identity_status='verified',relationship_class='B',
+                  relationship_reason='Robinhood官方资产登记已按链ID和合约地址精确匹配；属于老项目新资产。',
+                  updated_at=? WHERE candidate_id=?""",
+                (project_id, name, name, symbol, symbol, observed_at, candidate_id),
+            )
+            evidence_id = "c21-robinhood-official-" + hashlib.sha256(
+                f"{candidate_id}|{uid}".encode("utf-8")
+            ).hexdigest()[:22]
+            payload = {
+                "collectionState": "success",
+                "evidencePath": "official_old_project_new_asset_relationship",
+                "registryAssetId": uid,
+                "chainId": 4663,
+                "contractAddress": deployment["contractAddress"],
+                "assetStatus": asset_status,
+                "tradingCapabilities": asset.get("tradingCapabilities"),
+                "currentMultiplier": asset.get("currentMultiplier"),
+                "attempts": attempts,
+                "boundary": "exact_official_registry_address_match_not_general_investment_or_contract_safety",
+            }
+            connection.execute(
+                """INSERT INTO product_evidence(
+                  evidence_id,candidate_id,evidence_type,status,identity_status,source_name,
+                  source_url,observed_at,payload_json,boundary_note
+                ) VALUES(?,?,'deployed_product','qualifying','verified','Robinhood官方资产登记',?,?,?,?)
+                ON CONFLICT(evidence_id) DO UPDATE SET status=excluded.status,
+                  identity_status=excluded.identity_status,observed_at=excluded.observed_at,
+                  payload_json=excluded.payload_json,boundary_note=excluded.boundary_note""",
+                (
+                    evidence_id,
+                    candidate_id,
+                    ROBINHOOD_OFFICIAL_ASSETS_DOC,
+                    observed_at,
+                    json_text(payload),
+                    "只证明Robinhood官方登记中的链ID、合约地址和老项目新资产关系；不证明投资价值或全部合约风险。",
+                ),
+            )
+            reason_codes = [] if is_active else ["official_asset_inactive"]
+            risk_id = "c21-robinhood-official-risk-" + hashlib.sha256(
+                f"{candidate_id}|{window_key}".encode("utf-8")
+            ).hexdigest()[:22]
+            connection.execute(
+                """INSERT OR REPLACE INTO risk_observations(
+                  observation_id,candidate_id,source_name,source_status,observed_at,
+                  hard_trade_block,severe_anomaly,reason_codes_json,payload_json
+                ) VALUES(?,?,'Robinhood官方资产登记','success',?,?,?,?,?)""",
+                (
+                    risk_id,
+                    candidate_id,
+                    observed_at,
+                    int(not is_active),
+                    int(not is_active),
+                    json_text(reason_codes),
+                    json_text({
+                        "assetStatus": asset_status,
+                        "tradingCapabilities": asset.get("tradingCapabilities"),
+                        "boundary": "official_asset_status_only_not_general_contract_safety",
+                    }),
+                ),
+            )
+            matched_ids.append(candidate_id)
+        connection.commit()
+
+    reason = (
+        f"Robinhood官方资产登记已完成，按链ID和合约地址精确匹配 {len(matched_ids)} 个候选。"
+        if state == "success"
+        else "Robinhood官方资产登记本轮未完成；旧证据保留并等待断点重试。"
+    )
+    set_health(connection, "robinhood_official_assets", scope, state, reason, len(matched_ids), http)
+    connection.commit()
+    commit_cursor(
+        connection,
+        "robinhood_official_assets",
+        scope,
+        "official_registry",
+        window_key,
+        state,
+        {
+            "officialAssetCount": len(assets),
+            "matchedCandidateCount": len(matched_ids),
+            "activeMatchedCount": active_count,
+        },
+    )
+    return {
+        "state": state,
+        "officialAssets": len(assets),
+        "matchedCandidates": len(matched_ids),
+        "activeMatchedCandidates": active_count,
+        "candidateIds": matched_ids,
+    }
 
 
 def token_info(client, network, token, source, headers):
@@ -789,21 +1112,31 @@ def token_info(client, network, token, source, headers):
     return state, attributes, http, attempts
 
 
-def collect_quotes(connection, client=None, config_path=DEFAULT_CONFIG):
+def robinhood_rpc_url(network):
+    return user_environment("ROBINHOOD_RPC_URL") or ROBINHOOD_PUBLIC_RPC
+
+
+def collect_quotes(connection, client=None, config_path=DEFAULT_CONFIG, candidate_ids=None):
     payload, networks = config(config_path)
     source = payload["sources"]["geckoterminal"]
     key = user_environment(source.get("credentialEnv", "")) or user_environment(source.get("fallbackCredentialEnv", "")) or user_environment("COINGECKO_DEMO_API_KEY")
     headers = {source["credentialHeader"]: key} if key else {}
     client = client or JsonClient()
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    selected_clause = ""
+    parameters = ()
+    if selected_ids:
+        selected_clause = f" AND c.candidate_id IN ({','.join('?' for _ in selected_ids)})"
+        parameters = tuple(selected_ids)
     rows = connection.execute(
-        """
+        f"""
         SELECT m.*,c.network_id,c.token_address FROM market_observations m
         JOIN candidates c ON c.candidate_id=m.candidate_id
         WHERE m.observation_id=(SELECT m2.observation_id FROM market_observations m2 WHERE m2.candidate_id=m.candidate_id ORDER BY m2.observed_at DESC LIMIT 1)
-          AND m.source_status='success' AND m.pair_address!=''
-          AND c.relationship_class IN ('A','B','C')
+          AND m.source_status='success' AND m.pair_address!=''{selected_clause}
         ORDER BY c.network_id,c.candidate_id
-        """
+        """,
+        parameters,
     ).fetchall()
     states = defaultdict(int)
     skipped = 0
@@ -818,7 +1151,72 @@ def collect_quotes(connection, client=None, config_path=DEFAULT_CONFIG):
         loss = None
         provider = ""
         attempts = []
-        if network_id in STABLE_OUTPUTS:
+        quote_route = None
+        quote_output_token = None
+        quote_output_price = None
+        if network_id == "robinhood-mainnet":
+            network = networks[network_id]
+            rpc_url = robinhood_rpc_url(network)
+            info_state, info, _http, info_attempts = token_info(
+                client, network, row["token_address"], source, headers
+            )
+            attempts += info_attempts
+            decimals = info.get("decimals")
+            if decimals is None:
+                decimals_state, decimals, decimals_attempts = robinhood_token_decimals(
+                    client, rpc_url, row["token_address"]
+                )
+                attempts += decimals_attempts
+                if info_state == "success" and decimals_state != "success":
+                    info_state = decimals_state
+            amount = quote_input_amount(row["price_usd"], decimals)
+            if not amount:
+                state = "no_data" if info_state == "success" else info_state
+            else:
+                result = quote_robinhood_pool(
+                    client,
+                    rpc_url,
+                    row["pair_address"],
+                    row["token_address"],
+                    int(amount),
+                )
+                state = result.get("state") or "program_failure"
+                attempts += result.get("attempts") or []
+                provider = str(result.get("provider") or "")
+                quote_route = result.get("route")
+                quote_output_token = str(result.get("outputToken") or "").lower()
+                output = number(result.get("outputAmount"))
+                if state == "success" and output is not None and quote_output_token:
+                    output_info_token = (
+                        ROBINHOOD_WETH
+                        if quote_output_token == ROBINHOOD_NATIVE_CURRENCY
+                        else quote_output_token
+                    )
+                    output_decimals_state, output_decimals, output_decimals_attempts = robinhood_token_decimals(
+                        client, rpc_url, output_info_token
+                    )
+                    attempts += output_decimals_attempts
+                    if output_info_token == ROBINHOOD_USDG:
+                        quote_output_price = 1.0
+                    else:
+                        output_info_state, output_info, _output_http, output_info_attempts = token_info(
+                            client, network, output_info_token, source, headers
+                        )
+                        attempts += output_info_attempts
+                        quote_output_price = number(output_info.get("price_usd"))
+                        if output_info_state != "success" and state == "success":
+                            state = output_info_state
+                    destination_usd = (
+                        output / (10 ** int(output_decimals)) * quote_output_price
+                        if output_decimals_state == "success"
+                        and output_decimals is not None
+                        and quote_output_price is not None
+                        else None
+                    )
+                    loss = 100 - destination_usd if destination_usd is not None else None
+                if state == "success" and loss is None:
+                    state = "no_data"
+        elif network_id in STABLE_OUTPUTS:
             info_state, info, http, info_attempts = token_info(client, networks[network_id], row["token_address"], source, headers)
             attempts += info_attempts
             amount = quote_input_amount(row["price_usd"], info.get("decimals"))
@@ -828,7 +1226,9 @@ def collect_quotes(connection, client=None, config_path=DEFAULT_CONFIG):
                 stable, stable_decimals, stable_symbol = STABLE_OUTPUTS[network_id]
                 if network_id == "solana-mainnet":
                     query = urllib.parse.urlencode({"inputMint": row["token_address"], "outputMint": stable, "amount": amount, "slippageBps": 100, "swapMode": "ExactIn"})
-                    state, quote, _, quote_attempts = client.request("jupiter", f"https://api.jup.ag/swap/v1/quote?{query}", minimum_interval=2.05, no_data_http=(400, 404, 422))
+                    jupiter_key = user_environment("JUPITER_API_KEY")
+                    jupiter_headers = {"x-api-key": jupiter_key} if jupiter_key else {}
+                    state, quote, _, quote_attempts = client.request("jupiter", f"https://api.jup.ag/swap/v1/quote?{query}", headers=jupiter_headers, minimum_interval=2.05, no_data_http=(400, 404, 422))
                     attempts += quote_attempts
                     output = number(quote.get("outAmount"))
                     destination_usd = output / (10 ** stable_decimals) if output is not None else None
@@ -850,7 +1250,7 @@ def collect_quotes(connection, client=None, config_path=DEFAULT_CONFIG):
             UPDATE market_observations SET standard_sell_notional_usd=100,standard_sell_quote_state=?,
               standard_sell_quote_loss_pct=?,payload_json=? WHERE observation_id=?
             """,
-            (state, loss, json_text({**json.loads(row["payload_json"] or "{}"), "quoteProvider": provider, "quoteAttempts": attempts, "quoteBoundary": "read_only_route_quote_not_executed_not_guaranteed"}), row["observation_id"]),
+            (state, loss, json_text({**json.loads(row["payload_json"] or "{}"), "quoteProvider": provider, "quoteAttempts": attempts, "quoteRoute": quote_route, "quoteOutputToken": quote_output_token, "quoteOutputPriceUsd": quote_output_price, "quoteBoundary": "read_only_route_quote_not_executed_not_guaranteed"}), row["observation_id"]),
         )
         set_health(connection, "standard_sell_quote", str(row["candidate_id"]), state, "100美元标准卖出报价已完成。" if state == "success" else "100美元标准卖出报价当前不可用；不补零。", 1)
         connection.commit()
@@ -858,7 +1258,7 @@ def collect_quotes(connection, client=None, config_path=DEFAULT_CONFIG):
     return {"candidates": len(rows), "states": dict(states), "skippedCandidates": skipped}
 
 
-def run_enrichment(connection, *, include_quotes=True, client=None, progress=None, pause=None, only_source_id=None):
+def run_enrichment(connection, *, include_quotes=True, client=None, progress=None, pause=None, only_source_id=None, job_scope=None):
     from c2_1_path4 import collect_path4
 
     client = client or JsonClient()
@@ -873,6 +1273,8 @@ def run_enrichment(connection, *, include_quotes=True, client=None, progress=Non
     ]
     if include_quotes:
         stages.append(("quotes", "100美元标准卖出报价", lambda: collect_quotes(connection, client=client)))
+    if job_scope == "screening":
+        stages = [stage for stage in stages if stage[0] in {"incrementalDiscovery", "market"}]
     if only_source_id is not None:
         stage_key = RETRYABLE_SOURCE_STAGES.get(only_source_id)
         if not stage_key:

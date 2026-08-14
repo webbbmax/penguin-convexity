@@ -23,6 +23,10 @@ LOGGER = logging.getLogger(__name__)
 HEARTBEAT_INTERVAL_SECONDS = 10
 
 
+class UpdatePaused(RuntimeError):
+    pass
+
+
 def safe_progress_call(operation, *args, **kwargs):
     """Keep optional experience telemetry from changing update semantics."""
     try:
@@ -77,34 +81,56 @@ def run_update_task(
     tracking_task_id="",
     db_path=DEFAULT_DB_PATH,
     timeout=20,
+    pause_requested=None,
+    status_callback=None,
+    legacy_status=True,
 ):
     task = task_definition(task_id)
-    progress_components = [*task.get("components", []), "page_snapshot_rebuild"]
+    progress_components = [*task.get("components", [])]
+    if task.get("publishLegacySnapshots", True):
+        progress_components.append("page_snapshot_rebuild")
     component_order = {
         component: index
         for index, component in enumerate(progress_components, start=1)
     }
-    safe_progress_call(
-        begin_progress,
-        task_id,
-        task["label"],
-        len(component_order),
-    )
-
-    def progress_callback(component, current_item):
+    if legacy_status:
         safe_progress_call(
-            update_progress,
-            component,
-            current_item,
-            component_order.get(component, 0),
+            begin_progress,
+            task_id,
+            task["label"],
             len(component_order),
         )
 
-    retry_count = update_retry_status(
-        db_path,
-        retry_run_id,
-        task_id,
-        "running",
+    def progress_callback(component, current_item):
+        if pause_requested and pause_requested():
+            raise UpdatePaused("用户请求暂停当前任务；已在组件安全点停止。")
+        component_index = component_order.get(component, 0)
+        if legacy_status:
+            safe_progress_call(
+                update_progress,
+                component,
+                current_item,
+                component_index,
+                len(component_order),
+            )
+        if status_callback:
+            safe_progress_call(
+                status_callback,
+                component,
+                current_item,
+                component_index,
+                len(component_order),
+            )
+
+    retry_count = (
+        update_retry_status(
+            db_path,
+            retry_run_id,
+            task_id,
+            "running",
+        )
+        if legacy_status
+        else 0
     )
     heartbeat_stop = Event()
     heartbeat_thread = Thread(
@@ -123,45 +149,69 @@ def run_update_task(
             tracking_task_id=tracking_task_id,
             progress_callback=progress_callback,
         )
+    except UpdatePaused as error:
+        if legacy_status:
+            update_retry_status(
+                db_path,
+                retry_run_id,
+                task_id,
+                "pending",
+            )
+            rebuild_update_snapshots(db_path=db_path)
+            safe_progress_call(
+                finish_progress,
+                "paused",
+                str(error),
+                failed_count=0,
+                total_items=len(component_order),
+            )
+        return {
+            "status": "paused",
+            "message": str(error),
+            "explanation": "已完成部分保留；下次从现有持久化状态继续。",
+            "errors": 0,
+        }
     except Exception as error:
-        update_retry_status(
-            db_path,
-            retry_run_id,
-            task_id,
-            "failed",
-        )
-        record_failed_run(
-            task_id=task_id,
-            message=f"{task['label']}运行中断：{error}",
-            error_type=(
-                "timeout"
-                if isinstance(error, TimeoutError)
-                else "runtime_error"
-            ),
-            db_path=db_path,
-            mode="retry" if retry_run_id else "manual",
-        )
-        rebuild_update_snapshots(db_path=db_path)
-        safe_progress_call(
-            finish_progress,
-            "failed",
-            str(error),
-            failed_count=1,
-            total_items=len(component_order),
-        )
+        if legacy_status:
+            update_retry_status(
+                db_path,
+                retry_run_id,
+                task_id,
+                "failed",
+            )
+            record_failed_run(
+                task_id=task_id,
+                message=f"{task['label']}运行中断：{error}",
+                error_type=(
+                    "timeout"
+                    if isinstance(error, TimeoutError)
+                    else "runtime_error"
+                ),
+                db_path=db_path,
+                mode="retry" if retry_run_id else "manual",
+            )
+            rebuild_update_snapshots(db_path=db_path)
+            safe_progress_call(
+                finish_progress,
+                "failed",
+                str(error),
+                failed_count=1,
+                total_items=len(component_order),
+            )
         raise
     finally:
         heartbeat_stop.set()
         heartbeat_thread.join(timeout=1)
 
     retry_status = "succeeded" if result["errors"] == 0 else "failed"
-    update_retry_status(
-        db_path,
-        retry_run_id,
-        task_id,
-        retry_status,
-    )
-    rebuild_update_snapshots(db_path=db_path)
+    if legacy_status:
+        update_retry_status(
+            db_path,
+            retry_run_id,
+            task_id,
+            retry_status,
+        )
+        rebuild_update_snapshots(db_path=db_path)
     if result["status"] == "success":
         if result.get("sourceDiscoveriesIncomplete"):
             message = (
@@ -194,15 +244,16 @@ def run_update_task(
         )
         success_count = max(0, total_items - failed_count)
         waiting_count = 0
-    safe_progress_call(
-        finish_progress,
-        result["status"],
-        message,
-        success_count=success_count,
-        failed_count=failed_count,
-        waiting_count=waiting_count,
-        total_items=total_items,
-    )
+    if legacy_status:
+        safe_progress_call(
+            finish_progress,
+            result["status"],
+            message,
+            success_count=success_count,
+            failed_count=failed_count,
+            waiting_count=waiting_count,
+            total_items=total_items,
+        )
     return {
         "status": result["status"],
         "taskId": task_id,

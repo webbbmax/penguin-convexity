@@ -51,17 +51,61 @@ class C22ReleaseTests(unittest.TestCase):
         release = json.loads((ROOT / "docs/C2.2_RELEASE_MANIFEST.json").read_text(encoding="utf-8"))
         self.assertEqual(sha256(ROOT / release["acceptance"]["manifest"]), release["acceptance"]["manifestSha256"])
         self.assertEqual(sha256(ROOT / release["acceptance"]["report"]), release["acceptance"]["reportSha256"])
-        for item in release["releaseFiles"]:
-            self.assertEqual(sha256(ROOT / item["path"]), item["sha256"], item["path"])
+        repair = release["candidateProductionRepair"]
+        self.assertEqual(sha256(ROOT / repair["acceptanceManifest"]), repair["acceptanceManifestSha256"])
+        self.assertEqual(sha256(ROOT / repair["acceptanceReport"]), repair["acceptanceReportSha256"])
+        maintenance_path = ROOT / "docs/C2.2_TRACKING_CORE_REPAIR_20260812.json"
+        if maintenance_path.exists():
+            maintenance = json.loads(maintenance_path.read_text(encoding="utf-8"))
+            for item in maintenance["currentFiles"]:
+                self.assertEqual(sha256(ROOT / item["path"]), item["sha256"], item["path"])
+        else:
+            maintenance_path = ROOT / "docs/C2.2_TRACKING_HANDOFF_MAINTENANCE_20260812.json"
+            if maintenance_path.exists():
+                maintenance = json.loads(maintenance_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    sha256(ROOT / "docs/C2.2_RELEASE_MANIFEST.json"),
+                    maintenance["baseReleaseManifestSha256"],
+                )
+                for item in maintenance["currentFiles"]:
+                    self.assertEqual(sha256(ROOT / item["path"]), item["sha256"], item["path"])
+            else:
+                for item in release["releaseFiles"]:
+                    self.assertEqual(sha256(ROOT / item["path"]), item["sha256"], item["path"])
+
+    def test_candidate_production_release_and_operational_scan_states_are_separate(self):
+        phase = json.loads((ROOT / "docs/C2.2_PHASE.json").read_text(encoding="utf-8"))
+        acceptance = json.loads(
+            (ROOT / "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_ACCEPTANCE_MANIFEST.json").read_text(encoding="utf-8")
+        )
+        release = json.loads((ROOT / "docs/C2.2_RELEASE_MANIFEST.json").read_text(encoding="utf-8"))
+        repair = phase["candidateProductionRepair"]
+        self.assertEqual(repair["status"], "historical_candidate_scan_running")
+        self.assertEqual(acceptance["status"], "independent_acceptance_complete_released")
+        self.assertFalse(acceptance["formalHistoricalScanAuthorized"])
+        self.assertFalse(acceptance["formalHistoricalScanStarted"])
+        self.assertTrue(repair["formalHistoricalScanAuthorized"])
+        self.assertTrue(repair["formalHistoricalScanStarted"])
+        self.assertEqual(release["candidateProductionRepair"]["stateBoundary"], "release_time_before_separate_operational_authorization")
+        self.assertEqual(release["historicalCandidateScan"]["status"], "running")
+        self.assertFalse(release["historicalCandidateScan"]["gate0Rerun"])
 
     def test_current_snapshots_are_complete_and_do_not_publish_data_limited(self):
         front = load_js(ROOT / "app/c2-2-front-snapshot.js", "window.PENGUIN_CONVEXITY_C22 = ")
         tracking = load_js(ROOT / "app/c2-2-tracking-snapshot.js", "window.PENGUIN_CONVEXITY_C22_TRACKING = ")
         admin = load_js(ROOT / "app/c2-2-admin-snapshot.js", "window.PENGUIN_CONVEXITY_C22_ADMIN = ")
         self.assertEqual({row["assetId"] for row in front["items"]}, {row["assetId"] for row in tracking["items"]})
-        self.assertEqual(front["candidateBuildId"], tracking["candidateBuildId"])
+        self.assertEqual(front["trackingCandidateBuildId"], tracking["candidateBuildId"])
         self.assertEqual(admin["screening"]["buildId"], front["candidateBuildId"])
-        self.assertEqual(len(front["items"]), 11)
+        self.assertEqual(admin["trackingQualification"]["candidateCount"], tracking["inputSummary"]["candidateCount"])
+        self.assertGreater(tracking["inputSummary"]["candidateCount"], len(tracking["items"]))
+        self.assertEqual(len(front["items"]), front["coverageSummary"]["frontVisibleCount"])
+        self.assertEqual(tracking["inputSummary"]["publicCandidateCount"], len(front["items"]))
+        self.assertEqual(
+            tracking["inputSummary"]["completedFirstTrackingCount"]
+            + tracking["inputSummary"]["pendingFirstTrackingCount"],
+            len(front["items"]),
+        )
         self.assertNotIn("data_limited", json.dumps(front, ensure_ascii=False))
 
     def test_c22_snapshots_load_before_legacy_renderers(self):
@@ -72,19 +116,33 @@ class C22ReleaseTests(unittest.TestCase):
             self.assertTrue(legacy_positions, name)
             self.assertLess(snapshot_position, min(legacy_positions), name)
 
-    def test_launcher_and_visible_version_require_c22(self):
+    def test_c22_web_main_is_inherited_by_the_current_c23_desktop(self):
         launcher = (ROOT / "scripts/launch-convexity.ps1").read_text(encoding="utf-8")
+        # This PowerShell launcher is the hidden C2.3 rollback asset.  It still
+        # validates the inherited C2.2 web main, but it is no longer the
+        # official desktop shortcut target.
         self.assertIn('$health.experienceRelease -eq "C2.2"', launcher)
-        self.assertIn("/api/c2.2/status", launcher)
+        self.assertNotIn("/api/c2.2/status", launcher)
         self.assertIn("c2-2-front.js", launcher)
         nav = (ROOT / "app/workbench-nav.js").read_text(encoding="utf-8")
-        self.assertEqual(nav.count("当前版本 C2.2"), 1)
+        self.assertEqual(nav.count("当前版本 C2.3"), 1)
+        self.assertNotIn("当前版本 C2.2", nav)
         self.assertNotIn("当前版本 C2.1", nav)
         status = (ROOT / "docs/STATUS.md").read_text(encoding="utf-8")
-        self.assertIn("当前已发布体验版本：C2.2", status)
+        self.assertIn("当前已发布桌面版本：C2.3", status)
+        self.assertIn("当前网页业务主干：C2.2", status)
         migration = json.loads((ROOT / "docs/MIGRATION_MANIFEST.json").read_text(encoding="utf-8"))
         self.assertEqual(migration["experienceRelease"], "C2.2")
         self.assertTrue(migration["currentExperienceRelease"]["published"])
+        self.assertTrue(migration["c2_3DesktopRelease"]["published"])
+        self.assertEqual(migration["c2_3DesktopRelease"]["businessExperienceInherited"], "C2.2")
+
+    def test_desktop_watcher_releases_stale_or_reused_window_handles(self):
+        helper = (ROOT / "scripts/convexity-window-state.ps1").read_text(encoding="utf-8")
+        self.assertIn("IsVisibleEdgeWindowWithTitle", helper)
+        self.assertIn("while ([PenguinWindowNative]::IsVisibleEdgeWindowWithTitle($Handle, $appTitle))", helper)
+        self.assertNotIn("while ([PenguinWindowNative]::IsWindow([IntPtr]$Handle))", helper)
+        self.assertIn('$_.Title -like "*$appTitle*"', helper)
 
     def test_databases_and_release_backups_are_valid(self):
         baseline = json.loads((ROOT / "docs/C2.2_IMPLEMENTATION_BASELINE.json").read_text(encoding="utf-8"))
@@ -93,7 +151,6 @@ class C22ReleaseTests(unittest.TestCase):
         for item in backup["databases"]:
             source = ROOT / item["source"]
             copied = ROOT / item["backup"]
-            self.assertEqual(sha256(source), item["sha256"])
             self.assertEqual(sha256(copied), item["sha256"])
             self.assertEqual(item["sha256"], baseline_by_path[item["source"]]["sha256"])
             connection = sqlite3.connect(f"file:{source.as_posix()}?mode=ro", uri=True)

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "c2.4-implementation-baseline-v1",
+  "release": "C2.4",
+  "capturedAt": "2026-08-13T11:07:34+08:00",
+  "requirements": {
+    "lock": "docs/C2.4_REQUIREMENTS_LOCK.json",
+    "requirementSetSha256": "411f084d726cfb599536169ec0dcd9fc2d10d6f15e92f0df821385d2d2dbddc0",
+    "formalDocumentHashesVerified": true,
+    "inheritedDependencyHashesVerified": true
+  },
+  "git": {
+    "commit": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+    "branch": "main",
+    "dirtyBeforeC24": true,
+    "modifiedFileCount": 36,
+    "untrackedFileCount": 80,
+    "policy": "全部视为用户或既有C2.2/C2.3成果；C2.4只修改冻结范围内文件，不回退无关改动。"
+  },
+  "businessAssets": {
+    "appFileCount": 107,
+    "appTreeSha256": "43d267bd3a656870ca3c35e2b04c0c868fbca7d70c74e67b7496f60251f82cc9",
+    "scriptsFileCount": 397,
+    "scriptsTreeSha256": "3c826b4ee181d637beae3b7edeb92de68f22503c693f9603a1e6defa23e93925"
+  },
+  "mainDatabase": {
+    "path": "data/convexity.db",
+    "bytes": 548499456,
+    "pageCount": 133911,
+    "pageSize": 4096,
+    "journalMode": "wal",
+    "quickCheck": "ok",
+    "foreignKeyErrors": 0,
+    "projects": 624,
+    "candidateCases": 626,
+    "writePolicy": "C2.4不改主库业务结构，只读补充既有事实。"
+  },
+  "candidatePipeline": {
+    "path": "data/c2.1-pipeline.db",
+    "bytesAtCapture": 9923117056,
+    "pageCountAtCapture": 2422707,
+    "pageSize": 4096,
+    "journalMode": "wal",
+    "quickCheck": "ok",
+    "candidates": 4591622,
+    "productionRecords": 4358897,
+    "trackingEligible": 18903,
+    "firstGatePassedHistory": 19035,
+    "firstGateQueue": 18903,
+    "trackingRecords": 11,
+    "trackingCompleted": 11,
+    "currentEvaluations": 19178,
+    "processId": 39436,
+    "processPresent": true,
+    "policy": "候选生产任务正在续跑；开发不暂停、不重启、不从头重扫、不等待完成。"
+  },
+  "coreDefectAtCapture": {
+    "description": "C2.2候选已通过tracking_eligible形成约1.9万条第一关对象，但深度跟踪入口额外要求relationship_class为A/B/C且front_contract_ready=1且front_eligible=1，将第一关与公开底线耦合。",
+    "evidence": {
+      "trackingEligible": 18903,
+      "trackingRecords": 11,
+      "trackingCompleted": 11
+    },
+    "requiredRepair": "第一关通过后全部进入后台深度跟踪；A/B/C/D、项目证据和公开底线只在第二关生效。"
+  },
+  "runtimeBoundaries": {
+    "schedulerTask": "PenguinConvexity-C1.8-Scheduler",
+    "schedulerState": "Ready",
+    "schedulerLastResult": 0,
+    "desktopShortcutExists": true,
+    "policy": "不新建第二调度器，不修改用户暂停设置，不切换正式快捷方式；独立终验前只完成开发自测。"
+  }
+}

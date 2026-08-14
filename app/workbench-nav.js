@@ -12,6 +12,7 @@
 
   const topbar = document.querySelector(".workbench-topbar");
   if (!topbar) return;
+  window.PENGUIN_CONVEXITY_C24_TAKEOVER_PENDING = true;
   const currentPage = location.pathname.split("/").pop() || "workbench.html";
   const groups = [
     {
@@ -20,31 +21,29 @@
     },
     {
       label: "更新中心",
-      pages: [["new-token-update.html", "90天新币筛选"], ["update-center.html", "凸性跟踪更新"], ["change-explanations.html", "变化记录"], ["manual-review.html", "人工复核"]],
+      pages: [["new-token-update.html", "90 天候选"], ["update-center.html", "凸性跟踪"]],
     },
     {
-      label: "项目管理",
-      pages: [["project-master-pool.html", "项目队列"], ["source-discovery.html", "项目发现"], ["network-discovery.html", "链上发现"], ["weak-signal-inbox.html", "弱线索"], ["discovery-funnel.html", "发现漏斗"]],
+      label: "候选与项目",
+      pages: [["project-master-pool.html", "项目队列"], ["source-discovery.html", "项目发现"], ["network-discovery.html", "链上发现"], ["discovery-funnel.html", "发现漏斗"], ["weak-signal-inbox.html", "补证与待跟踪"]],
     },
     {
       label: "证据与来源",
-      pages: [["evidence-ledger.html", "证据账本"], ["source-registry.html", "信源目录"], ["source-adapter.html", "证据接入"], ["high-value-sources.html", "正式项目证据"], ["data-backbone.html", "数据主干"]],
+      pages: [["evidence-ledger.html", "证据账本"], ["source-registry.html", "信源目录"], ["source-adapter.html", "证据接入"], ["high-value-sources.html", "项目证据"], ["data-backbone.html", "数据主干"]],
     },
     {
-      label: "监控与催化",
-      pages: [["monitoring-infrastructure.html", "监控基础"], ["catalyst-paths.html", "催化路径"], ["action-gaps.html", "行动限制"]],
+      label: "持续跟踪",
+      pages: [["monitoring-infrastructure.html", "监控基础"], ["catalyst-paths.html", "催化与失效"], ["action-gaps.html", "当前限制"]],
     },
     {
-      label: "模型与规则",
-      pages: [["scan-center.html", "扫描中心"], ["screening-console.html", "门槛筛选"], ["four-layer-screening.html", "四层筛选"], ["rules-replay.html", "规则回放"], ["gold-calibration.html", "黄金校准"], ["real-case-calibration.html", "历史案例校准"], ["model-acceptance.html", "模型验收"]],
+      label: "判断规则与质量",
+      pages: [["decision-quality.html", "判断质量"], ["rules-replay.html", "规则回放"], ["four-layer-screening.html", "三阶段与四路径"], ["gold-calibration.html", "固定真实样本"], ["real-case-calibration.html", "时间外结果"], ["model-acceptance.html", "发布验收"], ["scan-center.html", "链上发现后继"], ["screening-console.html", "规则回放后继"]],
     },
     {
       label: "系统设置与日志",
       pages: [["data-dictionary.html", "数据与日志"]],
     },
   ];
-  const modelGroup = groups[5];
-  if (modelGroup) modelGroup.pages.unshift(["decision-quality.html", "判断质量"]);
   // These names remain in the route inventory for compatibility and auditing.
   const routeInventory = [
     "candidate-pool.html", "change-explanations.html", "data-dictionary.html", "data-backbone.html", "discovery-funnel.html", "evidence-ledger.html", "source-adapter.html", "catalyst-paths.html", "four-layer-screening.html", "gold-calibration.html", "high-value-sources.html", "manual-review.html", "model-acceptance.html", "monitoring-infrastructure.html", "network-discovery.html", "new-token-update.html", "project-detail.html", "project-master-pool.html", "real-case-calibration.html", "rules-replay.html", "scan-center.html", "screening-console.html", "source-discovery.html", "source-registry.html", "update-center.html", "weak-signal-inbox.html", "workbench.html", "action-gaps.html",
@@ -66,7 +65,7 @@
     const open = group.pages.some(([href]) => href === currentPage);
     return `<details class="c19-admin-group" ${open ? "open" : ""}><summary>${group.label}</summary><div class="c19-admin-subnav">${visiblePages.map(([href, label]) => `<a class="${href === currentPage ? "is-active" : ""}" href="${href === "change-explanations.html" ? "update-center.html#changeReview" : href}">${label}</a>`).join("")}</div></details>`;
   }).join("");
-  sidebar.innerHTML = `<a class="c19-workbench-brand" href="workbench.html"><img src="../desktop/assets/penguin-research-icon.png" alt=""><span><strong>企鹅投研-凸性</strong><small>凸性工作台</small></span></a><nav class="c19-admin-nav">${groupMarkup}</nav><div class="c19-admin-bottom"><strong>当前版本 C2.2</strong><small>用于维护数据、任务和运行状态</small></div>`;
+  sidebar.innerHTML = `<a class="c19-workbench-brand" href="workbench.html"><img src="../desktop/assets/penguin-research-icon.png" alt=""><span><strong>企鹅投研-凸性</strong><small>凸性工作台</small></span></a><nav class="c19-admin-nav">${groupMarkup}</nav><div class="c19-admin-bottom"><strong>当前版本 C2.4</strong><small>用于维护数据、任务和运行状态</small></div>`;
   document.body.insertBefore(sidebar, document.body.firstChild);
 
   const actions = topbar.querySelector(".topbar-actions") || topbar;
@@ -99,4 +98,32 @@
   document.querySelectorAll('a[href*="change-explanations.html"]').forEach((link) => {
     link.href = "update-center.html#changeReview";
   });
+
+  const loadC24 = () => {
+    if (document.querySelector('script[data-c24-admin-app]')) return;
+    const c24Style = document.createElement("link");
+    c24Style.rel = "stylesheet";
+    c24Style.href = "c2-4.css?v=c24-4";
+    document.head.appendChild(c24Style);
+    const loadApp = () => {
+      if (document.querySelector('script[data-c24-admin-app]')) return;
+      const c24App = document.createElement("script");
+      c24App.src = "c2-4-admin.js?v=c24-4";
+      c24App.dataset.c24AdminApp = "true";
+      document.body.appendChild(c24App);
+    };
+    if (window.PENGUIN_CONVEXITY_C24_ADMIN) {
+      loadApp();
+      return;
+    }
+    const c24Snapshot = document.createElement("script");
+    c24Snapshot.src = "c2-4-admin-snapshot.js?v=c24-4";
+    c24Snapshot.onload = loadApp;
+    document.body.appendChild(c24Snapshot);
+  };
+  if (document.readyState === "complete") {
+    setTimeout(loadC24, 0);
+  } else {
+    window.addEventListener("load", loadC24, { once: true });
+  }
 })();

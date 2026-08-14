@@ -12,6 +12,7 @@ import urllib.parse
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 
 from c2_1_db import json_text, utc_now
 from c2_1_resilience import commit_cursor, cursor_decision, day_window, hour_window
@@ -132,6 +133,15 @@ def historical_uint(rpc, url, token, block, selector):
         return "program_failure", None
 
 
+def normalized_supply(raw, decimals):
+    """Normalize integer totalSupply using the decimals returned at that block."""
+
+    try:
+        return Decimal(raw).scaleb(-int(decimals))
+    except (InvalidOperation, TypeError, ValueError, OverflowError):
+        return None
+
+
 def supply_history(network, token, windows, rpc, cache):
     if network["chainType"] != "EVM":
         return {"state": "unsupported", "reason": "solana_historical_supply_reconstruction_not_available_in_this_collector"}
@@ -169,15 +179,25 @@ def source_health(connection, scope, state, reason, affected=1):
     )
 
 
-def collect_path4(connection, client, config_payload, networks, pause=None):
+def collect_path4(connection, client, config_payload, networks, pause=None, candidate_ids=None):
     source = config_payload["sources"]["geckoterminal"]
     key = user_environment(source.get("credentialEnv", "")) or user_environment(source.get("fallbackCredentialEnv", "")) or user_environment("COINGECKO_DEMO_API_KEY")
     headers = {source["credentialHeader"]: key} if key else {}
     rules, _ = load_rules()
-    rows = connection.execute(
-        """SELECT c.* FROM candidates c JOIN evaluations e ON e.candidate_id=c.candidate_id AND e.is_current=1
-        WHERE e.hard_gate_status IN ('pass','stale') AND c.continuity_status='candidate_asset' ORDER BY c.candidate_id"""
-    ).fetchall()
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    if selected_ids:
+        placeholders = ",".join("?" for _ in selected_ids)
+        rows = connection.execute(
+            f"""SELECT * FROM candidates
+            WHERE continuity_status='candidate_asset' AND candidate_id IN ({placeholders})
+            ORDER BY candidate_id""",
+            tuple(selected_ids),
+        ).fetchall()
+    else:
+        rows = connection.execute(
+            """SELECT c.* FROM candidates c JOIN evaluations e ON e.candidate_id=c.candidate_id AND e.is_current=1
+            WHERE e.hard_gate_status IN ('pass','stale') AND c.continuity_status='candidate_asset' ORDER BY c.candidate_id"""
+        ).fetchall()
     rpc = RpcClient()
     block_cache = defaultdict(dict)
     states = defaultdict(int)
@@ -241,8 +261,6 @@ def collect_path4(connection, client, config_payload, networks, pause=None):
             final_state = "no_data"
         elif supply.get("state") != "success":
             final_state = supply.get("state") or "no_data"
-        elif supply.get("unitScaleStable") is not True:
-            final_state = "no_data"
         else:
             final_state = "success"
         previous_volume = current_volume = previous_price = current_price = None
@@ -254,10 +272,24 @@ def collect_path4(connection, client, config_payload, networks, pause=None):
             current_price = aggregate[windows["current"][-1]]["price"]
         if final_state == "success" and previous_price and current_price:
             activity = math.log((current_volume + 1) / (previous_volume + 1))
-            previous_value = previous_price * supply["previousSupplyRaw"]
-            current_value = current_price * supply["currentSupplyRaw"]
+            previous_supply = normalized_supply(
+                supply["previousSupplyRaw"], supply["previousDecimals"]
+            )
+            current_supply = normalized_supply(
+                supply["currentSupplyRaw"], supply["currentDecimals"]
+            )
+            previous_value = (
+                Decimal(str(previous_price)) * previous_supply
+                if previous_supply is not None
+                else None
+            )
+            current_value = (
+                Decimal(str(current_price)) * current_supply
+                if current_supply is not None
+                else None
+            )
             if previous_value > 0 and current_value > 0:
-                valuation = math.log(current_value / previous_value)
+                valuation = math.log(float(current_value / previous_value))
                 relative = activity - valuation
                 surplus = activity - abs(valuation)
             else:
@@ -276,7 +308,7 @@ def collect_path4(connection, client, config_payload, networks, pause=None):
               previous_weighted_median_price_usd=excluded.previous_weighted_median_price_usd,current_weighted_median_price_usd=excluded.current_weighted_median_price_usd,
               activity_log_change=excluded.activity_log_change,valuation_log_change=excluded.valuation_log_change,relative_expansion=excluded.relative_expansion,
               risk_adjusted_surplus=excluded.risk_adjusted_surplus,payload_json=excluded.payload_json""",
-            (observation_id, candidate["candidate_id"], window_id, final_state, utc_now(), len(pools), ohlcv_success, max(0, int(local_pools) - len(pools)), previous_volume, current_volume, previous_price, current_price, activity, valuation, relative, surplus, json_text({"comparisonWindowComplete": bool(windows), "supplyHistorySuccess": supply.get("state") == "success", "unitScaleStable": supply.get("unitScaleStable"), "previousSupplyRaw": str(supply.get("previousSupplyRaw")) if supply.get("previousSupplyRaw") is not None else None, "currentSupplyRaw": str(supply.get("currentSupplyRaw")) if supply.get("currentSupplyRaw") is not None else None, "upstreamTruncated": upstream_truncated, "boundary": "provider_indexed_pools_not_global_all_dexes"})),
+            (observation_id, candidate["candidate_id"], window_id, final_state, utc_now(), len(pools), ohlcv_success, max(0, int(local_pools) - len(pools)), previous_volume, current_volume, previous_price, current_price, activity, valuation, relative, surplus, json_text({"comparisonWindowComplete": bool(windows), "supplyHistorySuccess": supply.get("state") == "success", "unitScaleStable": supply.get("unitScaleStable"), "unitScaleUse": "normalized_per_block_not_a_current_gate", "previousSupplyRaw": str(supply.get("previousSupplyRaw")) if supply.get("previousSupplyRaw") is not None else None, "currentSupplyRaw": str(supply.get("currentSupplyRaw")) if supply.get("currentSupplyRaw") is not None else None, "previousDecimals": supply.get("previousDecimals"), "currentDecimals": supply.get("currentDecimals"), "upstreamTruncated": upstream_truncated, "boundary": "provider_indexed_pools_not_global_all_dexes"})),
         )
         if supply.get("state") == "success" and windows:
             for label, timestamp in (("previous", windows["previous"][-1]), ("current", windows["current"][-1])):

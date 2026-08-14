@@ -93,6 +93,41 @@ public static class PenguinWindowNative
     [DllImport("user32.dll")]
     public static extern bool IsWindow(IntPtr hWnd);
 
+    public static bool IsVisibleEdgeWindowWithTitle(long handle, string expectedTitle)
+    {
+        var hWnd = new IntPtr(handle);
+        if (!IsWindow(hWnd) || !IsWindowVisible(hWnd))
+        {
+            return false;
+        }
+
+        uint processId;
+        GetWindowThreadProcessId(hWnd, out processId);
+        try
+        {
+            using (var process = Process.GetProcessById((int)processId))
+            {
+                if (!string.Equals(process.ProcessName, "msedge", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        var length = GetWindowTextLength(hWnd);
+        if (length <= 0)
+        {
+            return false;
+        }
+        var title = new StringBuilder(length + 1);
+        GetWindowText(hWnd, title, title.Capacity);
+        return title.ToString().IndexOf(expectedTitle, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
     [DllImport("user32.dll")]
     private static extern bool SetProcessDPIAware();
 
@@ -402,7 +437,10 @@ function Find-PenguinAppWindow {
   do {
     $windows = @([PenguinWindowNative]::GetVisibleEdgeWindows())
     $newWindow = $windows |
-      Where-Object { -not $knownHandles.ContainsKey([string]$_.Handle) } |
+      Where-Object {
+        -not $knownHandles.ContainsKey([string]$_.Handle) -and
+        $_.Title -like "*$appTitle*"
+      } |
       Select-Object -First 1
     if ($null -ne $newWindow) {
       return $newWindow
@@ -443,8 +481,9 @@ function Watch-PenguinAppWindow {
     [Parameter(Mandatory = $true)][string]$StatePath
   )
 
+  $appTitle = "$([char]0x4F01)$([char]0x9E45)$([char]0x6295)$([char]0x7814)-$([char]0x51F8)$([char]0x6027)"
   $lastSignature = ""
-  while ([PenguinWindowNative]::IsWindow([IntPtr]$Handle)) {
+  while ([PenguinWindowNative]::IsVisibleEdgeWindowWithTitle($Handle, $appTitle)) {
     try {
       $placement = [PenguinWindowNative]::ReadPlacement($Handle)
       if (-not $placement.Minimized -and $placement.Width -ge 480 -and $placement.Height -ge 360) {

@@ -27,6 +27,11 @@ storage/*.db-*
 .mypy_cache/
 .ruff_cache/
 
+# C2.3 .NET desktop build outputs (source and package locks remain trackable)
+**/bin/
+**/obj/
+desktop-host/publish/
+
 # Generated UI/data snapshots; source files remain trackable.
 app/*-snapshot.js
 app/*-snapshot.json

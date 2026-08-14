@@ -41,6 +41,18 @@ class C21UpdateCenterMaintenanceTests(unittest.TestCase):
         self.assertEqual(called, ["market"])
         self.assertEqual(list(result), ["market"])
 
+    def test_screening_scope_does_not_run_second_gate_sources(self):
+        called = []
+        with mock.patch.object(enrichment, "collect_incremental_new_pools", side_effect=lambda connection, client=None: called.append("discovery") or {"ok": True}), \
+             mock.patch.object(enrichment, "collect_market", side_effect=lambda connection, client=None: called.append("market") or {"ok": True}), \
+             mock.patch.object(enrichment, "collect_website_identity", side_effect=AssertionError("unexpected identity")), \
+             mock.patch.object(enrichment, "collect_github", side_effect=AssertionError("unexpected github")), \
+             mock.patch.object(enrichment, "collect_risk_and_supply", side_effect=AssertionError("unexpected goplus")), \
+             mock.patch.object(enrichment, "collect_quotes", side_effect=AssertionError("unexpected quote")):
+            result = enrichment.run_enrichment(object(), client=object(), job_scope="screening")
+        self.assertEqual(called, ["discovery", "market"])
+        self.assertEqual(list(result), ["incrementalDiscovery", "market"])
+
     def test_front_and_update_center_copy_follow_maintenance_contract(self):
         front = (ROOT / "app" / "c2-1-front.js").read_text(encoding="utf-8")
         admin = (ROOT / "app" / "c2-1-admin.js").read_text(encoding="utf-8")
@@ -49,6 +61,9 @@ class C21UpdateCenterMaintenanceTests(unittest.TestCase):
         nav = (ROOT / "app" / "workbench-nav.js").read_text(encoding="utf-8")
         server = (ROOT / "scripts" / "serve_local.py").read_text(encoding="utf-8")
         runtime = (ROOT / "scripts" / "c2_1_runtime.py").read_text(encoding="utf-8")
+        pipeline = (ROOT / "scripts" / "c2_1_pipeline.py").read_text(encoding="utf-8")
+        c22_runner = (ROOT / "scripts" / "run_c2_2_update.py").read_text(encoding="utf-8")
+        c22_admin = (ROOT / "app" / "c2-2-admin.js").read_text(encoding="utf-8")
 
         self.assertNotIn("function health()", front)
         self.assertNotIn("${health()}", front)
@@ -57,9 +72,10 @@ class C21UpdateCenterMaintenanceTests(unittest.TestCase):
         self.assertIn("凸性跟踪更新", tracking_html)
         self.assertNotIn("c2-1-admin.js", tracking_html)
         self.assertNotIn("c2-1-admin-snapshot.js", tracking_html)
-        self.assertNotIn("c2-1.css", tracking_html)
+        self.assertIn("c2-1.css", tracking_html)
         self.assertIn("90天新币筛选", new_token_html)
-        self.assertIn("c2-1-admin.js", new_token_html)
+        self.assertNotIn("c2-1-admin.js", new_token_html)
+        self.assertIn("c2-2-admin.js", new_token_html)
         self.assertNotIn("update-center.js", new_token_html)
         self.assertNotIn("update-center-snapshot.js", new_token_html)
         self.assertNotIn("tracking-task-snapshot.js", new_token_html)
@@ -72,6 +88,19 @@ class C21UpdateCenterMaintenanceTests(unittest.TestCase):
         self.assertNotIn('"update-center.html":updateCenter', admin)
         self.assertIn('"retry_source"', server)
         self.assertIn('command.extend(["--source-id", source_id])', runtime)
+        self.assertIn("立即手动更新新币筛选", c22_admin)
+        self.assertIn("实时任务进度", c22_admin)
+        self.assertIn("data-c22-source-feedback", c22_admin)
+        self.assertIn("sourceFeedback(triggerButton", c22_admin)
+        self.assertIn("startJob(button.dataset.c22Job, button.dataset.c22RetrySource, button)", c22_admin)
+        self.assertNotIn("C2.2 更新中心", c22_admin)
+        self.assertIn("正在重新计算受影响项目", pipeline)
+        self.assertIn("index % 100 == 0", pipeline)
+        self.assertIn("remainingRecoverableScopes", c22_runner)
+        self.assertIn("仍有{remaining}个范围连接失败", c22_runner)
+        self.assertIn("当前版本 C2.3", nav)
+        self.assertNotIn("当前版本 C2.2", nav)
+        self.assertNotIn(".slice(0,12)", c22_admin)
 
 
 if __name__ == "__main__":

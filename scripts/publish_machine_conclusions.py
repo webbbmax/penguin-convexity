@@ -160,6 +160,11 @@ def meaningful(value):
     return not any(marker in text for marker in ("尚未", "待核验", "暂无法"))
 
 
+def mapping_or_empty(value):
+    """Treat malformed historical snapshots as missing, not as a program crash."""
+    return value if isinstance(value, dict) else {}
+
+
 def merged_invalidation_conditions(value):
     project_conditions = []
     for item in str(value or "").split("；"):
@@ -237,8 +242,8 @@ def strict_structure_ready(case):
 
 
 def decide_action(case, score, market, risk, tradeability):
-    risk_status = (risk or {}).get("overall_risk") or case.get("risk_level")
-    tradeability_status = (tradeability or {}).get("overall_status")
+    risk_status = mapping_or_empty(risk).get("overall_risk") or case.get("risk_level")
+    tradeability_status = mapping_or_empty(tradeability).get("overall_status")
     project_identity = case.get("project_identity_status")
     asset_identity = case.get("asset_identity_status")
 
@@ -297,8 +302,8 @@ def decide_state(case, score, action, market, risk, tradeability):
         return "identity_pending"
     if case.get("asset_identity_status") != "verified":
         return "asset_pending"
-    risk_status = (risk or {}).get("overall_risk")
-    tradeability_status = (tradeability or {}).get("overall_status")
+    risk_status = mapping_or_empty(risk).get("overall_risk")
+    tradeability_status = mapping_or_empty(tradeability).get("overall_status")
     if (
         market is None
         or tradeability_status != "pass"
@@ -320,9 +325,9 @@ def decide_state(case, score, action, market, risk, tradeability):
 
 def state_reason(state, score, risk, tradeability):
     if state == "invalidated":
-        if (risk or {}).get("overall_risk") == "blocked":
+        if mapping_or_empty(risk).get("overall_risk") == "blocked":
             return "合约或安全风险已经达到阻断级。"
-        if (tradeability or {}).get("overall_status") == "fail":
+        if mapping_or_empty(tradeability).get("overall_status") == "fail":
             return "卖出路径或交易性已经达到阻断级。"
         return "项目或资产身份出现无法继续采用的冲突。"
     if state == "reflexive":
@@ -351,9 +356,12 @@ def opportunity_stage(action):
 
 def conclusion_record(case, score, inputs, previous, now):
     project_id = case["project_id"]
-    market = inputs["markets"].get(project_id)
-    risk = inputs["risks"].get(project_id)
-    tradeability = inputs["tradeability"].get(project_id)
+    market = mapping_or_empty(inputs.get("markets")).get(project_id)
+    risk = mapping_or_empty(inputs.get("risks")).get(project_id)
+    tradeability = mapping_or_empty(inputs.get("tradeability")).get(project_id)
+    market = market if isinstance(market, dict) else None
+    risk = mapping_or_empty(risk)
+    tradeability = mapping_or_empty(tradeability)
     action = decide_action(case, score, market, risk, tradeability)
     state = decide_state(
         case,

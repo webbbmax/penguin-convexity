@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "c2.2-first-gate-correctness-release-record-v1",
+  "releasedAt": "2026-08-12T22:10:00+08:00",
+  "scope": "C2.2 frozen-scope correctness maintenance inherited by C2.3",
+  "requirementsChanged": false,
+  "thresholdsChanged": false,
+  "mainDatabaseWritten": false,
+  "gate0Rerun": false,
+  "historicalScanRestartedFromZero": false,
+  "historicalScanResume": {
+    "verifiedAt": "2026-08-12T22:22:33+08:00",
+    "resumedFromCheckpoint": true,
+    "completedHistoricalPartitionsBefore": 651,
+    "completedHistoricalPartitionsAfter": 652,
+    "workerAlive": true,
+    "runId": "candidate-production-20260812T141859Z-9b5b0a"
+  },
+  "temporaryAcceptanceCopies": {
+    "retained": true,
+    "totalGiB": 24.121,
+    "reason": "当前环境安全策略拒绝删除；不参与产品运行，正式回滚备份另行保留。"
+  },
+  "backup": "data/backups/c2.2-first-gate-correctness-pre-20260812T125100Z.db",
+  "formalAudit": "reports/c2.2-first-gate-correctness/final-audit.json",
+  "funnelDiagnostic": "reports/c2.2-first-gate-correctness/funnel-diagnostic.json",
+  "plainLanguageReport": "docs/C2.2_FIRST_GATE_CORRECTNESS_REPAIR_20260812.md",
+  "finalFacts": {
+    "queued": 15794,
+    "completed": 15693,
+    "waitingAtomicQualification": 101,
+    "unjustifiedPending": 0,
+    "frontEligible": 12,
+    "trackingInput": 12,
+    "activeProject": 11,
+    "continuousObservation": 1,
+    "convexityClue": 0
+  },
+  "programRepairs": [
+    "candidate_asset promotion after confirmed public market and deterministic local pass",
+    "D to C promotion after identity closure and qualifying product evidence",
+    "queue reconciliation from current qualified evaluations",
+    "candidate and production freshness enforcement",
+    "candidate_id plus current evaluation performance index",
+    "risk-only first-gate ownership and later supply tracking ownership"
+  ],
+  "verification": {
+    "candidateProduction": "28/28",
+    "corePipeline": "2/2",
+    "trackingRepair": "5/5",
+    "snapshots": "7/7",
+    "c22Acceptance": "8/8",
+    "total": "50/50",
+    "quickCheck": "ok",
+    "foreignKeyViolations": 0,
+    "desktopSmoke": "passed"
+  }
+}

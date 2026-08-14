@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>..\..\desktop\assets\penguin-research-clean.ico</ApplicationIcon>
+    <AssemblyName>PenguinConvexity.Desktop</AssemblyName>
+    <RootNamespace>PenguinConvexity.Desktop</RootNamespace>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\..\desktop\assets\penguin-research-clean.ico" Link="Assets\penguin-research-clean.ico" />
+    <Resource Include="..\..\desktop\assets\penguin-research-icon.png" Link="Assets\penguin-research-icon.png" />
+  </ItemGroup>
+</Project>

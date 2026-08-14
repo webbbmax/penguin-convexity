@@ -166,7 +166,8 @@ def test_static_entrypoints():
     assert "source-discovery.html" in workbench
     assert '["new-token-update.html", "90天新币筛选"]' in navigation
     assert '["update-center.html", "凸性跟踪更新"]' in navigation
-    assert "c2-1-admin.js" in new_token_html
+    assert "c2-2-admin.js" in new_token_html
+    assert "c2-1-admin.js" not in new_token_html
     assert "update-center.js" not in new_token_html
     assert "c2-1-admin.js" not in update_html
     assert '["source-registry.html", "信源状态"]' in navigation

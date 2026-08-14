@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "c2.2-candidate-production-repair-independent-acceptance-v1",
+  "repairId": "c2.2-candidate-production-repair-v1",
+  "status": "independent_acceptance_complete_released",
+  "checkedAt": "2026-08-11T20:39:19+08:00",
+  "acceptedAt": "2026-08-11T20:39:19+08:00",
+  "releasedAt": "2026-08-11T20:39:19+08:00",
+  "requirements": {
+    "originalC22SetSha256": "e689e0177a83918e5075c03f524ab9220ae070d193dad7c580ca35ea91c87770",
+    "repairSetSha256": "184630e821918881b0306ce8078e86dcc2b27c78d515aad7b0bbb52e8aea4a03",
+    "allHashesMatched": true
+  },
+  "fixedDefects": [
+    {
+      "code": "missing_trade_counts_must_remain_unknown",
+      "before": "waiting_for_trades",
+      "after": "source_pending/no_data with buys and sells null",
+      "file": "scripts/candidate_production.py",
+      "regression": "passed"
+    }
+  ],
+  "tests": {
+    "independentFixedSamples": "10/10 passed",
+    "candidateProduction": "12/12 passed",
+    "allNonReleasePythonTestFiles": "83/83 passed",
+    "javascriptSyntax": "passed",
+    "pythonCompilation": "passed",
+    "browserDesktopViewports": "4/4 passed_no_post",
+    "browserManifest": "reports/c2.2-update-center-fix/manifest.json",
+    "browserManifestSha256": "49052b036522f3d80132d57c114f6631fa6226a6f7e69dd43921862a943b019f",
+    "realDesktop": "official_shortcut_launch_singleton_window_save_restore_passed"
+  },
+  "databases": {
+    "main": {
+      "sha256": "a7b68e3eb341df98fbb9803c7565a8776f63813bfd206ae0a3f3711da5e7727b",
+      "integrityCheck": "ok",
+      "foreignKeyErrors": 0
+    },
+    "pipeline": {
+      "sha256": "80e1f5439f15900b22b3c6639263308e5a589f990dbfe88df6e876e9d8866fd2",
+      "candidateCount": 4590214,
+      "productionRecordCount": 0,
+      "partitionCount": 0,
+      "runCount": 0,
+      "qualificationBatchCount": 0,
+      "integrityCheck": "ok",
+      "foreignKeyErrors": 0
+    },
+    "preMigrationBackup": {
+      "sha256": "71adf4864e57d5fd00164f0dc0894a2aa1faf904687bbdd9aaa673eee4290327",
+      "integrityCheck": "ok",
+      "foreignKeyErrors": 0
+    }
+  },
+  "formalHistoricalScanAuthorized": false,
+  "formalHistoricalScanStarted": false,
+  "releaseManifestUpdated": true,
+  "releaseBlockedBy": null,
+  "report": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_INDEPENDENT_ACCEPTANCE.md"
+}

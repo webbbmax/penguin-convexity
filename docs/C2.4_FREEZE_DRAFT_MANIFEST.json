@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "c2.4-freeze-draft-manifest-v1",
+  "release": "C2.4",
+  "status": "confirmed_and_superseded_by_formal_requirements_lock",
+  "createdAt": "2026-08-13T09:41:22+08:00",
+  "updatedAt": "2026-08-13T10:43:23+08:00",
+  "userRequest": "纠正前10边界：每条链首页合计最多展示10个；全部通过第二关的项目继续跟踪，并在全部机会中分页显示全部。",
+  "purpose": "保存用户确认的C2.4大白话范围和逐功能继承来源；正式范围以docs/C2.4_REQUIREMENTS_LOCK.json为准。",
+  "hashAlgorithm": "SHA-256",
+  "file": {
+    "path": "docs/C2.4_FREEZE_DRAFT.md",
+    "sha256": "c0b0b856b5168a5d5ff9c5cd88d7449839030bc8fe1c55fdfbb37e3403c497f1",
+    "bytes": 33945
+  },
+  "featureInheritanceDraft": {
+    "path": "docs/C2.4_FEATURE_INHERITANCE_DRAFT.json",
+    "sha256": "c24c4f721998cb1a53c6acc55414bbb2221aad79f574e4409060d4c86b668853",
+    "bytes": 10243,
+    "routeCount": 29,
+    "approvedDeletions": 0
+  },
+  "storageAudit": {
+    "path": "docs/TEMP_STORAGE_CLEANUP_PLAN_20260813.md",
+    "sha256": "2a4cb62743b31d3be4d25b5224eb250569f2851a37e234f50cb567c138d46656",
+    "authorizedDeletionCompleted": "runtime/c2.2-first-gate-acceptance; 24.122 GiB",
+    "cleanupResult": {
+      "path": "docs/TEMP_STORAGE_CLEANUP_RESULT_20260813.json",
+      "sha256": "00d8310c49c772a9a9edcadcd03dbf5a469e238c6852dd2c5f2099dda0195e22"
+    },
+    "retentionPolicy": {
+      "path": "docs/TEMP_ARTIFACT_RETENTION_POLICY.json",
+      "sha256": "ef141ba04314bfd186082045deb2d6c31fc2cec39270ffe58bbe2edd259037c1"
+    }
+  },
+  "upstreamFrozenDependencies": [
+    {
+      "path": "docs/C2.3_REQUIREMENTS_LOCK.json",
+      "sha256": "4992b5d393f1566dd731de0af8ab73e7c7f8e3006829db26820e06797453ce36",
+      "purpose": "C2.3正式桌面容器与C2.2网页业务主干继承"
+    },
+    {
+      "path": "docs/C2.2_REQUIREMENTS_LOCK.json",
+      "sha256": "f9a7b132d1d3b680364dd06648cd2118c2ad9443313060ed2efe4b6b1737a86c",
+      "purpose": "两作业、原子快照、稳定assetId、贝叶斯与主干继承基线"
+    },
+    {
+      "path": "docs/C2.2_FIRST_GATE_CORRECTNESS_REPAIR_20260812.json",
+      "sha256": "681e5c81d785941c7ac9f273f6636fb2024a3caebb489a0b6ba9ea9c13feb593",
+      "purpose": "当前第一关真实漏斗与已发布纠错边界"
+    }
+  ],
+  "formalRequirementsLock": "docs/C2.4_REQUIREMENTS_LOCK.json",
+  "requirementsLockCreated": true,
+  "formalRequirementDocumentCount": 10,
+  "formalRequirementSetSha256": "411f084d726cfb599536169ec0dcd9fc2d10d6f15e92f0df821385d2d2dbddc0",
+  "productCodeAuthorized": false,
+  "databaseChangeAuthorized": false,
+  "temporaryFileDeletionAuthorized": true,
+  "temporaryFileDeletionScopeCompleted": "only runtime/c2.2-first-gate-acceptance",
+  "nextUserDecision": "冻结不授权开发；只有用户另行明确回复开始C2.4整版开发后才允许修改产品代码。"
+}

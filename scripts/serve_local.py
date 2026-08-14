@@ -89,6 +89,11 @@ from c2_2_runtime import (
     status_payload as c22_status_payload,
     update_config as update_c22_config,
 )
+from candidate_production_runtime import (
+    launch_hidden as launch_candidate_production,
+    request_pause as request_candidate_production_pause,
+    retry_partition as retry_candidate_partition,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -98,7 +103,7 @@ RUNTIME_ROOT = PROJECT_ROOT / "runtime"
 CACHE_ROOT = RUNTIME_ROOT / "cache"
 LOG_ROOT = RUNTIME_ROOT / "logs"
 CONVEXITY_RELEASE = "C1.7"
-EXPERIENCE_RELEASE = "C2.2"
+EXPERIENCE_RELEASE = "C2.4"
 MIGRATION_RELEASE = "M1.0"
 UPDATE_STATUS_LOCK = threading.Lock()
 UPDATE_STATUS = load_update_status()
@@ -117,6 +122,12 @@ C22_STARTUP_SNAPSHOTS = (
     (APP_ROOT / "c2-2-front-snapshot.js", "window.PENGUIN_CONVEXITY_C22 = "),
     (APP_ROOT / "c2-2-tracking-snapshot.js", "window.PENGUIN_CONVEXITY_C22_TRACKING = "),
     (APP_ROOT / "c2-2-admin-snapshot.js", "window.PENGUIN_CONVEXITY_C22_ADMIN = "),
+)
+C24_STARTUP_SNAPSHOTS = (
+    (APP_ROOT / "c2-4-candidate-snapshot.js", "window.PENGUIN_CONVEXITY_C24_CANDIDATES = "),
+    (APP_ROOT / "c2-4-tracking-snapshot.js", "window.PENGUIN_CONVEXITY_C24_TRACKING = "),
+    (APP_ROOT / "c2-4-front-snapshot.js", "window.PENGUIN_CONVEXITY_C24 = "),
+    (APP_ROOT / "c2-4-admin-snapshot.js", "window.PENGUIN_CONVEXITY_C24_ADMIN = "),
 )
 
 
@@ -445,7 +456,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
         if request_path == "/api/c2.1/status":
             self.send_json(200, c21_status_payload())
             return
-        if request_path == "/api/c2.2/status":
+        if request_path in {"/api/c2.2/status", "/api/c2.4/status"}:
             self.send_json(200, c22_status_payload())
             return
         super().do_GET()
@@ -466,6 +477,12 @@ class QuietHandler(SimpleHTTPRequestHandler):
             "/api/c2.2/scheduler",
             "/api/c2.2/run",
             "/api/c2.2/pause-current",
+            "/api/c2.2/candidate-production/run",
+            "/api/c2.2/candidate-production/pause",
+            "/api/c2.2/candidate-production/retry",
+            "/api/c2.4/scheduler",
+            "/api/c2.4/run",
+            "/api/c2.4/pause-current",
         }:
             self.send_json(404, {"error": "接口不存在"})
             return
@@ -499,26 +516,61 @@ class QuietHandler(SimpleHTTPRequestHandler):
                 paused = request_c21_pause(bool(payload.get("paused", True)))
                 self.send_json(200, {"status": "success", "pauseCurrentRequested": paused, "runtime": c21_status_payload()})
                 return
-            if self.path == "/api/c2.2/scheduler":
+            if self.path in {"/api/c2.2/scheduler", "/api/c2.4/scheduler"}:
                 payload = self.read_json()
                 job_code = str(payload.get("jobCode") or "").strip()
                 changes = {key: payload[key] for key in ("mode", "intervalHours", "paused") if key in payload}
                 config = update_c22_config(job_code, changes)
                 self.send_json(200, {"status": "success", "config": config, "runtime": c22_status_payload()})
                 return
-            if self.path == "/api/c2.2/run":
+            if self.path in {"/api/c2.2/run", "/api/c2.4/run"}:
                 payload = self.read_json()
                 job_code = str(payload.get("jobCode") or "").strip() or "all"
                 if job_code not in {*C22_JOB_CODES, "all"}:
-                    raise ValueError("不支持的C2.2更新范围。")
+                    raise ValueError("不支持的更新范围。")
                 trigger = str(payload.get("trigger") or "manual")
-                result = launch_c22_hidden(job_code, trigger)
+                source_id = str(payload.get("sourceId") or "").strip() or None
+                result = launch_c22_hidden(job_code, trigger, source_id)
                 self.send_json(202 if result.get("status") == "launched" else 200, {**result, "runtime": c22_status_payload()})
                 return
-            if self.path == "/api/c2.2/pause-current":
+            if self.path in {"/api/c2.2/pause-current", "/api/c2.4/pause-current"}:
                 payload = self.read_json()
-                paused = request_c22_pause(bool(payload.get("paused", True)))
-                self.send_json(200, {"status": "success", "pauseCurrentRequested": paused, "runtime": c22_status_payload()})
+                job_code = str(payload.get("jobCode") or "").strip()
+                if job_code not in C22_JOB_CODES:
+                    raise ValueError("暂停当前任务必须指定新币筛选或凸性跟踪。")
+                requested = bool(payload.get("paused", True))
+                paused = request_c22_pause(requested, job_code)
+                if job_code == "screening":
+                    request_c21_pause(requested)
+                self.send_json(200, {
+                    "status": "success",
+                    "message": "暂停请求已记录；当前作业会在安全点停止并保留已有结果。",
+                    "pauseCurrentRequested": paused,
+                    "runtime": c22_status_payload(),
+                })
+                return
+            if self.path == "/api/c2.2/candidate-production/run":
+                payload = self.read_json()
+                queue = str(payload.get("queue") or "historical_backlog")
+                result = launch_candidate_production(queue)
+                status_code = 409 if result.get("status") == "not_authorized" else 202 if result.get("status") == "launched" else 200
+                self.send_json(status_code, {**result, "runtime": c22_status_payload()})
+                return
+            if self.path == "/api/c2.2/candidate-production/pause":
+                payload = self.read_json()
+                paused = request_candidate_production_pause(bool(payload.get("paused", True)))
+                self.send_json(200, {
+                    "status": "success",
+                    "message": "候选基础扫描会在当前批次安全点暂停并保留断点。" if paused else "暂停请求已取消。",
+                    "pauseRequested": paused,
+                    "runtime": c22_status_payload(),
+                })
+                return
+            if self.path == "/api/c2.2/candidate-production/retry":
+                payload = self.read_json()
+                result = retry_candidate_partition(str(payload.get("partitionId") or "").strip())
+                status_code = 409 if result.get("status") == "not_authorized" else 202 if result.get("status") == "launched" else 200
+                self.send_json(status_code, {**result, "runtime": c22_status_payload()})
                 return
             if self.path == "/api/c1-8/scheduler":
                 payload = self.read_json()
@@ -651,10 +703,14 @@ def rebuild_startup_snapshots():
         finishedAt=None,
         error="",
     )
-    print("企鹅投研凸性：正在校验 C2.1/C2.2 已发布快照。", flush=True)
+    print("企鹅投研凸性：正在校验 C2.1/C2.2/C2.4 业务快照。", flush=True)
     try:
         with QuietHandler.refresh_lock:
-            for snapshot_path, prefix in (*C21_STARTUP_SNAPSHOTS, *C22_STARTUP_SNAPSHOTS):
+            for snapshot_path, prefix in (
+                *C21_STARTUP_SNAPSHOTS,
+                *C22_STARTUP_SNAPSHOTS,
+                *C24_STARTUP_SNAPSHOTS,
+            ):
                 source = snapshot_path.read_text(encoding="utf-8").strip()
                 if not source.startswith(prefix) or not source.endswith(";"):
                     raise ValueError(f"发布快照格式无效：{snapshot_path.name}")
@@ -664,14 +720,14 @@ def rebuild_startup_snapshots():
             finishedAt=iso_now(),
             error="",
         )
-        print("企鹅投研凸性：C2.1/C2.2 已发布快照校验通过。", flush=True)
+        print("企鹅投研凸性：C2.1/C2.2/C2.4 业务快照校验通过。", flush=True)
     except Exception as error:
         set_startup_rebuild_state(
             state="failed",
             finishedAt=iso_now(),
             error=str(error),
         )
-        print(f"企鹅投研凸性：C2.1/C2.2 已发布快照校验失败：{error}", flush=True)
+        print(f"企鹅投研凸性：C2.1/C2.2/C2.4 业务快照校验失败：{error}", flush=True)
 
 
 def main():

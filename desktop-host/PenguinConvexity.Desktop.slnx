@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PenguinConvexity.Desktop/PenguinConvexity.Desktop.csproj" />
+  <Project Path="PenguinConvexity.Desktop.Tests/PenguinConvexity.Desktop.Tests.csproj" />
+</Solution>

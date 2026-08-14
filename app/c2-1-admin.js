@@ -1,5 +1,6 @@
 (function c21Admin(){
 "use strict";
+if(window.PENGUIN_CONVEXITY_C24_TAKEOVER_PENDING)return;
 const data=window.PENGUIN_CONVEXITY_C21_ADMIN;if(!data||data.schemaVersion!=="c2.1-admin-snapshot-v1")return;
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),fmt=v=>v==null?"--":new Intl.NumberFormat("zh-CN",{maximumFractionDigits:2,notation:Math.abs(Number(v))>=1000000?"compact":"standard"}).format(v),time=v=>v?new Intl.DateTimeFormat("zh-CN",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(v)):"尚无";
 const page=location.pathname.split("/").pop(),host=document.querySelector("main")||document.querySelector(".content")||document.body;

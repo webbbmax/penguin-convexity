@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "c2.3-post-release-maintenance-v1",
+  "release": "C2.3",
+  "recordedAt": "2026-08-12T12:36:55+08:00",
+  "status": "passed_published",
+  "scope": "修复来源单项更新无就地反馈、正常规则重算被误报为可能中断、完成结果不说明剩余失败，以及后台左栏仍显示C2.2。",
+  "authorization": "用户报告发布后真实桌面缺陷并要求处理。",
+  "boundaries": {
+    "businessRulesChanged": false,
+    "thresholdsChanged": false,
+    "databaseSchemaChanged": false,
+    "schedulerSettingsChanged": false,
+    "desktopContainerBinaryChanged": false,
+    "c22BusinessProtocolRenamed": false,
+    "candidateHistoryRestartedFromZero": false
+  },
+  "changedFiles": [
+    {"path": "app/c2-2-admin.js", "bytes": 40391, "sha256": "796a5379e29c97c2d3f5bab7072d13d36516d8915dd8bb2ee006762ece019297"},
+    {"path": "app/c2-2.css", "bytes": 8288, "sha256": "68fb34bde541ee7d2b1ba707047e7ae8aafdff92a550a694df5f03d6e4465a56"},
+    {"path": "app/workbench-nav.js", "bytes": 7057, "sha256": "e0700eeee477ee3e6016a985e302098d7a6e318a47366d53047e1617bed1f225"},
+    {"path": "scripts/c2_1_pipeline.py", "bytes": 75768, "sha256": "a1bdc87f1fd57a4b47877bba51bfbf4389b9d81c7a96f10c40526baf0af08829"},
+    {"path": "scripts/c2_2_runtime.py", "bytes": 11282, "sha256": "97c6af6455d5165f2d327c9549539f823ab869df943f32f92a92417585411710"},
+    {"path": "scripts/run_c2_2_update.py", "bytes": 16216, "sha256": "d30a3d73e3c0d2379202e40fb85b75a0aad2b5376ecdf9a866bcc3b7ea0738ce"},
+    {"path": "scripts/test_c2_1_update_center_maintenance.py", "bytes": 5600, "sha256": "ffa2190f68a092fb96ea260b95d63287ab158f90ee47dccd8c817a3628f31e6a"},
+    {"path": "scripts/test_c2_2_acceptance.py", "bytes": 8384, "sha256": "9da705bc14c5859b2c35c3167bb187e45027305c58a9a0b4906dd909a42eab56"},
+    {"path": "scripts/test_c2_3_desktop_contract.py", "bytes": 4226, "sha256": "0a994fa89182396619749c0405048c8977b9b45e92d0a388694882b6565d6a83"},
+    {"path": "scripts/test_c2_3_source_retry_ui.js", "bytes": 3398, "sha256": "f8d6da0f9355054c564ab2b9544ce26203b10df8dec54afeed907d790dd4079a"},
+    {"path": "docs/STATUS.md", "bytes": 23380, "sha256": "9a09ce3e2494a07fc6bf72ba7fdc9215893d9f5af82fb924e6a5af5ca0e3da43"}
+  ],
+  "verification": {
+    "requirementsLockFileSha256": "4992b5d393f1566dd731de0af8ab73e7c7f8e3006829db26820e06797453ce36",
+    "requirementSetSha256": "82057a667611285c8486008145ac105fa7549f4e56eeb9dcfcf68b9333008746",
+    "desktopArtifactSha256": "6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868",
+    "stableAppExclusionRule": "排除运行时生成的*snapshot.js与本清单三项获批app维护文件后计算；日常更新不得使稳定资产校验失效。",
+    "stableAppFileCountAfter": 70,
+    "stableAppTreeSha256After": "5185ff61ea5e8eebb052d2c03c1c5b844898e8a97b8425ca1c963b6b08132df2",
+    "desktopFileCountAfter": 5,
+    "desktopTreeSha256After": "c9f45e60672ba4a54b3a13c377ad70e4a2756e1b9862395faa1f774c7da4ef3d",
+    "javascriptSyntax": "passed",
+    "pythonCompile": "passed",
+    "maintenanceUnitTests": {"passed": 3, "failed": 0},
+    "runtimeTests": {"passed": 10, "failed": 0},
+    "candidateEvaluationTests": {"passed": 2, "failed": 0},
+    "c22AffectedAcceptanceTests": {"passed": 1, "failed": 0},
+    "c23DesktopContract": "passed_with_exact_post_release_maintenance_record",
+    "sourceRetryBrowserScenarios": {"passed": 2, "failed": 0, "productDataMutated": false},
+    "realDesktopReadOnly": {
+      "visibleVersion": "当前版本 C2.3",
+      "sourceRetryControlPresent": true,
+      "completionResultVisible": true,
+      "visibleCurrentVersionC22": false
+    }
+  },
+  "actualSourceRetry": {
+    "jobCode": "screening",
+    "sourceId": "project_website_identity",
+    "runId": "c22-20260812T041334Z-screening",
+    "state": "completed",
+    "completedAt": "2026-08-12T04:31:24.776014Z",
+    "remainingRecoverableScopes": 17,
+    "result": "单项更新真实执行完成；17个网站范围仍为source_failure，旧成功数据保留。"
+  },
+  "candidateProductionContinuity": {
+    "stateAfterRetry": "running",
+    "pausedAfterRetry": false,
+    "workerPidObserved": 32876,
+    "localScannedBeforeResume": 2493897,
+    "localScannedAfterOneRecoveredPartition": 2498897,
+    "resumeBoundary": "从既有分片断点继续，没有重跑Gate 0或从459万候选起点重新开始。"
+  },
+  "knownBoundary": "本修复保证点击有反馈、后台有进度、完成有结论；不会把第三方项目网站的真实连接失败伪装成成功。"
+}

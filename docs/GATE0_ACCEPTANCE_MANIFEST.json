@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "gate0-sol-acceptance-manifest-v1",
+  "release": "C2.1-Gate0",
+  "acceptedAt": "2026-08-09T13:15:00+08:00",
+  "authority": "Sol",
+  "status": "passed_released_with_documented_preexisting_database_baseline_exception",
+  "requirementsLock": {
+    "path": "docs/GATE0_REQUIREMENTS_LOCK.json",
+    "sha256": "2942d993e466615e7574c6aeadf2f7e2a468b2cdf051d9f0e2c34e074f34fc44",
+    "officialDocumentsMatched": "6/6"
+  },
+  "modelVerification": {
+    "source": "current_turn_and_thread_settings_metadata",
+    "turnId": "019fe4c4-e1e7-7893-819a-33331d3a0870",
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "verified": true
+  },
+  "acceptedRun": {
+    "runId": "gate0-solfinal-20260809T045924Z-f7bbd2",
+    "correctedFromRunId": "gate0-backfill-20260808T235243Z-8929b37d",
+    "windowStart": "2026-05-10T14:07:10Z",
+    "windowEnd": "2026-08-08T14:07:10Z",
+    "windowDays": 90,
+    "networks": 6,
+    "partitions": {"completed": 262, "total": 262, "failed": 0, "retrying": 0},
+    "networkRequestPartitions": {"completed": 197, "total": 197},
+    "readOnlyReusePartitions": {"completed": 65, "total": 65},
+    "events": 5922807,
+    "candidateTokens": 4585955,
+    "requests": {
+      "total": 6723,
+      "success": 6477,
+      "no_data": 0,
+      "quota_limited": 0,
+      "source_failure": 246,
+      "unsupported": 0,
+      "configuration_missing": 0,
+      "program_failure": 0
+    },
+    "eventsByNetwork": {
+      "ethereum-mainnet": 58282,
+      "base-mainnet": 613975,
+      "arbitrum-mainnet": 233,
+      "bnb-mainnet": 411199,
+      "robinhood-mainnet": 1472364,
+      "solana-mainnet": 3366754
+    },
+    "candidatesByNetwork": {
+      "ethereum-mainnet": 32282,
+      "base-mainnet": 564820,
+      "arbitrum-mainnet": 236,
+      "bnb-mainnet": 326412,
+      "robinhood-mainnet": 609480,
+      "solana-mainnet": 3052725
+    },
+    "unsupportedObservedLabels": {
+      "ethereum-mainnet": 4,
+      "base-mainnet": 8,
+      "arbitrum-mainnet": 6
+    },
+    "marketWideComplete": false,
+    "usableAsGlobalT0": false
+  },
+  "solCorrections": {
+    "networkRequestsDuringFinalization": 0,
+    "outsideWindowEventsRemoved": 353,
+    "outsideWindowEventsByNetwork": {"bnb-mainnet": 333, "robinhood-mainnet": 2, "solana-mainnet": 18},
+    "duplicateLedgerRowsRemoved": 3304,
+    "resultCapResponsesReclassified": 212,
+    "temporaryPathReferenceDefectFixed": true,
+    "invalidIntermediateRunsQuarantinedWithoutDeletion": true
+  },
+  "independentAudit": {
+    "path": "runtime/gate0-shadow/backfill/background/runs/gate0-solfinal-20260809T045924Z-f7bbd2/sol-independent-audit.json",
+    "sha256": "7d6cc4b8fbaab2b66ca1d8713fe942f5f42df933ebad782c841982d6e50a9e10",
+    "pass": true,
+    "partitionHashesChecked": 262,
+    "eventCount": 5922807,
+    "candidateCount": 4585955,
+    "remainingExpectedCandidates": 0,
+    "errors": 0
+  },
+  "rowLevelValidation": {
+    "duplicateEvents": 0,
+    "decodeFailures": 0,
+    "missingPools": 0,
+    "missingTokenRows": 0,
+    "missingTimestamps": 0,
+    "outsideWindowEvents": 0,
+    "futureEvents": 0,
+    "accepted29DayOverlapRequests": 0,
+    "candidateEarliestEventMismatches": 0
+  },
+  "idempotence": {
+    "scheduledTask": "PenguinConvexity-Gate0-Backfill",
+    "taskResult": 0,
+    "stageAfterRetrigger": "completed_idempotent_exit",
+    "additionalNetworkRequests": 0,
+    "ledgerRowsBeforeAndAfter": 6723,
+    "candidateSha256BeforeAndAfter": "e7bf3075b1a33fba24c2dc3187eef59be49dc93bc564606f2ad0f0b462599385",
+    "ledgerSha256BeforeAndAfter": "42e0ebf89164af39825de8ec813b05f9583da1c354d486ab5b0fb4ab2085560a",
+    "summarySha256BeforeAndAfter": "13aaf027dbb15cbaad08c0292ab88ff20c7ccfa04af0c094da342cd87b31940e",
+    "validationSha256BeforeAndAfter": "6b70976084b9cecaa9655f2e8fbaf42889b0aa7ec1d86a52aad364b81d0625f9",
+    "partitionManifestInventorySha256BeforeAndAfter": "a0c7a96fb0f1b6c2350253b313dcd8ab64ed0e0022724f604bad1cb60f1444f3"
+  },
+  "regression": {
+    "pythonCompile": "passed",
+    "testGate0BackfillRecovery": "passed",
+    "testGate0DexFactoryBackfill": "passed",
+    "testGate0ShadowPreflight": "passed",
+    "testBuildGate0Report": "passed",
+    "classificationStatesIndependentlyTested": 6,
+    "responsiveContract": "passed_by_static_html_css_assertions_at_375_768_1280_1440_design_boundaries",
+    "browserToolNote": "local file URL was blocked by the in-app Browser security policy; no alternate browser surface or localhost bypass was used"
+  },
+  "protectedBoundaries": {
+    "c20FrozenDocumentsMatched": "5/5",
+    "c20ImmutableCoreFilesMatched": "5/5",
+    "accepted29DayFilesMatched": "6/6",
+    "unfinishedForensicTmpPreserved": true,
+    "forbiddenRuntimeReferences": 0,
+    "c18Scheduler": {
+      "enabled": true,
+      "state": "Ready",
+      "trigger": "PT1H",
+      "action": "wscript.exe scripts/run-c1-8-scheduler-hidden.vbs C:/Python312/python.exe",
+      "userPaused": true,
+      "changedByGate0": false
+    },
+    "database": {
+      "frozenExpectedSha256": "3a30e13ca29ada90381a05f9e9cefc35bb4879e63a4e2077fef4c7f69454392b",
+      "currentSha256": "f8000b94b88079a6e4749a48e9d48c90d66bd169204a89a5ac1a94a560b578e0",
+      "exactFrozenHashMatched": false,
+      "classification": "preexisting_product_watchdog_change_before_sol_finalization_not_gate0_mutation",
+      "latestRecordedWrite": "watchdog-recovery-c2e0eb094109a07c finished 2026-08-08T14:19:56.978238Z",
+      "gate0ReadMode": "sqlite_uri_mode_ro_and_no_database_import_in_finalizer",
+      "hashStableDuringSolReadOnlyAudit": true,
+      "integrityCheck": "ok",
+      "foreignKeyErrors": 0,
+      "tables": 54,
+      "projects": 606,
+      "candidateCases": 608,
+      "rawEvents": 29382,
+      "normalizedEvents": 29382,
+      "evidenceItems": 3362,
+      "evidenceLineage": 99049,
+      "trackingRuns": 656,
+      "rollbackPerformed": false
+    }
+  },
+  "officialPromotion": {
+    "path": "runtime/gate0-shadow/backfill/latest.json",
+    "sha256": "dc52cee62194129eb4ee4fb60d705cd69d8f7c5cc60fc56603e00bb22fd79d88",
+    "previousPointerBackup": "runtime/gate0-shadow/backfill/latest.pre-gate0-sol-promotion-20260809.json",
+    "promotedBy": "Sol"
+  },
+  "postReleaseTaskState": {
+    "task": "PenguinConvexity-Gate0-Backfill",
+    "enabled": false,
+    "state": "Disabled",
+    "taskDefinitionPreserved": true,
+    "reason": "one-time recovery task no longer needs to wake every 15 minutes after official promotion"
+  },
+  "reports": {
+    "progress": "reports/gate0-backfill-progress/report.html",
+    "dataPreflight": "reports/gate0-data-preflight/report.html",
+    "analysisNotebook": "reports/gate0-data-preflight/gate0-analysis.ipynb"
+  },
+  "releaseBoundary": {
+    "gate0Passed": true,
+    "c21ProductFrozen": false,
+    "c21ProductCodeStarted": false,
+    "fourteenRealtimeDaysBlockDevelopment": false,
+    "projectMinimumWaitDays": 0,
+    "allProjectAgesUseOnlyRealSourceHistory": true
+  }
+}

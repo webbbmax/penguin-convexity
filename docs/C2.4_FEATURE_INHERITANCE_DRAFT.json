@@ -1,0 +1,227 @@
+{
+  "schemaVersion": "c2.4-feature-inheritance-draft-v1",
+  "release": "C2.4",
+  "status": "confirmed_source_superseded_by_formal_manifest",
+  "updatedAt": "2026-08-13T10:43:23+08:00",
+  "formalManifest": "docs/C2.4_INHERITANCE_MANIFEST.json",
+  "defaultRule": "inherit_and_adapt_unless_explicitly_replaced_or_user_approved_for_deletion",
+  "approvedDeletions": [],
+  "treatments": {
+    "current_main_entry": "适配C2.4数据后作为当前主入口",
+    "context_function": "功能保留并从相关主页面进入，不占一级导航",
+    "explicit_replacement": "旧功能迁到明确的新承载位置，旧路由保留迁移说明或跳转",
+    "retained_inactive": "代码和历史保留但不进入当前界面，必须说明原因与重新启用条件"
+  },
+  "routes": [
+    {
+      "path": "app/candidate-pool.html",
+      "currentFunction": "机会首页、全部机会和判断说明的前台承载",
+      "treatment": "current_main_entry",
+      "c2_4Location": "凸性机会中心",
+      "dataAdaptation": "只读取第二关完整公开结果；首页每链合计只派生贝叶斯前10作为摘要，全部机会分页显示所有入选项目；排名不截断跟踪队列或业务快照"
+    },
+    {
+      "path": "app/change-explanations.html",
+      "currentFunction": "重要变化",
+      "treatment": "current_main_entry",
+      "c2_4Location": "前台重要变化",
+      "dataAdaptation": "只显示会改变公开判断的变化；增加链与生命周期筛选；后台维护入口改由更新中心承载"
+    },
+    {
+      "path": "app/project-detail.html",
+      "currentFunction": "项目详情与上下文返回",
+      "treatment": "context_function",
+      "c2_4Location": "从机会、变化和列表进入",
+      "dataAdaptation": "合并当前候选、凸性跟踪、强路径、贝叶斯、来源、日龄和历史"
+    },
+    {
+      "path": "app/workbench.html",
+      "currentFunction": "工作台概览",
+      "treatment": "current_main_entry",
+      "c2_4Location": "工作台概览",
+      "dataAdaptation": "只显示当前两作业、持续跟踪、公开结果和真实待处理事项"
+    },
+    {
+      "path": "app/new-token-update.html",
+      "currentFunction": "90天新币筛选更新",
+      "treatment": "current_main_entry",
+      "c2_4Location": "更新中心/90天候选初筛",
+      "dataAdaptation": "保留手动、自动、断点、进度、来源重试；只处理0至90天候选"
+    },
+    {
+      "path": "app/update-center.html",
+      "currentFunction": "凸性跟踪更新",
+      "treatment": "current_main_entry",
+      "c2_4Location": "更新中心/凸性跟踪",
+      "dataAdaptation": "保留独立设置与单项重试；同时显示90天内和90天后持续跟踪"
+    },
+    {
+      "path": "app/project-master-pool.html",
+      "currentFunction": "项目队列",
+      "treatment": "current_main_entry",
+      "c2_4Location": "候选与项目/项目队列",
+      "dataAdaptation": "按稳定assetId展示候选、深度跟踪、公开和持续跟踪状态"
+    },
+    {
+      "path": "app/source-discovery.html",
+      "currentFunction": "项目发现",
+      "treatment": "context_function",
+      "c2_4Location": "候选与项目/项目发现",
+      "dataAdaptation": "使用当前候选生产与T0证据，不读取旧静态发现快照"
+    },
+    {
+      "path": "app/network-discovery.html",
+      "currentFunction": "链上发现",
+      "treatment": "context_function",
+      "c2_4Location": "候选与项目/链上发现",
+      "dataAdaptation": "按正式六链目录显示当前覆盖、候选和真实零结果"
+    },
+    {
+      "path": "app/discovery-funnel.html",
+      "currentFunction": "发现漏斗",
+      "treatment": "context_function",
+      "c2_4Location": "候选与项目/发现漏斗",
+      "dataAdaptation": "对账历史底座、候选初筛、深度跟踪和公开结果的同批次数量"
+    },
+    {
+      "path": "app/weak-signal-inbox.html",
+      "currentFunction": "弱线索收件箱",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "候选与项目/补证与待跟踪",
+      "dataAdaptation": "只展示缺项目证据、待来源、未完成公开底线的当前对象；不使用社交热度替代证据"
+    },
+    {
+      "path": "app/evidence-ledger.html",
+      "currentFunction": "证据账本",
+      "treatment": "current_main_entry",
+      "c2_4Location": "证据与来源/证据账本",
+      "dataAdaptation": "按assetId、来源、观察时间和输入用途展示当前证据与历史"
+    },
+    {
+      "path": "app/source-registry.html",
+      "currentFunction": "信源目录与状态",
+      "treatment": "current_main_entry",
+      "c2_4Location": "证据与来源/信源目录",
+      "dataAdaptation": "严格区分无数据、额度、来源、支持、配置和程序状态，并显示影响层"
+    },
+    {
+      "path": "app/source-adapter.html",
+      "currentFunction": "证据接入状态",
+      "treatment": "context_function",
+      "c2_4Location": "证据与来源/证据接入",
+      "dataAdaptation": "只显示当前C2.4字段生产者、最近成功、边界和单项恢复"
+    },
+    {
+      "path": "app/high-value-sources.html",
+      "currentFunction": "正式项目持续证据",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "证据与来源/正式项目证据",
+      "dataAdaptation": "改为项目关系、代码、部署产品、业务和链上使用的可归属证据；不使用高价值措辞"
+    },
+    {
+      "path": "app/data-backbone.html",
+      "currentFunction": "数据主干",
+      "treatment": "current_main_entry",
+      "c2_4Location": "证据与来源/数据主干",
+      "dataAdaptation": "显示两库、原子快照、游标、断点、数据时间和完整性，不展示旧版本数量"
+    },
+    {
+      "path": "app/monitoring-infrastructure.html",
+      "currentFunction": "项目监控基础",
+      "treatment": "current_main_entry",
+      "c2_4Location": "持续跟踪/监控基础",
+      "dataAdaptation": "只监控当前深度跟踪和90天后持续跟踪assetId"
+    },
+    {
+      "path": "app/catalyst-paths.html",
+      "currentFunction": "催化路径",
+      "treatment": "context_function",
+      "c2_4Location": "持续跟踪/催化与失效条件及项目详情",
+      "dataAdaptation": "只保留程序可验证的催化、反证和观察条件，不生成投资动作"
+    },
+    {
+      "path": "app/action-gaps.html",
+      "currentFunction": "行动限制",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "持续跟踪/当前限制及项目详情",
+      "dataAdaptation": "改为风险、退出、证据和失效条件；移除建仓、仓位和行动责任语言"
+    },
+    {
+      "path": "app/decision-quality.html",
+      "currentFunction": "判断质量",
+      "treatment": "current_main_entry",
+      "c2_4Location": "判断规则与质量/判断质量",
+      "dataAdaptation": "使用当前贝叶斯、可信度、固定样本和7/14/30天时间外结果"
+    },
+    {
+      "path": "app/rules-replay.html",
+      "currentFunction": "规则回放",
+      "treatment": "current_main_entry",
+      "c2_4Location": "判断规则与质量/规则回放",
+      "dataAdaptation": "复算C2.4宽初筛、公开底线、四路径、第91天迁移和同链排名"
+    },
+    {
+      "path": "app/scan-center.html",
+      "currentFunction": "扫描中心",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "候选与项目/链上发现和发现漏斗",
+      "dataAdaptation": "旧扫描入口迁到当前六链候选覆盖，不启动新的全量回扫"
+    },
+    {
+      "path": "app/screening-console.html",
+      "currentFunction": "门槛筛选",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/规则回放",
+      "dataAdaptation": "旧门槛控制台迁到当前候选初筛和公开底线回放"
+    },
+    {
+      "path": "app/four-layer-screening.html",
+      "currentFunction": "四层筛选",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/三阶段主链与四条路径",
+      "dataAdaptation": "保留分层解释能力，改用C2.4两关、公开底线和强路径"
+    },
+    {
+      "path": "app/gold-calibration.html",
+      "currentFunction": "黄金校准",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/固定真实样本",
+      "dataAdaptation": "不使用黄金或主观标签；改为冻结真实样本和边界回归"
+    },
+    {
+      "path": "app/real-case-calibration.html",
+      "currentFunction": "历史案例校准",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/时间外结果",
+      "dataAdaptation": "使用真实7/14/30天结果；程序不自动调参"
+    },
+    {
+      "path": "app/model-acceptance.html",
+      "currentFunction": "模型验收",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/发布验收",
+      "dataAdaptation": "改为确定性规则、贝叶斯复算、核心链和固定样本验收，不使用大模型判断"
+    },
+    {
+      "path": "app/data-dictionary.html",
+      "currentFunction": "数据、设置与日志",
+      "treatment": "current_main_entry",
+      "c2_4Location": "系统设置与日志",
+      "dataAdaptation": "显示当前设置、任务日志、数据库、备份、临时产物状态和字段解释"
+    },
+    {
+      "path": "app/manual-review.html",
+      "currentFunction": "人工逐项目复核",
+      "treatment": "retained_inactive",
+      "c2_4Location": "无当前入口；保留历史与回滚资产",
+      "dataAdaptation": "与零人工产品定位冲突；只有用户以后明确改变定位并重新冻结才可启用"
+    }
+  ],
+  "releaseChecks": [
+    "every existing route has exactly one treatment",
+    "no approved deletion is implied by a hidden navigation item",
+    "every visible route uses current C2.4 producer, cutoff time and terminology",
+    "every explicit replacement has a reachable successor and return path",
+    "retained inactive routes cannot leak stale C1.x data into current UI"
+  ]
+}

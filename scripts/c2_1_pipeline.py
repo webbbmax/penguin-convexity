@@ -26,6 +26,7 @@ from c2_1_db import (
 )
 from c2_1_rules import age_band, age_days, evaluate_candidate, load_rules, number, parse_utc, product_evidence_summary
 from c2_1_enrichment import RETRYABLE_SOURCE_STAGES, prepare_source_retry, run_enrichment
+from c2_1_observation_state import confirmed_trade_block, latest_effective_market_row
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -67,6 +68,7 @@ SOURCE_AFFECTED_FIELDS = {
     "goplus": ["显性硬风险", "当前供应与持仓"],
     "c2_1_path4": ["已索引池OHLCV", "历史供应"],
     "standard_sell_quote": ["100美元标准卖出报价"],
+    "robinhood_official_assets": ["Robinhood官方资产身份", "老项目新资产关系"],
     "c2_1_pipeline": ["当前完整快照"],
     "convexity_main_readonly": ["项目身份", "既有市场与风险事实"],
 }
@@ -469,6 +471,211 @@ def sync_main_mappings(connection, main_db_path=DEFAULT_MAIN_DB_PATH):
     return {"mappedPrimaryAssets": mapped, "continuityExcluded": continuity, "qualifyingBusinessEvidence": evidence}
 
 
+PRODUCT_EVIDENCE_STATE_SOURCES = {
+    "github": "GitHub官方仓库状态",
+    "business": "DefiLlama结构化协议状态",
+    "deployed_product": "产品合约证据能力",
+    "token_utility": "代币功能证据能力",
+    "product_usage": "DefiLlama产品使用序列",
+}
+
+
+def sync_product_evidence_states(
+    connection,
+    candidate_ids,
+    main_db_path=DEFAULT_MAIN_DB_PATH,
+):
+    """Materialize all five frozen evidence categories without inventing evidence."""
+
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    if not selected_ids:
+        return {"candidates": 0, "states": {}, "productUsageSeries": 0, "identityDowngraded": 0, "relationshipUpgraded": 0}
+    placeholders = ",".join("?" for _ in selected_ids)
+    rows = connection.execute(
+        f"""SELECT candidate_id,mapped_project_id,official_repo,identity_status,
+                   relationship_class,continuity_status
+            FROM candidates WHERE candidate_id IN ({placeholders}) ORDER BY candidate_id""",
+        tuple(selected_ids),
+    ).fetchall()
+    if not rows:
+        return {"candidates": 0, "states": {}, "productUsageSeries": 0, "identityDowngraded": 0, "relationshipUpgraded": 0}
+
+    project_ids = {str(row["mapped_project_id"] or "") for row in rows if row["mapped_project_id"]}
+    usage_series = {}
+    if project_ids:
+        with closing(open_main_db_readonly(main_db_path)) as main:
+            project_placeholders = ",".join("?" for _ in project_ids)
+            for event in main.execute(
+                f"""SELECT n.project_id,n.event_time,r.source_url,r.raw_payload_json
+                   FROM normalized_events_v2 n
+                   JOIN raw_events r ON r.raw_event_id=n.raw_event_id
+                   WHERE n.event_type='protocol_adoption_snapshot'
+                     AND n.processing_status='evidence_ready'
+                     AND n.attribution_status IN ('verified','corroborated')
+                     AND n.project_id IN ({project_placeholders})
+                   ORDER BY n.project_id,n.event_time""",
+                tuple(sorted(project_ids)),
+            ):
+                project_id = str(event[0] or "")
+                if project_id not in project_ids:
+                    continue
+                try:
+                    payload = json.loads(event[3] or "{}")
+                except json.JSONDecodeError:
+                    continue
+                value = number(((payload.get("metric") or {}).get("value")))
+                if value is None:
+                    value = number(((payload.get("raw") or {}).get("totalTvlUsd")))
+                if value is None:
+                    continue
+                day = str(event[1] or "")[:10]
+                usage_series.setdefault(project_id, {})[day] = {
+                    "observedAt": event[1], "sourceUrl": event[2] or "", "value": value,
+                }
+
+    state_counts = Counter()
+    usage_count = 0
+    now = utc_now()
+    pending_identity_rows = [
+        row for row in rows
+        if row["identity_status"] not in {"verified", "market_matched"}
+    ]
+    downgraded = sum(1 for row in pending_identity_rows if row["relationship_class"] == "C")
+    connection.execute(
+        f"""UPDATE candidates SET relationship_class='D',
+           relationship_reason='代币与项目身份尚未闭环，不能归为C类。',updated_at=?
+           WHERE candidate_id IN ({placeholders}) AND relationship_class='C'
+             AND identity_status NOT IN ('verified','market_matched')""",
+        (now, *selected_ids),
+    )
+    connection.executemany(
+        """UPDATE product_evidence SET status='pending',identity_status=?,
+           boundary_note='代码仓库本身已取得，但代币与项目身份尚未闭环，不能作为合格产品证据。'
+           WHERE candidate_id=? AND evidence_type='github' AND status='qualifying'""",
+        [(row["identity_status"], int(row["candidate_id"])) for row in pending_identity_rows],
+    )
+    generated_sources = tuple(PRODUCT_EVIDENCE_STATE_SOURCES.values())
+    source_placeholders = ",".join("?" for _ in generated_sources)
+    connection.execute(
+        f"""DELETE FROM product_evidence
+           WHERE candidate_id IN ({placeholders})
+             AND source_name IN ({source_placeholders})""",
+        (*selected_ids, *generated_sources),
+    )
+    existing_by_candidate = {}
+    for evidence in connection.execute(
+        f"""SELECT candidate_id,evidence_type,status FROM product_evidence
+           WHERE candidate_id IN ({placeholders})""",
+        tuple(selected_ids),
+    ):
+        existing_by_candidate.setdefault(int(evidence["candidate_id"]), {}).setdefault(
+            evidence["evidence_type"], set()
+        ).add(evidence["status"])
+
+    inserts = []
+    for row in rows:
+        candidate_id = int(row["candidate_id"])
+        identity_status = str(row["identity_status"] or "not_verified")
+        identity_closed = identity_status in {"verified", "market_matched"}
+        existing = existing_by_candidate.get(candidate_id, {})
+
+        records = []
+        if "github" not in existing:
+            records.append((
+                "github", "pending" if row["official_repo"] else "no_data",
+                PRODUCT_EVIDENCE_STATE_SOURCES["github"], "",
+                "已有官方仓库入口，等待自动核验。" if row["official_repo"] else "当前没有与该代币身份闭环的官方仓库入口。",
+                {"collectionState": "pending" if row["official_repo"] else "no_data", "reasonCode": "repository_pending" if row["official_repo"] else "official_repository_not_mapped"},
+            ))
+        if "business" not in existing or "qualifying" not in existing["business"]:
+            records.append((
+                "business", "no_data", PRODUCT_EVIDENCE_STATE_SOURCES["business"], "",
+                "DefiLlama来源已接入，但当前没有与该代币身份闭环的结构化协议数据。",
+                {"collectionState": "no_data", "reasonCode": "verified_protocol_mapping_not_found"},
+            ))
+        if "deployed_product" not in existing or "qualifying" not in existing["deployed_product"]:
+            records.append((
+                "deployed_product", "unsupported", PRODUCT_EVIDENCE_STATE_SOURCES["deployed_product"], "",
+                "当前没有可自动证明合约属于项目产品、而不是普通代币合约的确定性映射来源。",
+                {"collectionState": "unsupported", "reasonCode": "verified_product_contract_mapping_not_integrated"},
+            ))
+        if "token_utility" not in existing or "qualifying" not in existing["token_utility"]:
+            records.append((
+                "token_utility", "unsupported", PRODUCT_EVIDENCE_STATE_SOURCES["token_utility"], "",
+                "当前没有跨协议通用且可确定解码的代币功能执行来源，程序不根据转账或项目描述猜测用途。",
+                {"collectionState": "unsupported", "reasonCode": "token_utility_decoder_not_integrated"},
+            ))
+
+        points = sorted((usage_series.get(str(row["mapped_project_id"] or "")) or {}).values(), key=lambda item: item["observedAt"])
+        if "product_usage" not in existing or "qualifying" not in existing["product_usage"]:
+            if len(points) >= 2 and identity_closed:
+                previous, current = points[-2], points[-1]
+                usage_status = "qualifying"
+                usage_url = current["sourceUrl"]
+                usage_observed_at = current["observedAt"]
+                usage_payload = {
+                    "collectionState": "success", "metric": "tvlUsd", "unit": "USD",
+                    "previousValue": previous["value"], "currentValue": current["value"],
+                    "previousObservedAt": previous["observedAt"], "currentObservedAt": current["observedAt"],
+                    "newRealUsage": current["value"] > previous["value"],
+                    "supportingMetrics": {"metric": "tvlUsd", "pointCount": len(points)},
+                    "reasonCode": "verified_defillama_time_series",
+                }
+                usage_note = "确定项目映射下的DefiLlama真实TVL序列；只代表产品金融使用，不代表全部用户采用或投资价值。"
+                usage_count += 1
+            else:
+                usage_status = "pending" if len(points) >= 2 else "no_data"
+                usage_url = points[-1]["sourceUrl"] if points else ""
+                usage_observed_at = points[-1]["observedAt"] if points else now
+                usage_payload = {
+                    "collectionState": usage_status,
+                    "reasonCode": "asset_project_identity_pending" if points else "two_point_usage_series_not_found",
+                    "pointCount": len(points),
+                }
+                usage_note = "已有业务序列但代币与项目身份尚未闭环。" if points else "当前没有身份闭环且至少两个真实时间点的产品使用序列。"
+            records.append((
+                "product_usage", usage_status, PRODUCT_EVIDENCE_STATE_SOURCES["product_usage"], usage_url,
+                usage_note, usage_payload, usage_observed_at,
+            ))
+
+        for record in records:
+            evidence_type, status, source_name, source_url, boundary_note, payload = record[:6]
+            observed_at = record[6] if len(record) > 6 else now
+            evidence_id = "c22-product-state-" + hashlib.sha256(
+                f"{candidate_id}|{evidence_type}".encode()
+            ).hexdigest()[:22]
+            inserts.append(
+                (evidence_id, candidate_id, evidence_type, status, identity_status, source_name,
+                 source_url, observed_at, json_text(payload), boundary_note)
+            )
+            state_counts[f"{evidence_type}:{status}"] += 1
+    connection.executemany(
+        """INSERT INTO product_evidence(
+             evidence_id,candidate_id,evidence_type,status,identity_status,source_name,
+             source_url,observed_at,payload_json,boundary_note
+           ) VALUES(?,?,?,?,?,?,?,?,?,?)""",
+        inserts,
+    )
+    upgraded = connection.execute(
+        f"""UPDATE candidates SET relationship_class='C',
+           relationship_reason='存在合格产品证据，但项目新旧关系不做猜测。',updated_at=?
+           WHERE candidate_id IN ({placeholders}) AND relationship_class='D'
+             AND continuity_status='candidate_asset'
+             AND identity_status IN ('verified','market_matched')
+             AND EXISTS(
+               SELECT 1 FROM product_evidence pe
+               WHERE pe.candidate_id=candidates.candidate_id AND pe.status='qualifying'
+             )""",
+        (now, *selected_ids),
+    ).rowcount
+    connection.commit()
+    return {
+        "candidates": len(rows), "states": dict(state_counts),
+        "productUsageSeries": usage_count, "identityDowngraded": downgraded,
+        "relationshipUpgraded": int(upgraded or 0),
+    }
+
+
 def import_main_observations(connection, main_db_path=DEFAULT_MAIN_DB_PATH):
     now = utc_now()
     imported_market = 0
@@ -535,7 +742,10 @@ def import_main_observations(connection, main_db_path=DEFAULT_MAIN_DB_PATH):
         hard_codes = {"honeypot", "cannot_sell", "blacklist", "transfer_blocked", "frozen"}
         codes = [str(item.get("code") or "") for item in flags if isinstance(item, dict)]
         hard_block = row[4] in {"failed", "blocked", "untradeable"} or bool(hard_codes.intersection(codes)) or row[7] == "high"
-        severe = hard_block or any(item in {"buy_or_sell_tax_ge_20", "liquidity_drop_ge_80"} for item in codes)
+        # Percentage-based sell loss and liquidity-drop rules were removed by
+        # the user-authorized C2.4 trial.  Keep the values as evidence, but do
+        # not turn them into a severe blocker.
+        severe = hard_block
         observation_id = "c21-main-risk-" + hashlib.sha256(f"{candidate[0]}|{row[2]}|{','.join(codes)}".encode()).hexdigest()[:20]
         connection.execute(
             """
@@ -560,7 +770,7 @@ def row_json(row, key, fallback):
 
 
 def latest_market(connection, candidate_id):
-    row = connection.execute("SELECT * FROM market_observations WHERE candidate_id=? ORDER BY observed_at DESC LIMIT 1", (candidate_id,)).fetchone()
+    row = latest_effective_market_row(connection, candidate_id)
     if not row:
         return None
     return {
@@ -573,6 +783,32 @@ def latest_market(connection, candidate_id):
         "standardSellQuoteLossPct": row["standard_sell_quote_loss_pct"], "evidenceIds": [row["observation_id"]],
         **row_json(row, "payload_json", {}),
     }
+
+
+def candidate_with_production_t0(connection, row):
+    """Use the completed qualification record as the T0 authority for tracking."""
+
+    candidate = dict(row)
+    production_ready = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='candidate_production_records'"
+    ).fetchone()
+    if not production_ready:
+        return candidate
+    production = connection.execute(
+        """
+        SELECT p.effective_t0,p.t0_status,p.age_days
+        FROM candidate_production_records p
+        JOIN candidate_qualification_batches qb
+          ON qb.qualification_batch_id=p.qualification_batch_id AND qb.state='completed'
+        WHERE p.candidate_id=? AND p.tracking_eligible=1
+        """,
+        (row["candidate_id"],),
+    ).fetchone()
+    if production:
+        candidate["effective_t0"] = production["effective_t0"] or candidate.get("effective_t0")
+        candidate["t0_status"] = production["t0_status"] or candidate.get("t0_status")
+        candidate["age_days"] = production["age_days"]
+    return candidate
 
 
 def candidate_input(connection, row, as_of):
@@ -644,6 +880,10 @@ def latest_supply_input(connection, candidate_id, market, thresholds=None):
     current, previous = rows[0], rows[1]
     previous_supply = number(previous["supply_raw"])
     current_supply = number(current["supply_raw"])
+    if previous_supply is not None and previous["decimals"] is not None:
+        previous_supply /= 10 ** int(previous["decimals"])
+    if current_supply is not None and current["decimals"] is not None:
+        current_supply /= 10 ** int(current["decimals"])
     supply_change = (current_supply / previous_supply - 1) * 100 if previous_supply and current_supply is not None else None
     market_activity = number((market or {}).get("volumeUsd"))
     market_p50 = number((thresholds or {}).get("volumeP50"))
@@ -685,15 +925,31 @@ def percentile(values, fraction):
 
 def build_cohort_catalog(connection, as_of):
     cutoff = (parse_utc(as_of) - timedelta(days=30)).isoformat().replace("+00:00", "Z")
-    rows = connection.execute(
+    production_ready = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='candidate_production_records'"
+    ).fetchone()
+    if production_ready:
+        cohort_query = """
+        SELECT c.network_id,
+               CASE WHEN qb.state='completed' AND p.tracking_eligible=1
+                    THEN p.effective_t0 ELSE c.effective_t0 END AS effective_t0,
+               m.liquidity_usd,m.volume_usd,m.transaction_count,m.volume_liquidity_ratio
+        FROM market_observations m
+        JOIN candidates c ON c.candidate_id=m.candidate_id
+        LEFT JOIN candidate_production_records p ON p.candidate_id=c.candidate_id
+        LEFT JOIN candidate_qualification_batches qb ON qb.qualification_batch_id=p.qualification_batch_id
+        WHERE m.observation_id=(SELECT m2.observation_id FROM market_observations m2 WHERE m2.candidate_id=m.candidate_id AND m2.source_status='success' ORDER BY m2.observed_at DESC LIMIT 1)
+          AND m.observed_at>=? AND c.continuity_status='candidate_asset'
         """
-        SELECT c.network_id,c.effective_t0,m.liquidity_usd,m.volume_usd,m.transaction_count,m.volume_liquidity_ratio
+    else:
+        cohort_query = """
+        SELECT c.network_id,c.effective_t0,m.liquidity_usd,m.volume_usd,
+               m.transaction_count,m.volume_liquidity_ratio
         FROM market_observations m JOIN candidates c ON c.candidate_id=m.candidate_id
         WHERE m.observation_id=(SELECT m2.observation_id FROM market_observations m2 WHERE m2.candidate_id=m.candidate_id AND m2.source_status='success' ORDER BY m2.observed_at DESC LIMIT 1)
           AND m.observed_at>=? AND c.continuity_status='candidate_asset'
-        """,
-        (cutoff,),
-    ).fetchall()
+        """
+    rows = connection.execute(cohort_query, (cutoff,)).fetchall()
     expansion = [item[0] for item in connection.execute("SELECT relative_expansion FROM pool_window_observations WHERE source_status='success' AND observed_at>=? AND relative_expansion IS NOT NULL", (cutoff,))]
     return {"rows": rows, "expansion": expansion}
 
@@ -703,13 +959,35 @@ def cohort_context(connection, candidate, as_of, rules, catalog=None):
     if not band:
         return None
     catalog = catalog or build_cohort_catalog(connection, as_of)
-    rows = catalog["rows"]
-    same_band = [item for item in rows if age_band(age_days(item["effective_t0"], as_of), rules) == band]
-    primary = [item for item in same_band if item["network_id"] == candidate["network_id"]]
-    selected = primary if len(primary) >= int(rules["cohortPercentiles"]["primary"]["minimumValidObjects"]) else same_band if len(same_band) >= int(rules["cohortPercentiles"]["secondary"]["minimumValidObjects"]) else []
-    if not selected:
+    context_key = (candidate["network_id"], band)
+    context_cache = catalog.setdefault("_contextCache", {})
+    if context_key in context_cache:
+        return context_cache[context_key]
+    if "_bandRows" not in catalog:
+        band_rows = {}
+        band_chain_rows = {}
+        for item in catalog["rows"]:
+            item_band = age_band(age_days(item["effective_t0"], as_of), rules)
+            if not item_band:
+                continue
+            band_rows.setdefault(item_band, []).append(item)
+            band_chain_rows.setdefault((item["network_id"], item_band), []).append(item)
+        catalog["_bandRows"] = band_rows
+        catalog["_bandChainRows"] = band_chain_rows
+    same_band = catalog["_bandRows"].get(band, [])
+    primary = catalog["_bandChainRows"].get(context_key, [])
+    if len(primary) >= int(rules["cohortPercentiles"]["primary"]["minimumValidObjects"]):
+        selected = primary
+        scope = "same_chain_same_age_band_rolling_30_days"
+    elif len(same_band) >= int(rules["cohortPercentiles"]["secondary"]["minimumValidObjects"]):
+        selected = same_band
+        scope = "all_supported_chains_same_age_band_rolling_30_days"
+    else:
+        context_cache[context_key] = None
         return None
-    scope = "same_chain_same_age_band_rolling_30_days" if selected is primary else "all_supported_chains_same_age_band_rolling_30_days"
+    if not selected:
+        context_cache[context_key] = None
+        return None
     metrics = {
         "liquidityP60": percentile([item["liquidity_usd"] for item in selected], .60),
         "volumeP60": percentile([item["volume_usd"] for item in selected], .60),
@@ -722,7 +1000,9 @@ def cohort_context(connection, candidate, as_of, rules, catalog=None):
     }
     metrics["relativeExpansionP60"] = percentile(catalog["expansion"], .60)
     digest = hashlib.sha256(json_text({"scope": scope, "band": band, "sample": len(selected), **metrics}).encode()).hexdigest()[:16]
-    return {"snapshotId": f"cohort:{band}:{digest}", "scope": scope, "sampleSize": len(selected), **metrics}
+    context = {"snapshotId": f"cohort:{band}:{digest}", "scope": scope, "sampleSize": len(selected), **metrics}
+    context_cache[context_key] = context
+    return context
 
 
 def previous_evaluation(connection, candidate_id):
@@ -778,17 +1058,102 @@ def record_material_changes(connection, candidate_id, previous, result):
         )
 
 
-def evaluate_all(connection, as_of=None):
+def evaluation_is_current_for_production(
+    *,
+    evaluated_at,
+    evaluation_rule_hash,
+    qualified_at,
+    production_updated_at,
+    candidate_updated_at,
+    current_rule_hash,
+):
+    """A rule result is current only when it follows every production input."""
+
+    evaluated = parse_utc(evaluated_at)
+    qualified = parse_utc(qualified_at)
+    production_updated = parse_utc(production_updated_at)
+    candidate_updated = parse_utc(candidate_updated_at)
+    return bool(
+        evaluated
+        and qualified
+        and production_updated
+        and candidate_updated
+        and evaluated >= qualified
+        and evaluated >= production_updated
+        and evaluated >= candidate_updated
+        and str(evaluation_rule_hash or "") == str(current_rule_hash or "")
+    )
+
+
+def evaluate_all(
+    connection,
+    as_of=None,
+    *,
+    pending_qualification_only=False,
+    limit=None,
+    progress=None,
+    candidate_ids=None,
+    commit_interval=None,
+    cohort_catalog=None,
+):
     as_of = as_of or utc_now()
     rules, rule_hash = load_rules()
-    rows = connection.execute("SELECT * FROM candidates WHERE continuity_status='candidate_asset' AND (mapped_project_id!='' OR relationship_class IN ('A','B','C'))").fetchall()
-    catalog = build_cohort_catalog(connection, as_of)
+    production_ready = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='candidate_production_records'"
+    ).fetchone()
+    selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+    if selected_ids:
+        placeholders = ",".join("?" for _ in selected_ids)
+        rows = connection.execute(
+            f"SELECT * FROM candidates WHERE candidate_id IN ({placeholders}) ORDER BY candidate_id",
+            tuple(selected_ids),
+        ).fetchall()
+    elif production_ready and pending_qualification_only:
+        query = """SELECT c.* FROM candidates c
+            JOIN candidate_production_records p ON p.candidate_id=c.candidate_id
+            JOIN candidate_qualification_batches qb
+              ON qb.qualification_batch_id=p.qualification_batch_id AND qb.state='completed'
+            JOIN candidate_first_gate_queue fq
+              ON fq.candidate_id=p.candidate_id AND fq.state='completed'
+            WHERE p.tracking_eligible=1 AND NOT EXISTS(
+              SELECT 1 FROM evaluations e
+              WHERE e.candidate_id=c.candidate_id AND e.is_current=1
+                AND datetime(e.evaluated_at)>=datetime(p.qualified_at)
+                AND datetime(e.evaluated_at)>=datetime(p.updated_at)
+                AND datetime(e.evaluated_at)>=datetime(c.updated_at)
+                AND e.rule_config_hash=?
+            )
+            ORDER BY datetime(p.qualified_at),p.candidate_id"""
+        parameters = (rule_hash,)
+        if limit is not None:
+            query += " LIMIT ?"
+            parameters = (*parameters, max(0, int(limit)))
+        rows = connection.execute(query, parameters).fetchall()
+    elif production_ready:
+        rows = connection.execute(
+            """SELECT c.* FROM candidates c
+            JOIN candidate_production_records p ON p.candidate_id=c.candidate_id
+            JOIN candidate_qualification_batches qb
+              ON qb.qualification_batch_id=p.qualification_batch_id AND qb.state='completed'
+            JOIN candidate_first_gate_queue fq
+              ON fq.candidate_id=p.candidate_id AND fq.state='completed'
+            WHERE p.tracking_eligible=1"""
+        ).fetchall()
+    else:
+        rows = connection.execute(
+            "SELECT * FROM candidates WHERE continuity_status='candidate_asset' AND (mapped_project_id!='' OR relationship_class IN ('A','B','C'))"
+        ).fetchall()
+    catalog = cohort_catalog or build_cohort_catalog(connection, as_of)
     counts = Counter()
-    for row in rows:
+    total_rows = len(rows)
+    for index, row in enumerate(rows, start=1):
+        row = candidate_with_production_t0(connection, row)
+        if progress and (index == 1 or index % 100 == 0):
+            progress(index - 1, total_rows, str(row["candidate_id"]))
         market = latest_market(connection, row["candidate_id"])
         risks = []
         for item in connection.execute("SELECT * FROM risk_observations WHERE candidate_id=? ORDER BY observed_at DESC LIMIT 4", (row["candidate_id"],)):
-            risks.append({"sourceName": item["source_name"], "sourceStatus": item["source_status"], "observedAt": item["observed_at"], "hardTradeBlock": bool(item["hard_trade_block"]), "severeAnomaly": bool(item["severe_anomaly"]), "reasonCodes": row_json(item, "reason_codes_json", []), "evidenceIds": [item["observation_id"]]})
+            risks.append({"sourceName": item["source_name"], "sourceStatus": item["source_status"], "observedAt": item["observed_at"], "hardTradeBlock": confirmed_trade_block(item), "severeAnomaly": confirmed_trade_block(item), "reasonCodes": row_json(item, "reason_codes_json", []), "evidenceIds": [item["observation_id"]]})
         input_row = candidate_input(connection, row, as_of)
         previous = previous_evaluation(connection, row["candidate_id"])
         cohort = cohort_context(connection, row, as_of, rules, catalog)
@@ -809,7 +1174,10 @@ def evaluate_all(connection, as_of=None):
               consecutive_completed_misses,formed_at,invalidated_at,is_current
             ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)
             ON CONFLICT(candidate_id,evaluation_window_id,rule_version) DO UPDATE SET
-              evaluated_at=excluded.evaluated_at,hard_gate_status=excluded.hard_gate_status,
+              evaluated_at=excluded.evaluated_at,rule_config_hash=excluded.rule_config_hash,
+              cohort_snapshot_id=excluded.cohort_snapshot_id,cohort_scope=excluded.cohort_scope,
+              cohort_sample_size=excluded.cohort_sample_size,age_days=excluded.age_days,age_band=excluded.age_band,
+              hard_gate_status=excluded.hard_gate_status,
               hard_gate_json=excluded.hard_gate_json,display_state=excluded.display_state,
               display_reason=excluded.display_reason,paths_json=excluded.paths_json,
               factor_directions_json=excluded.factor_directions_json,confidence_json=excluded.confidence_json,
@@ -827,9 +1195,36 @@ def evaluate_all(connection, as_of=None):
                 result["formedAt"], result["invalidatedAt"],
             ),
         )
-        connection.execute("UPDATE candidates SET last_evaluated_at=?,updated_at=? WHERE candidate_id=?", (as_of, utc_now(), row["candidate_id"]))
+        if production_ready:
+            production_row = connection.execute(
+                "SELECT front_contract_ready,qualification_batch_id FROM candidate_production_records WHERE candidate_id=?",
+                (row["candidate_id"],),
+            ).fetchone()
+            if production_row:
+                front_eligible = int(bool(production_row["front_contract_ready"]) and bool(result["frontEligible"]))
+                connection.execute(
+                    """UPDATE candidate_production_records SET front_eligible=?,front_reason_code=?,updated_at=?
+                    WHERE candidate_id=?""",
+                    (
+                        front_eligible,
+                        "front_hard_gate_passed" if front_eligible else "hard_gate_not_passed",
+                        as_of,
+                        row["candidate_id"],
+                    ),
+                )
+                if production_row["qualification_batch_id"]:
+                    connection.execute(
+                        """UPDATE candidate_qualification_members SET front_eligible=?
+                        WHERE qualification_batch_id=? AND candidate_id=?""",
+                        (front_eligible, production_row["qualification_batch_id"], row["candidate_id"]),
+                    )
+        connection.execute("UPDATE candidates SET last_evaluated_at=? WHERE candidate_id=?", (as_of, row["candidate_id"]))
         counts[result["hardGate"]["status"]] += 1
         counts[result["displayState"]["code"]] += 1
+        if commit_interval and index % max(1, int(commit_interval)) == 0:
+            connection.commit()
+    if progress:
+        progress(total_rows, total_rows, "")
     connection.commit()
     return {"evaluated": len(rows), "counts": dict(counts), "ruleConfigHash": rule_hash}
 
@@ -900,15 +1295,36 @@ def front_item(connection, row):
 def build_snapshots(connection, front_path=DEFAULT_FRONT_SNAPSHOT, backend_path=DEFAULT_BACKEND_SNAPSHOT):
     generated_at = utc_now()
     build_id = "c21-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:6]
-    rows = connection.execute(
+    production_ready = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='candidate_production_records'"
+    ).fetchone()
+    if production_ready:
+        snapshot_query = """
+        SELECT e.*,c.network_id,c.token_address,
+               COALESCE(p.effective_t0,c.effective_t0) AS effective_t0,
+               COALESCE(p.t0_status,c.t0_status) AS t0_status,c.t0_scope_json,
+               c.first_seen_at,p.relationship_class,
+               p.asset_id AS mapped_asset_id,c.canonical_name,c.symbol
+        FROM evaluations e
+        JOIN candidates c ON c.candidate_id=e.candidate_id
+        JOIN candidate_production_records p ON p.candidate_id=e.candidate_id
+        JOIN candidate_qualification_batches qb
+          ON qb.qualification_batch_id=p.qualification_batch_id AND qb.state='completed'
+        JOIN candidate_first_gate_queue fq
+          ON fq.candidate_id=p.candidate_id AND fq.state='completed'
+        WHERE e.is_current=1 AND e.hard_gate_status IN ('pass','stale')
+          AND p.front_eligible=1
+        ORDER BY e.sort_score DESC,e.evaluated_at DESC,c.candidate_id
         """
+    else:
+        snapshot_query = """
         SELECT e.*,c.network_id,c.token_address,c.effective_t0,c.t0_status,c.t0_scope_json,
                c.first_seen_at,c.relationship_class,c.mapped_asset_id,c.canonical_name,c.symbol
         FROM evaluations e JOIN candidates c ON c.candidate_id=e.candidate_id
         WHERE e.is_current=1 AND e.hard_gate_status IN ('pass','stale')
         ORDER BY e.sort_score DESC,e.evaluated_at DESC,c.candidate_id
         """
-    ).fetchall()
+    rows = connection.execute(snapshot_query).fetchall()
     items = [front_item(connection, row) for row in rows]
     hard_gate_passed = len(items)
     front_visible = len(items)
@@ -923,6 +1339,33 @@ def build_snapshots(connection, front_path=DEFAULT_FRONT_SNAPSHOT, backend_path=
         """,
         (generated_at,),
     ).fetchone()
+    first_gate_ready = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='candidate_first_gate_queue'"
+    ).fetchone()
+    if first_gate_ready:
+        first_gate_counts = connection.execute(
+            """SELECT COUNT(*) queued,
+              SUM(CASE WHEN q.state='completed' THEN 1 ELSE 0 END) completed,
+              SUM(CASE WHEN q.state IN ('pending','retrying','running','failed')
+                            AND p.market_state='market_confirmed' AND b.state='completed' THEN 1 ELSE 0 END) pending,
+              SUM(CASE WHEN q.state IN ('pending','retrying','running','failed')
+                            AND (p.age_days<0 OR p.age_days>90) THEN 1 ELSE 0 END) outside_window,
+              SUM(CASE WHEN q.state='failed' THEN 1 ELSE 0 END) failed,
+              SUM(CASE WHEN q.source_queue='historical_backlog' THEN 1 ELSE 0 END) historical_queued,
+              SUM(CASE WHEN q.source_queue='historical_backlog' AND q.state='completed' THEN 1 ELSE 0 END) historical_completed,
+              SUM(CASE WHEN q.source_queue='daily_incremental' THEN 1 ELSE 0 END) daily_queued,
+              SUM(CASE WHEN q.source_queue='daily_incremental' AND q.state='completed' THEN 1 ELSE 0 END) daily_completed
+            FROM candidate_first_gate_queue q
+            LEFT JOIN candidate_production_records p ON p.candidate_id=q.candidate_id
+            LEFT JOIN candidate_qualification_batches b
+              ON b.qualification_batch_id=p.qualification_batch_id"""
+        ).fetchone()
+    else:
+        first_gate_counts = {
+            "queued": 0, "completed": 0, "pending": 0, "outside_window": 0, "failed": 0,
+            "historical_queued": 0, "historical_completed": 0,
+            "daily_queued": 0, "daily_completed": 0,
+        }
     state_counts = Counter(item["displayState"]["code"] for item in items)
     blocker_counts = Counter()
     for evaluation in connection.execute("SELECT hard_gate_json FROM evaluations WHERE is_current=1 AND hard_gate_status!='pass'"):
@@ -962,7 +1405,26 @@ def build_snapshots(connection, front_path=DEFAULT_FRONT_SNAPSHOT, backend_path=
         "schemaVersion": "c2.1-front-snapshot-v1", "buildId": build_id, "generatedAt": generated_at,
         "sourceCutoffAt": source_impact["lastSuccessfulAt"] or generated_at, "modelVersion": "deterministic-empirical-bayes-v1",
         "ruleVersion": rules["ruleVersion"], "ruleConfigHash": rule_hash, "supportedScope": supported_scope(),
-        "coverageSummary": {"discoveredCount": int(counts["discovered"] or 0), "suspectedWithin90DaysCount": int(counts["within90"] or 0), "t0VerifiedCount": int(counts["t0verified"] or 0), "hardGatePassedCount": hard_gate_passed, "frontVisibleCount": front_visible, "backfillCompleteCount": sum(item["observationHistory"]["gapDays"] == 0 for item in items), "backfillGapCount": sum(item["observationHistory"]["gapDays"] > 0 for item in items), "added24hCount": sum(parse_utc(item["firstSeenAt"]) and parse_utc(generated_at) - parse_utc(item["firstSeenAt"]) <= timedelta(hours=24) for item in items)},
+        "coverageSummary": {
+            "discoveredCount": int(counts["discovered"] or 0),
+            "suspectedWithin90DaysCount": int(counts["within90"] or 0),
+            "t0VerifiedCount": int(counts["t0verified"] or 0),
+            "t0HandoffCount": int(first_gate_counts["queued"] or 0),
+            "firstGateQueuedCount": int(first_gate_counts["queued"] or 0),
+            "firstGateCompletedCount": int(first_gate_counts["completed"] or 0),
+            "firstGatePendingCount": int(first_gate_counts["pending"] or 0),
+            "firstGateOutsideWindowCount": int(first_gate_counts["outside_window"] or 0),
+            "firstGateFailedCount": int(first_gate_counts["failed"] or 0),
+            "historicalT0HandoffCount": int(first_gate_counts["historical_queued"] or 0),
+            "historicalFirstGateCompletedCount": int(first_gate_counts["historical_completed"] or 0),
+            "dailyT0HandoffCount": int(first_gate_counts["daily_queued"] or 0),
+            "dailyFirstGateCompletedCount": int(first_gate_counts["daily_completed"] or 0),
+            "hardGatePassedCount": hard_gate_passed,
+            "frontVisibleCount": front_visible,
+            "backfillCompleteCount": sum(item["observationHistory"]["gapDays"] == 0 for item in items),
+            "backfillGapCount": sum(item["observationHistory"]["gapDays"] > 0 for item in items),
+            "added24hCount": sum(parse_utc(item["firstSeenAt"]) and parse_utc(generated_at) - parse_utc(item["firstSeenAt"]) <= timedelta(hours=24) for item in items),
+        },
         "sourceImpactSummary": source_impact, "statusCounts": {code: state_counts.get(code, 0) for code in ("data_limited", "convexity_clue", "active_project", "early_observation", "continuous_observation")},
         "hardGateCounts": dict(Counter(row["hard_gate_status"] for row in connection.execute("SELECT hard_gate_status FROM evaluations WHERE is_current=1"))),
         "blockerCounts": dict(blocker_counts), "materialChanges": material_changes, "items": items,
@@ -1018,7 +1480,14 @@ def build_snapshots(connection, front_path=DEFAULT_FRONT_SNAPSHOT, backend_path=
     return {"buildId": build_id, "frontVisibleCount": front_visible, "hardGatePassedCount": hard_gate_passed, "frontSha256": front_hash, "backendSha256": backend_hash}
 
 
-def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, candidate_path=DEFAULT_CANDIDATE_PATH, retry_source_id=None):
+def run_pipeline(
+    action="all",
+    trigger_kind="manual",
+    db_path=DEFAULT_DB_PATH,
+    candidate_path=DEFAULT_CANDIDATE_PATH,
+    retry_source_id=None,
+    evaluation_limit=None,
+):
     if action == "retry_source" and retry_source_id not in RETRYABLE_SOURCE_STAGES:
         raise ValueError("单项更新缺少有效来源。")
     initialize_database(db_path)
@@ -1034,15 +1503,15 @@ def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, c
                 connection.commit()
                 result = {}
                 completion_message = "C2.1本轮流水线已完成。"
-                if action in {"all", "import"}:
+                if action in {"all", "screening", "import"}:
                     ensure_not_paused()
                     result["import"] = import_gate0_candidates(connection, run_id, trigger_kind, candidate_path)
-                if action in {"all", "sync"}:
+                if action in {"all", "screening", "sync"}:
                     ensure_not_paused()
                     status_payload(state="running", stage="identity_mapping", runId=run_id, triggerKind=trigger_kind, message="正在只读同步项目身份、连续资产和产品证据。")
                     result["mapping"] = sync_main_mappings(connection)
                     result["legacyObservations"] = import_main_observations(connection)
-                if action in {"all", "enrich", "retry_source"}:
+                if action in {"all", "screening", "enrich", "retry_source"}:
                     ensure_not_paused()
                     retry_pending = prepare_source_retry(connection, retry_source_id) if action == "retry_source" else None
                     status_payload(state="running", stage="enrichment", runId=run_id, triggerKind=trigger_kind, message="正在单独更新所选来源。" if action == "retry_source" else "正在分层采集市场、官方仓库和100美元标准卖出报价。")
@@ -1055,14 +1524,24 @@ def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, c
                         ),
                         pause=ensure_not_paused,
                         only_source_id=retry_source_id if action == "retry_source" else None,
+                        job_scope="screening" if action == "screening" else None,
                     )
                     if action == "retry_source":
                         result["retrySource"] = {"sourceId": retry_source_id, "pendingScopes": retry_pending}
-                if action in {"all", "evaluate", "retry_source"}:
+                if action in {"all", "evaluate", "evaluate_snapshot", "retry_source"}:
                     ensure_not_paused()
                     status_payload(state="running", stage="rules", runId=run_id, triggerKind=trigger_kind, message="正在按冻结规则计算宽硬门槛、四路径和五状态。")
-                    result["evaluation"] = evaluate_all(connection)
-                if action in {"all", "snapshot", "retry_source"}:
+                    result["evaluation"] = evaluate_all(
+                        connection,
+                        pending_qualification_only=action == "evaluate_snapshot",
+                        limit=evaluation_limit if action == "evaluate_snapshot" else None,
+                        progress=lambda completed, total, item: status_payload(
+                            state="running", stage="rules", runId=run_id, triggerKind=trigger_kind,
+                            completedUnits=completed, totalUnits=total, currentItem=item,
+                            message=f"正在重新计算受影响项目：{completed}/{total}。",
+                        ),
+                    )
+                if action in {"all", "snapshot", "evaluate_snapshot", "retry_source"}:
                     ensure_not_paused()
                     set_source_health(connection, "c2_1_pipeline", "all", "success", plain_reason="C2.1本轮确定性处理成功。")
                     connection.commit()
@@ -1103,7 +1582,7 @@ def run_pipeline(action="all", trigger_kind="manual", db_path=DEFAULT_DB_PATH, c
 
 def main():
     parser = argparse.ArgumentParser(description="C2.1可恢复生产流水线")
-    parser.add_argument("action", nargs="?", choices=("all", "import", "sync", "enrich", "evaluate", "snapshot", "retry_source"), default="all")
+    parser.add_argument("action", nargs="?", choices=("all", "screening", "import", "sync", "enrich", "evaluate", "evaluate_snapshot", "snapshot", "retry_source"), default="all")
     parser.add_argument("--trigger", choices=("manual", "automatic", "resume", "development"), default="manual")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
     parser.add_argument("--candidate-path", type=Path, default=DEFAULT_CANDIDATE_PATH)

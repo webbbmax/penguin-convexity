@@ -1,0 +1,164 @@
+{
+  "schemaVersion": "c2.4-release-manifest-v1",
+  "release": "C2.4",
+  "name": "普通用户体验与机会发布重构",
+  "status": "independent_full_acceptance_complete_released",
+  "releasedAt": "2026-08-13T18:00:27+08:00",
+  "userAuthorization": "发布 C2.4",
+  "requirementsLock": "docs/C2.4_REQUIREMENTS_LOCK.json",
+  "requirementSetSha256": "411f084d726cfb599536169ec0dcd9fc2d10d6f15e92f0df821385d2d2dbddc0",
+  "acceptanceManifest": {
+    "path": "docs/C2.4_ACCEPTANCE_MANIFEST.json",
+    "bytes": 7625,
+    "sha256": "90af346784b5b4e0382ade966e4dd9d6de385e113a04708be77d0e3434504533"
+  },
+  "finalAcceptanceReport": {
+    "path": "docs/C2.4_FINAL_ACCEPTANCE.md",
+    "bytes": 5498,
+    "sha256": "fa56acb2cb77c4e1dd8d4c80a54a0ea5dd9ab823abc003766c41c15744604e92"
+  },
+  "desktopArtifact": {
+    "path": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "runtime": "win-x64",
+    "selfContained": true,
+    "bytes": 433152,
+    "sha256": "6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868",
+    "containerInheritedFrom": "C2.3"
+  },
+  "businessArtifacts": [
+    {"path": "app/c2-4-front.js", "sha256": "5e96095bce729833cc3927c8af200f37eb28da56db83872932c54cef2d9fba51"},
+    {"path": "app/c2-4-admin.js", "sha256": "0a664b088d6ccac109d9e33413f2dbf82284b2ea7e459b14c039ec0f0a940f6b"},
+    {"path": "app/c2-4.css", "sha256": "3645216c5dc66a3bb2e35d03e79fbdfd86b51b919fb4c45cffeac19f747934bd"},
+    {"path": "app/workbench-nav.js", "sha256": "175a6bab6594dc7cf3d648d3922999607a19456fe36736012baa1d3d9aa10d70"},
+    {"path": "scripts/c2_4_rules.py", "sha256": "6457427b82ffe1cb7fa58fa15f85fc492093f9b2617565c90bc5c4bfff03269b"},
+    {"path": "scripts/build_c2_4_snapshots.py", "sha256": "0c53b5afed26c4454afe38552f515731f9c9cc8d47368f08e58b76c8129bf2d3"},
+    {"path": "scripts/c2_1_enrichment.py", "sha256": "b89d16e303fdef12d5debfdd4a1c015ece37177cce938b9c8a923bcf2d913865"}
+  ],
+  "acceptedSnapshotSet": {
+    "dataCutoffAt": "2026-08-13T09:14:13.265165Z",
+    "storagePolicy": "验收哈希作为历史证据保存；同路径当前快照会被后续正常调度原子替换，不作为代码漂移判断。",
+    "candidate": {"pathAtAcceptance": "app/c2-4-candidate-snapshot.js", "buildId": "c24-candidate-e37a29b32be3760a", "acceptedSha256": "0848cab2c43ebe1df5f7371e2e7e8c4d1ffa5f81198498f44a7fb5e89a51009b"},
+    "tracking": {"pathAtAcceptance": "app/c2-4-tracking-snapshot.js", "buildId": "c24-tracking-00a38c45ba4bb3c0", "acceptedSha256": "6133aeabab146d7cadffb671f57b6069ebc935dfb3816eff08dd72fffa8b9586"},
+    "public": {"pathAtAcceptance": "app/c2-4-front-snapshot.js", "buildId": "c24-public-0fd5298f2bc0b098", "acceptedSha256": "ff8ad6fec86fe843bb5d681dcaf79bca881aa87a8bdfd12983ffd006ef865fae"},
+    "admin": {"pathAtAcceptance": "app/c2-4-admin-snapshot.js", "buildId": "c24-admin-787e3342203a94e4", "acceptedSha256": "c0632caeeb5b8889cfc31006cd7ad0128f20aace115d5d2c355af92d7703d527"}
+  },
+  "officialDesktopEntry": {
+    "path": "C:/Users/Donutfi/Desktop/企鹅投研-凸性.lnk",
+    "target": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "arguments": "",
+    "actualColdLaunchPassed": true,
+    "singleInstancePassed": true,
+    "desktopPidAtRelease": 40252,
+    "experienceRelease": "C2.4"
+  },
+  "environmentModel": {
+    "deploymentType": "single_user_local_desktop",
+    "separateTestEnvironment": false,
+    "separateProductionEnvironment": false,
+    "candidateAndOfficialEntryShareWorkspace": true,
+    "releaseMeaning": [
+      "把独立终验候选的代码、快照和证据哈希封存为正式C2.4",
+      "把阶段、状态、项目记忆和迁移清单更新为已发布",
+      "确认正式桌面快捷方式打开已验收的C2.4本地页面和服务"
+    ],
+    "notPerformed": [
+      "没有上传云服务器、应用商店或独立正式服务器",
+      "没有把代码从隔离测试目录复制到另一套正式目录",
+      "没有提交或推送GitHub"
+    ]
+  },
+  "inheritance": {
+    "singleProductTrunk": true,
+    "desktopContainer": "C2.3 .NET 10 WPF WebView2",
+    "businessBaseline": "C2.2",
+    "approvedDeletions": 0,
+    "inheritedRoutes": 29,
+    "schedulerChanged": false,
+    "secondSchedulerCreated": false,
+    "secondCSharpBusinessChannelCreated": false
+  },
+  "runtimeAtRelease": {
+    "pageServicePid": 37108,
+    "pageServiceState": "ready",
+    "candidateProductionPid": null,
+    "candidateProductionState": "ready_completed",
+    "candidateProductionRunId": "candidate-production-20260813T081837Z-bcf2ef",
+    "candidateProductionFinishedAt": "2026-08-13T09:52:38.781516Z",
+    "candidateLocalScannedCount": 4592870,
+    "candidateLocalPendingCount": 0,
+    "firstGateProcessedCount": 21463,
+    "firstGatePendingCount": 525,
+    "scheduler": {
+      "taskName": "PenguinConvexity-C1.8-Scheduler",
+      "state": "Ready",
+      "lastTaskResult": 0,
+      "hiddenAction": "wscript.exe"
+    },
+    "normalDesktopConsoleWindows": 0,
+    "gate0Rerun": false,
+    "historical459mRescanStarted": false
+  },
+  "verification": {
+    "acceptedArtifactHashDrift": 0,
+    "acceptanceChecks": {"total": 79, "passed": 79, "failed": 0},
+    "tier0Failures": 0,
+    "tier1Failures": 0,
+    "liveRoutes": {"total": 29, "passed": 29, "failed": 0},
+    "healthExperienceRelease": "C2.4",
+    "startupRebuild": "success",
+    "jobs": ["screening", "convexity_tracking"],
+    "desktopColdLaunch": "passed",
+    "desktopSingleInstance": "passed",
+    "databaseAtRelease": {
+      "main": {"path": "data/convexity.db", "bytes": 559009792, "quickCheck": "ok", "foreignKeyErrors": 0},
+      "pipeline": {"path": "data/c2.1-pipeline.db", "bytesAtCheck": 10162503680, "quickCheck": "ok", "foreignKeyErrors": 0}
+    },
+    "productionUpdatesTriggeredByRelease": false,
+    "backgroundTaskRestartedByRelease": false
+  },
+  "rollback": {
+    "desktopContainerRollbackAsset": "runtime/c2.3-rollback/企鹅投研-凸性.pre-c2.3.lnk",
+    "previousBusinessRelease": "C2.2",
+    "previousDesktopRelease": "C2.3",
+    "c2_4CodeReleaseBackup": {
+      "path": "backups/c2.4-release-20260813T1800",
+      "manifest": "backups/c2.4-release-20260813T1800/manifest.json",
+      "fileCountExcludingManifest": 49,
+      "totalBytesExcludingManifest": 944635,
+      "treeSha256ExcludingManifest": "911c558d5cc05c38f29e21752b742ad1b03a4f6e78c29b1610da265c573f1cca",
+      "databaseCopies": 0,
+      "runtimeSnapshotCopies": 0
+    },
+    "automaticBusinessRollback": false,
+    "reason": "当前没有独立正式目录，C2.4业务页面与开发候选共用工作区；回滚业务文件必须依据轻量发布备份精确恢复，不能用快捷方式回滚代替。",
+    "requiresUserAuthorization": true
+  },
+  "releaseClosureMaintenance": {
+    "issue": "运行手册中的旧PowerShell健康检查仍验证C2.2，会把健康C2.4误判为旧服务。",
+    "resolution": "健康检查改为验证C2.4页面脚本、C2.4健康版本、两个独立作业和唯一Windows调度器；运行手册同步当前环境和发布边界。",
+    "launcher": {"path": "scripts/launch-convexity.ps1", "bytes": 6149, "sha256": "9f1bb6de5fd2c85673f77f9a879bb841e0bb588aed99723a3fcef9d1fcf2dfb5"},
+    "runbook": {"path": "docs/RUNBOOK.md", "bytes": 30400, "sha256": "8579c4c0f54ade34bfeac022516ed06491b95b99629c4a850012616aa5230ab0"},
+    "verification": {
+      "healthCheckExitCode": 0,
+      "pageServicePidBefore": 37108,
+      "pageServicePidAfter": 37108,
+      "healthyServicePreserved": true,
+      "longRegressionRerun": false
+    }
+  },
+  "firstScheduledSnapshotAfterRelease": {
+    "schedulerFinishedAt": "2026-08-13T10:05:23.101584Z",
+    "dataCutoffAt": "2026-08-13T10:02:08.416321Z",
+    "reasonForHashChange": "日常调度在发布收口期间正常生成了新的原子运行快照；这是数据更新，不是代码版本漂移。",
+    "candidate": {"path": "app/c2-4-candidate-snapshot.js", "bytes": 50278141, "buildId": "c24-candidate-effa844817c6ee3a", "sha256": "8a20766b9cb2402e5adad580cd124efddd759ecf355f8443ef4bf4a75bacc8a4"},
+    "tracking": {"path": "app/c2-4-tracking-snapshot.js", "bytes": 92722949, "buildId": "c24-tracking-328517cb5722b796", "sha256": "48d5b062c868ce161758142d6915c5e12be1c5c4d71366c415d46cea09ab9ecf"},
+    "public": {"path": "app/c2-4-front-snapshot.js", "bytes": 10970, "buildId": "c24-public-376d502160bf9a73", "sha256": "2a134023903d88fa751594d19a3cc20a36964a55deae7ee805236ad6bccbcd0a"},
+    "admin": {"path": "app/c2-4-admin-snapshot.js", "bytes": 57840, "buildId": "c24-admin-1c79db1d7d5528e0", "sha256": "0a85822a3627dddf5bd5830ab22e9d859cc55abcda3b197eaef8b05f173ffbe4"},
+    "independentAudit": {"path": "reports/c2.4-release/live-snapshot-audit.json", "bytes": 5405, "sha256": "799f0115f4f99081cbc7c87013e456e11c40d9df743a380fcb84e7e92c20f4b4", "status": "passed"},
+    "counts": {"inputCandidates": 4592870, "firstGateHistory": 21325, "firstGateQueue": 21311, "tracking": 21311, "completedTrackingAssessed": 911, "public": 1, "homeDerived": 0, "unrankedPublic": 1},
+    "allCoreSetDifferencesZero": true,
+    "stateMismatches": 0,
+    "cohortMismatches": 0
+  },
+  "knownBoundary": "当前是单机单目录发布，不是测试环境向独立正式环境的部署；运行数据会继续由日常作业更新，但发布代码和验收快照以本清单哈希为准。"
+}

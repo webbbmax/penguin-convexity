@@ -250,6 +250,47 @@ class MachineConclusionPublicationTest(unittest.TestCase):
         self.assertEqual(blocked["actionCategory"], "observe")
         self.assertEqual(blocked["state"], "market_exit_pending")
 
+    def test_malformed_historical_inputs_become_missing_instead_of_crashing(self):
+        case = {
+            "project_id": "project-malformed",
+            "case_id": "case-malformed",
+            "canonical_name": "Malformed",
+            "symbol": "BAD",
+            "maturity_level": "L1",
+            "project_identity_status": "verified",
+            "asset_identity_status": "verified",
+            "risk_level": "unknown",
+            "remaining_convexity": "unknown",
+            "liquidity_grade": "unknown",
+            "value_capture_grade": "unknown",
+            "convexity_source": "",
+            "invalidation": "",
+            "next_review_at": None,
+        }
+        score = {
+            "machine_score_id": "score-malformed",
+            "confidence": "low",
+            "evidence_quality_score": 10,
+            "mismatch_score": 10,
+            "convexity_readiness_score": 10,
+            "blockers": [],
+            "sourceEvidenceIds": [],
+            "source_url": "",
+        }
+        record = conclusion_record(
+            case,
+            score,
+            {
+                "markets": {"project-malformed": "bad-market"},
+                "risks": {"project-malformed": "bad-risk"},
+                "tradeability": {"project-malformed": "bad-tradeability"},
+            },
+            None,
+            datetime(2026, 8, 11, tzinfo=timezone.utc),
+        )
+        self.assertEqual(record["actionCategory"], "observe")
+        self.assertEqual(record["state"], "market_exit_pending")
+
     def test_invalidation_conditions_remain_unique_after_republish(self):
         conditions = merged_invalidation_conditions(
             "项目主体或资产官方关系出现冲突；"

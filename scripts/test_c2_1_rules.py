@@ -100,7 +100,7 @@ class C21RuleTests(unittest.TestCase):
         self.assertFalse(result["frontEligible"])
         self.assertEqual(result["hardGate"]["status"], "fail")
 
-    def test_supply_unit_change_bypasses_hysteresis(self):
+    def test_supply_unit_change_is_normalized_and_does_not_bypass_hysteresis(self):
         previous = {
             "evaluationWindowId": "hour:2026-08-10T11:completed", "frontEligible": True,
             "hardGate": {"status": "pass"}, "displayState": {"code": "convexity_clue"},
@@ -111,7 +111,7 @@ class C21RuleTests(unittest.TestCase):
             supply={"historyState": "success", "unitScaleStable": False, "marketActivityVsP50": 1},
             previous=previous, as_of="2026-08-10T12:00:00Z", rules=self.rules, rule_hash=self.rule_hash,
         )
-        self.assertNotEqual(result["displayState"]["code"], "convexity_clue")
+        self.assertEqual(result["displayState"]["code"], "convexity_clue")
 
     def test_provider_failure_is_data_limited_not_path_miss(self):
         candidate = self.candidate()

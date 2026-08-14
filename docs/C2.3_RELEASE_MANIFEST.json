@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "c2.3-release-manifest-v1",
+  "release": "C2.3",
+  "name": "稳定桌面容器与浏览器隔离",
+  "status": "independent_full_acceptance_complete_released",
+  "releasedAt": "2026-08-12T12:03:25+08:00",
+  "requirementsLock": "docs/C2.3_REQUIREMENTS_LOCK.json",
+  "requirementSetSha256": "82057a667611285c8486008145ac105fa7549f4e56eeb9dcfcf68b9333008746",
+  "acceptanceManifest": "docs/C2.3_ACCEPTANCE_MANIFEST.json",
+  "finalAcceptanceReport": "docs/C2.3_FINAL_ACCEPTANCE.md",
+  "artifact": {
+    "path": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "runtime": "win-x64",
+    "selfContained": true,
+    "bytes": 433152,
+    "sha256": "6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868",
+    "dotnetSdk": "10.0.400",
+    "webView2Sdk": "1.0.3537.50"
+  },
+  "officialDesktopEntry": {
+    "path": "C:/Users/Donutfi/Desktop/企鹅投研-凸性.lnk",
+    "target": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "arguments": "",
+    "actualLaunchPassed": true,
+    "singleInstancePassed": true
+  },
+  "rollback": {
+    "shortcutBackup": "runtime/c2.3-rollback/企鹅投研-凸性.pre-c2.3.lnk",
+    "script": "scripts/rollback-c2.3-desktop.ps1",
+    "rehearsed": true,
+    "scope": "只恢复桌面快捷方式指向，不回滚页面、数据库、快照和后台任务。",
+    "requiresUserAuthorization": true
+  },
+  "inheritance": {
+    "businessExperience": "C2.2",
+    "businessFilesChangedByC23": false,
+    "businessRulesChanged": false,
+    "databaseSchemaChanged": false,
+    "schedulerChanged": false,
+    "approvedBusinessDeletions": 0,
+    "legacyPowerShellLauncherRetained": true
+  },
+  "runtimeAtRelease": {
+    "pageServicePid": 43568,
+    "candidateProductionPid": 4160,
+    "candidateProductionRunId": "candidate-production-20260812T015104Z-96c732",
+    "candidateProductionState": "running",
+    "candidateLocalScannedCount": 2458897,
+    "scheduler": "PenguinConvexity-C1.8-Scheduler",
+    "gate0Rerun": false
+  },
+  "verification": {
+    "acceptanceChecks": {"total": 38, "passed": 38, "failed": 0},
+    "dotnetTests": {"total": 8, "passed": 8, "failed": 0},
+    "livePagesAndResources": {"total": 32, "passed": 32, "failed": 0},
+    "desktopFaultAndLifecycle": "passed",
+    "threeDesktopViewports": "passed",
+    "shortcutRollbackAndReinstall": "passed",
+    "mainDatabaseIntegrity": "ok",
+    "pipelineDatabaseIntegrity": "ok",
+    "foreignKeyErrors": 0,
+    "ordinaryBrowserInterference": 0,
+    "backgroundTaskInterference": 0
+  },
+  "knownBoundary": "C2.3只替换Windows桌面容器；网页业务和8766本地服务继续使用C2.2冻结主干。"
+}

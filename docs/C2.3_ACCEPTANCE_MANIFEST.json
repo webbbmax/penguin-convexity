@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "c2.3-acceptance-manifest-v1",
+  "release": "C2.3",
+  "status": "passed",
+  "acceptedAt": "2026-08-12T12:03:25+08:00",
+  "requirementSetSha256": "82057a667611285c8486008145ac105fa7549f4e56eeb9dcfcf68b9333008746",
+  "summary": {
+    "total": 38,
+    "passed": 38,
+    "failed": 0,
+    "unexplainedDifferences": 0,
+    "unapprovedBusinessDeletions": 0
+  },
+  "groups": [
+    {"group": "A", "passed": ["A01", "A02", "A03", "A04"], "evidence": "需求锁、依赖哈希和实现基线完全对账；app与desktop业务资产树哈希未变。"},
+    {"group": "B", "passed": ["B01", "B02", "B03", "B04"], "evidence": ".NET 10.0.400自包含win-x64发布，8/8测试通过；WebView2缺失真实故障页通过；独立用户数据目录通过。"},
+    {"group": "C", "passed": ["C01", "C02", "C03", "C04", "C05"], "evidence": "冷启动、热启动、端口身份、单实例和三视口/屏外恢复通过。"},
+    {"group": "D", "passed": ["D01", "D02", "D03", "D04", "D05"], "evidence": "自有服务精确PID回收，外部服务、普通浏览器和候选生产进程保留，黑框0。"},
+    {"group": "E", "passed": ["E01", "E02", "E03", "E04", "E05", "E06"], "evidence": "WebView2、Python启动、端口冲突、身份失败和渲染进程恢复均通过；用户页无Null、堆栈、原始JSON、密钥或内部ID。"},
+    {"group": "F", "passed": ["F01", "F02", "F03", "F04", "F05"], "evidence": "正式快捷方式、现役页面、32/32资源、三视口和只读边界通过。"},
+    {"group": "G", "passed": ["G01", "G02", "G03", "G04", "G05"], "evidence": "新增.NET与容器契约、受影响回归、两库完整性和风险分层时间边界通过。"},
+    {"group": "H", "passed": ["H01", "H02", "H03", "H04"], "evidence": "旧入口保留，快捷方式单独回滚和再发布通过，阶段与发布文档已对账。"}
+  ],
+  "verification": {
+    "dotnet": {"sdk": "10.0.400", "buildWarnings": 0, "buildErrors": 0, "testsPassed": 8, "testsFailed": 0},
+    "targetedPython": {"desktopContract": "passed", "livePagesAndResources": {"passed": 32, "failed": 0}, "c19AffectedExperience": "passed", "fullHistoricalSuiteRerun": false, "reason": "C2.3未修改Python业务与网页资产，按冻结的风险分层执行。"},
+    "inheritance": {"appFiles": 107, "appTreeSha256": "0e768fea7291843d49d9aa050ba06d6a48a24f0630176d120a8c653de35f06ed", "desktopFiles": 5, "desktopTreeSha256": "c9f45e60672ba4a54b3a13c377ad70e4a2756e1b9862395faa1f774c7da4ef3d", "businessRulesChanged": false},
+    "desktopLifecycle": {"coldWindowMs": 425, "coldPageReadyMs": 4060, "hotWindowMs": 450, "hotPageReadyMs": 904, "duplicateActivationMs": 143, "portConflict": "passed_unknown_process_preserved", "identityMismatch": "passed_visible_plain_language_fault", "webViewUnavailable": "passed_visible_install_repair_flow", "rendererRecovery": "passed_once_without_background_restart"},
+    "viewports": {"1180x760": "passed", "1440x900": "passed", "maximized": "passed", "offscreenRecovery": "passed", "horizontalOverflow": 0},
+    "databases": {
+      "main": {"bytes": 541958144, "sha256": "a7b68e3eb341df98fbb9803c7565a8776f63813bfd206ae0a3f3711da5e7727b", "integrity": "ok", "foreignKeyErrors": 0, "projects": 624, "candidateCases": 626},
+      "pipeline": {"bytesAtCheck": 7904755712, "integrity": "ok", "foreignKeyErrors": 0, "candidates": 4591622, "marketObservations": 31445, "physicalHashGate": false, "reason": "授权的历史候选生产仍在持续写入。"}
+    },
+    "backgroundIsolation": {"candidatePid": 4160, "candidateRunId": "candidate-production-20260812T015104Z-96c732", "candidateState": "running", "localScannedCountAtClose": 2458897, "pageServicePid": 43568, "ordinaryEdgeVisibleWindowsPreserved": 1, "ordinaryChromeVisibleWindowsPreserved": 1, "gate0Rerun": false},
+    "scheduler": {"taskName": "PenguinConvexity-C1.8-Scheduler", "enabled": true, "lastResult": 0, "enabledLongLivedTaskCount": 1, "secondLongLivedTaskCount": 0},
+    "formalShortcut": {"path": "C:/Users/Donutfi/Desktop/企鹅投研-凸性.lnk", "target": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe", "actualLaunch": "passed", "rollbackRehearsal": "passed_then_reinstalled_c2.3"}
+  },
+  "artifact": {"path": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe", "bytes": 433152, "sha256": "6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868", "runtime": "win-x64", "selfContained": true},
+  "report": "docs/C2.3_FINAL_ACCEPTANCE.md"
+}

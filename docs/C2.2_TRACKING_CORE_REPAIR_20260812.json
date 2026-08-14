@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "c2.2-tracking-core-repair-v1",
+  "release": "C2.2",
+  "name": "候选库真实首轮跟踪闭环修复",
+  "status": "accepted_released",
+  "publishedAt": "2026-08-12T15:45:00+08:00",
+  "scope": "C2.2 post-release core repair; C2.4 remains paused",
+  "frozenRequirementSetSha256": "e689e0177a83918e5075c03f524ab9220ae070d193dad7c580ca35ea91c87770",
+  "problem": {
+    "classification": "C2.2_legacy_core_bug",
+    "plainReason": "候选资格批次只进入规则计算，市场、卖出报价、风险与供应、路径四仍在处理旧主库项目；规则评估又被错误显示成首轮跟踪完成。",
+    "businessThresholdsChanged": false,
+    "c24ScopeChanged": false
+  },
+  "repair": {
+    "candidateTrackingDatabase": "data/c2.1-pipeline.db",
+    "checkpointTable": "candidate_tracking_records",
+    "boundedBatchSize": 25,
+    "publicPriority": "A/B/C and front contract ready",
+    "backendDHandling": "identity_pending_not_first_tracking_pending",
+    "realStages": [
+      "DexScreener market and liquidity",
+      "100 USD standard sell quote",
+      "GoPlus risk and supply",
+      "indexed pool and historical supply path4",
+      "deterministic evaluation"
+    ],
+    "evaluationInvalidationInputs": [
+      "qualification timestamp",
+      "candidate production updated timestamp including authoritative T0",
+      "rule config hash"
+    ],
+    "singleWriterCheckpointHandoff": true,
+    "historicalWorkerAuthorizedResumeAfterMaintenance": true,
+    "mainDatabaseMode": "unchanged_read_only_supplementary_lineage"
+  },
+  "databaseSafety": {
+    "candidateDatabaseBeforeBytes": 8251932672,
+    "candidateCountBefore": 4591622,
+    "productionRecordCountBefore": 2803897,
+    "backup": "backups/c2.2-tracking-repair/c2.1-pipeline-before-tracking-repair-20260812T1530.db",
+    "backupBytes": 8251932672,
+    "sourceQuickCheckBefore": "ok",
+    "backupQuickCheck": "ok",
+    "sourceQuickCheckAfter": "ok",
+    "sourceForeignKeyErrorsAfter": 0,
+    "mainDatabaseQuickCheckAfter": "ok",
+    "mainDatabaseForeignKeyErrorsAfter": 0,
+    "mainProjectsAfter": 624,
+    "mainCasesAfter": 626,
+    "trackingRecordCountAfter": 9,
+    "trackingCompletedCountAfter": 9
+  },
+  "realPilot": {
+    "productionQualifiedSelected": 8,
+    "legacyPublicSelected": 1,
+    "completed": 9,
+    "partial": 0,
+    "repeatSelected": 0,
+    "publishedFrontCount": 7,
+    "completedFirstTrackingCount": 7,
+    "pendingFirstTrackingCount": 0,
+    "trackingStateCounts": {
+      "convexity_clue": 0,
+      "active_project": 2,
+      "observing": 5,
+      "awaiting_first_tracking": 0
+    },
+    "zeroClueReason": "ArmaraOS仅形成交易与流动性路径，heyAura仅形成路径四；没有项目同时形成至少两条路径且包含交易与流动性。"
+  },
+  "desktopAcceptance": {
+    "container": "C2.3 WPF WebView2 inheriting C2.2 web main",
+    "trackingCenterStats": "14775 total, 14763 identity pending, 7 entered second stage, 7 completed, 0 incomplete, 0 clues",
+    "frontStats": "7 public, 2 active, 5 observing, 0 awaiting",
+    "detailSample": "ArmaraOS",
+    "detailFacts": "11 market rows, 3 supply rows, 7 risk rows and four-path reasons",
+    "consoleErrors": 0,
+    "updateButtonsClicked": false,
+    "postRequests": 0
+  },
+  "historicalScan": {
+    "pausedAtExistingCheckpoint": true,
+    "restartedFromZero": false,
+    "completedPartitionsAfterResume": 564,
+    "localScannedCountAfterResume": 2813897,
+    "workerPidAtAcceptance": 33736,
+    "stateAtAcceptance": "running",
+    "gate0Rerun": false
+  },
+  "acceptance": {
+    "failedTestsAddedBeforeRepair": true,
+    "targetedPostFixTests": "35/35 passed",
+    "affectedRegression": "78/78 passed; release contract retest 10/10 passed; final single-source retry guard targeted retest 24/24 passed",
+    "pythonCompile": "passed",
+    "snapshotAtomicPublish": "passed",
+    "realDesktopCorePath": "passed",
+    "businessRulesChanged": false,
+    "c23DesktopContainerChanged": false
+  },
+  "currentFiles": [
+    {"path": "app/c2-2-admin.js", "sha256": "656996eb6866dab32e246a369cace820cac0b47025c95d3f02bb75e23366ea5f"},
+    {"path": "app/c2-2-front-snapshot.js", "sha256": "6ef5e4d8c1153547acd4649245db08a47ad45ff6d7df7962563aa0f99db13999"},
+    {"path": "app/c2-2-tracking-snapshot.js", "sha256": "ebc4bf055bc855b183ab4446194b01a1b87bf9ea0cb87eddec807f2a049dbbee"},
+    {"path": "app/c2-2-admin-snapshot.js", "sha256": "ff991e9fa85d58e4280a130a4f809084c6bad0c043044f41f09ad9d5412094f8"},
+    {"path": "scripts/build_c2_2_snapshots.py", "sha256": "cae6c76749ee5c97b9c458bdb03454c8e576dcaac7bbf3fdc75af65b7acbd28f"},
+    {"path": "scripts/c2_1_enrichment.py", "sha256": "1d3e55d1c4b26007e9d84eed05b42ad797bc7b79087317a7e718325a7ded01dd"},
+    {"path": "scripts/c2_1_path4.py", "sha256": "2c6c150d8e538e768c3378aa9ee5d250d3e6b144cda1fbabd10ebb6b190a1fcc"},
+    {"path": "scripts/c2_1_pipeline.py", "sha256": "f6382dd1ae01acf217464f3fc1f898c35ef1d6b85d0ed5c73e67c30c58d90aa2"},
+    {"path": "scripts/c2_2_tracking.py", "sha256": "81defe8989708b9069f1b440d85503e79a7726dd7f9a254cfd0b0e567bade7ef"},
+    {"path": "scripts/run_c2_2_update.py", "sha256": "97e21ce8fcd2a8f09359cb06146ef82f2223c9a2617f9ed2834ca28c3085eef0"},
+    {"path": "scripts/candidate_production_runtime.py", "sha256": "2427fe13df7d2b7f8b4aa5c1fed1925b2fd6891f1e9cc523186442d8d5428b69"},
+    {"path": "scripts/c2_2_candidate_tracking.py", "sha256": "1540d1e63e84b000ccb4c22f5c35cc3bdd35b2329772e3126a38ee5cba3788ab"},
+    {"path": "scripts/test_candidate_production.py", "sha256": "307134d080e0bdbd5ccb2f78bbfcc8029f88395137c4c5ecdf81c5ead527881e"},
+    {"path": "scripts/test_c2_2_tracking_repair.py", "sha256": "09a6658b864182166ad18cc2ed57cb967549275370722fa3e8d7d3e6d56511e2"},
+    {"path": "scripts/test_c2_2_snapshots.py", "sha256": "31d0a34104113eb220b4922fb7a03e7436d9253b3e216bca0502fc50fa312ec5"},
+    {"path": "scripts/test_c2_2_runtime.py", "sha256": "fcf9d4c2d8583d77fc540955f7677c9883fe6b3523a1d8fe13b68b8adf0ebaec"},
+    {"path": "scripts/test_c2_2_acceptance.py", "sha256": "c65fc074ee9e46fef65cbb57b9dd0e71a828a64d0106644449e300bb68c6d5f3"},
+    {"path": "scripts/test_c2_2_release.py", "sha256": "5d2dc072c89155871abbe9b741f308c73e6bcec76ed7177633cfe205a3e43869"},
+    {"path": "storage/c2.2-tracking-repair.sql", "sha256": "530c27257606c4853dcb3a54ce3bc0e4fa3b9860a9d992dbf268d531ee387125"},
+    {"path": "docs/C2.2_PHASE.json", "sha256": "2f72918f880a87d4343ae2b82c2111d2be2ab5a3cba62f8f3698317f48d110be"},
+    {"path": "docs/STATUS.md", "sha256": "648c36afdbcfccff8f0511e35dd14cdeb73364970056a381af58374035140094"},
+    {"path": "docs/C2.2_FINAL_ACCEPTANCE.md", "sha256": "1c32d922025f25d556f9d48125cc9442a17a05f6c0c6262473270e1d5cf23382"}
+  ],
+  "nextBoundary": "C2.4 remains paused until the user resumes product planning after this core repair."
+}

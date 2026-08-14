@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "c2.3-inheritance-manifest-v1",
+  "release": "C2.3",
+  "status": "frozen",
+  "defaultTreatment": "inherit_unless_explicitly_replaced_or_user_approved_for_deletion",
+  "approvedDeletionCount": 0,
+  "approvedDeletions": [],
+  "mustInherit": [
+    {
+      "asset": "c2_2_product_trunk",
+      "includes": ["front four sections", "context project detail", "admin seven groups", "two independent update pages", "manual and automatic controls", "progress and source retry"],
+      "treatment": "inherit_unchanged"
+    },
+    {
+      "asset": "research_and_rule_system",
+      "includes": ["T0", "A/B/C/D", "wide hard gates", "Bayes", "four strong paths", "risk", "tradeability", "important changes", "all frozen numeric thresholds"],
+      "treatment": "inherit_without_rule_change"
+    },
+    {
+      "asset": "data_and_snapshots",
+      "includes": ["data/convexity.db", "data/c2.1-pipeline.db", "atomic snapshots", "history", "cursors", "checkpoints", "user settings"],
+      "treatment": "inherit_no_schema_or_retention_change"
+    },
+    {
+      "asset": "local_http_business_path",
+      "includes": ["127.0.0.1:8766", "scripts/serve_local.py", "desktop/index.html", "existing HTML CSS JavaScript", "existing business APIs"],
+      "treatment": "inherit_as_single_business_data_channel"
+    },
+    {
+      "asset": "background_runtime",
+      "includes": ["PenguinConvexity-C1.8-Scheduler", "candidate production", "new token screening", "convexity tracking", "single instance locks", "checkpoints and retries"],
+      "treatment": "inherit_independent_from_desktop_window"
+    },
+    {
+      "asset": "brand_and_information_architecture",
+      "includes": ["logo", "洞见共识之外的价值", "南极蓝", "front admin separation", "version shown once in admin"],
+      "treatment": "inherit_unchanged"
+    }
+  ],
+  "approvedReplacements": [
+    {
+      "old": "PowerShell launcher opens ordinary msedge.exe --app and tracks Edge windows by process and title",
+      "new": ".NET 10 LTS WPF WebView2 owned desktop window with native lifecycle and recovery"
+    },
+    {
+      "old": "desktop single instance depends on launcher mutex plus ordinary Edge window discovery",
+      "new": "desktop container session lock plus explicit activation IPC"
+    },
+    {
+      "old": "desktop window placement is monitored through ordinary Edge HWND enumeration",
+      "new": "WPF owns and persists its own window placement"
+    },
+    {
+      "old": "technical startup error dialog",
+      "new": "native stage view and five plain-language recoverable fault states"
+    }
+  ],
+  "retainedRollbackAssets": [
+    "scripts/launch-convexity.ps1",
+    "scripts/convexity-window-state.ps1",
+    "current PowerShell shortcut installer behavior as documented rollback instructions"
+  ],
+  "forbiddenChanges": [
+    "business rule or threshold change",
+    "business database schema retention cleanup or compaction",
+    "second C sharp business data channel",
+    "direct C sharp business database write",
+    "third party business API call from the desktop container",
+    "browser profile sharing or ordinary Edge Chrome window control",
+    "second long lived scheduler",
+    "background job restart caused by desktop launch or close",
+    "mobile web macOS Linux wallet or automatic trading scope",
+    "unapproved deletion of C2.2 assets"
+  ],
+  "preImplementationBaseline": {
+    "required": true,
+    "mustRecord": [
+      "git status without modifying existing user changes",
+      "C2.2 frozen dependency hashes and current dirty worktree",
+      "desktop shortcut target and icon",
+      "port 8766 ownership and health identity",
+      "active browser and desktop process baseline without reading browser content",
+      "scheduler and background production PID runId checkpoint and progress",
+      "business database sizes integrity and hashes",
+      "active page and route inventory",
+      "window state and user update settings"
+    ]
+  },
+  "releaseReconciliation": {
+    "required": true,
+    "categories": ["inherited", "replaced", "retained_for_rollback", "new", "deleted"],
+    "unexpectedMissingAssetAllowed": false,
+    "businessDeletionAllowed": false
+  }
+}

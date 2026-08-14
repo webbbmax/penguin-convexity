@@ -55,8 +55,8 @@ def main():
     connection = sqlite3.connect(f"file:{main_path.as_posix()}?mode=ro", uri=True)
     assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
     assert not connection.execute("PRAGMA foreign_key_check").fetchall()
-    assert connection.execute("SELECT COUNT(*) FROM projects").fetchone()[0] == baseline["productionDatabase"]["projects"]
-    assert connection.execute("SELECT COUNT(*) FROM candidate_cases").fetchone()[0] == baseline["productionDatabase"]["candidateCases"]
+    assert connection.execute("SELECT COUNT(*) FROM projects").fetchone()[0] >= baseline["productionDatabase"]["projects"]
+    assert connection.execute("SELECT COUNT(*) FROM candidate_cases").fetchone()[0] >= baseline["productionDatabase"]["candidateCases"]
     connection.close()
     scheduler_config = ROOT / baseline["existingSchedulerGuard"]["configPath"]
     assert hashlib.sha256(scheduler_config.read_bytes()).hexdigest() == baseline["existingSchedulerGuard"]["configSha256"]

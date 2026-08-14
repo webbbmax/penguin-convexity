@@ -1,0 +1,171 @@
+{
+  "schemaVersion": "c2.4-requirements-lock-v1",
+  "release": "C2.4",
+  "name": "普通用户体验与机会发布重构",
+  "status": "frozen",
+  "frozenAt": "2026-08-13T10:43:23+08:00",
+  "userAuthorization": "可以按冻结稿冻结C2.4",
+  "hashAlgorithm": "SHA-256",
+  "requirementSetCanonicalization": "按documents顺序，以path:lowercase_sha256逐行连接，行间使用LF，末尾无换行",
+  "requirementSetSha256": "411f084d726cfb599536169ec0dcd9fc2d10d6f15e92f0df821385d2d2dbddc0",
+  "draftConfirmation": {
+    "plainLanguageDraft": "docs/C2.4_FREEZE_DRAFT.md",
+    "draftSha256": "c0b0b856b5168a5d5ff9c5cd88d7449839030bc8fe1c55fdfbb37e3403c497f1",
+    "featureInheritanceDraft": "docs/C2.4_FEATURE_INHERITANCE_DRAFT.json",
+    "featureInheritanceDraftSha256": "c24c4f721998cb1a53c6acc55414bbb2221aad79f574e4409060d4c86b668853",
+    "draftManifest": "docs/C2.4_FREEZE_DRAFT_MANIFEST.json",
+    "draftManifestSha256": "99ea91c2d977e70d368409320234445eb888308b8a7aa78488d1139a880d1e5d",
+    "formalizationPolicy": "把用户确认的大白话范围拆为PRD、页面数据契约、UI/UX、用语、确定性规则、固定真实样本、29项继承账本、核心优先测试、独立验收和交接；不授权产品编码。"
+  },
+  "documents": [
+    {
+      "path": "docs/C2.4_PRD.md",
+      "role": "正式产品结果、两关职责、生命周期、前后台、继承与程序上限",
+      "bytes": 11869,
+      "sha256": "28b4369bc580f1c76b53857bd5e0f300d211f5eaaeb2b7b8d24ca68b6275728e"
+    },
+    {
+      "path": "docs/C2.4_PAGE_DATA_CONTRACT.md",
+      "role": "三份业务产物、字段所有权、核心集合关系和页面取数契约",
+      "bytes": 9329,
+      "sha256": "fcba30c7675a1efb97d07d1e471f15603df36dc5f8b44f07e20208b5daadca50"
+    },
+    {
+      "path": "docs/C2.4_DESIGN_SPEC.md",
+      "role": "普通用户前台、后台七组、两个更新页和桌面交互规格",
+      "bytes": 5613,
+      "sha256": "d4d5368ad5144a2c362240003dc922e51a2a207be2a0d0a9ba441948830c6bb5"
+    },
+    {
+      "path": "docs/C2.4_COPY_DICTIONARY.md",
+      "role": "主链、三状态、四路径、来源状态和投资边界固定用语",
+      "bytes": 5445,
+      "sha256": "adbd9d6f9b5372f07eb50066f84d21a51a8506396c98548b9fae6d105cb68fb0"
+    },
+    {
+      "path": "docs/C2.4_RULE_CONFIG.json",
+      "role": "宽第一关、公开底线、P50/P40、四路径、防抖、持续跟踪和同链排名机器规则",
+      "bytes": 12947,
+      "sha256": "775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988"
+    },
+    {
+      "path": "docs/C2.4_RULE_REGRESSION_MANIFEST.json",
+      "role": "真实历史证据哈希、后备分位数口径和核心边界夹具",
+      "bytes": 8527,
+      "sha256": "9157f41607f040149e6686b01f30563258ce00c0d41cc4cbfebd9f08d89d25db"
+    },
+    {
+      "path": "docs/C2.4_INHERITANCE_MANIFEST.json",
+      "role": "29个既有路由逐项承载、基线哈希、零批准删除和验收责任",
+      "bytes": 13690,
+      "sha256": "aa11bca2088253d40f657bdaa74adcb8d7127196afd731fd8b4b481032649453"
+    },
+    {
+      "path": "docs/C2.4_TEST_STRATEGY.md",
+      "role": "核心集合优先、独立预期、风险分层和测试时间边界",
+      "bytes": 6479,
+      "sha256": "5362b77e3b3a304352dff633a94003bbbe7b4afd8a1d74dbf3a1e9e1c6f36634"
+    },
+    {
+      "path": "docs/C2.4_ACCEPTANCE_PLAN.md",
+      "role": "冻结、核心集合、规则、迁移、前台、更新、桌面和发布阻断验收",
+      "bytes": 7784,
+      "sha256": "e7909f883922bb00c1247e99f84160aed830a504f8742aba2494661af85e3bc1"
+    },
+    {
+      "path": "docs/C2.4_HANDOFF.md",
+      "role": "实现顺序、长任务禁区、报告责任和独立终验交接",
+      "bytes": 4872,
+      "sha256": "ff3443edfd210142452405c36b45be3134862d9fdc296e3a427209ab32c14662"
+    }
+  ],
+  "inheritedFrozenDependencies": [
+    {
+      "path": "docs/C2.3_REQUIREMENTS_LOCK.json",
+      "sha256": "4992b5d393f1566dd731de0af8ab73e7c7f8e3006829db26820e06797453ce36",
+      "purpose": "正式.NET WPF WebView2桌面容器、本地HTTP单一业务通道和浏览器隔离继承"
+    },
+    {
+      "path": "docs/C2.2_REQUIREMENTS_LOCK.json",
+      "sha256": "f9a7b132d1d3b680364dd06648cd2118c2ad9443313060ed2efe4b6b1737a86c",
+      "purpose": "唯一产品主干、两个独立可恢复作业、稳定assetId、原子快照和贝叶斯边界继承"
+    },
+    {
+      "path": "docs/C2.2_FIRST_GATE_CORRECTNESS_REPAIR_20260812.json",
+      "sha256": "681e5c81d785941c7ac9f273f6636fb2024a3caebb489a0b6ba9ea9c13feb593",
+      "purpose": "冻结前第一关历史交接和真实漏斗纠错基线"
+    },
+    {
+      "path": "docs/MODEL_HANDOFF_PROTOCOL.md",
+      "sha256": "6e9bc11c80b83add05e705ec2885f7396cf3278643e55fa93ffc2fb74a310515",
+      "purpose": "模型由用户决定、阶段门禁和长任务边界"
+    },
+    {
+      "path": "docs/TEST_PRIORITY_POLICY.json",
+      "sha256": "d4f155782cbb09a224fe7498501c37a0b6dc9ecbd9536a238d2ab4964ab25148",
+      "purpose": "核心业务链优先于数据页面和边缘测试"
+    },
+    {
+      "path": "docs/TEMP_ARTIFACT_RETENTION_POLICY.json",
+      "sha256": "ef141ba04314bfd186082045deb2d6c31fc2cec39270ffe58bbe2edd259037c1",
+      "purpose": "测试副本专用目录登记保留和安全清理机制"
+    }
+  ],
+  "frozenProductChoices": {
+    "singleProductTrunk": true,
+    "approvedDeletionCount": 0,
+    "inheritedRouteCount": 29,
+    "formalPipeline": [
+      "historical_or_daily_discovery",
+      "90_day_candidate_initial_screen",
+      "convexity_deep_tracking",
+      "public_opportunity_center"
+    ],
+    "firstGateRequiredCheckCount": 4,
+    "relationshipOrProductEvidenceControlsFirstGate": false,
+    "publicOpportunitySource": "second_gate_complete_public_snapshot_only",
+    "publicStates": ["convexity_clue", "active_project", "observing"],
+    "waitingFirstTrackingIsPublic": false,
+    "dataLimitedIsPublicCategory": false,
+    "lifecyclePools": ["new_0_90", "continued_91_plus"],
+    "ordinaryOldProjectDiscovery": false,
+    "strongPathCount": 4,
+    "productUsageIsStrongPath": false,
+    "bayesWeights": [0.25, 0.25, 0.2, 0.15, 0.15],
+    "bayesCanControlEligibilityOrClue": false,
+    "homeRankingScope": "same_chain_only",
+    "homeMaximumPerChainTotal": 10,
+    "homeLimitIsTrackingLimit": false,
+    "allOpportunitiesContainsAllPublicEligible": true,
+    "allOpportunitiesPageSize": 20,
+    "crossChainBayesLeaderboard": false,
+    "supportedChainCount": 6,
+    "backendNavigationGroupCount": 7,
+    "independentUpdatePageCount": 2,
+    "manualAndAutomaticUpdatesRetained": true,
+    "singleWindowsSchedulerRetained": true,
+    "desktopFrameworkRetained": ".NET 10 LTS WPF WebView2 Evergreen",
+    "mobileOrWebInScope": false,
+    "gate0Or459mRescan": false,
+    "coreAcceptanceUsesIndependentAssetIdSetReconciliation": true,
+    "rank11FixtureRequired": true,
+    "fullHistoricalRegressionByDefault": false
+  },
+  "implementationAuthority": "等待用户另行明确开始C2.4整版开发；冻结动作本身不授权修改产品代码、数据库、规则实现、页面、任务、设置或快捷方式。",
+  "finalAuthority": "Tier 0核心集合和Tier 1规则边界先通过，再按影响范围完成独立终验；实现报告、测试耗时和低优先级通过数不能替代发布验收。",
+  "immutableBoundaries": [
+    "第一关结果只是第二关工作清单，不是机会中心项目",
+    "机会中心只读取第二关完整公开快照",
+    "首页每链10个是展示上限，不是跟踪或全部机会收录上限",
+    "同链第11名及以后不得从跟踪快照公开快照或全部机会消失",
+    "第91天只迁移曾在0至90天完成两关并达到公开条件的同一assetId",
+    "不按名称Symbol数组顺序或页面位置连接对象",
+    "不把缺失来源失败或能力边界变成0项目差或前台分类",
+    "贝叶斯总分不能单独形成凸性线索或公开资格",
+    "未获批准删除的既有功能和历史必须继承",
+    "不建立跨链贝叶斯总榜第二调度器或第二CSharp业务通道",
+    "不重跑Gate0或459万历史扫描",
+    "不使用大模型补数据生成业务判断或自动调参",
+    "不开发移动端网页版钱包自动交易或普通老项目发现"
+  ]
+}

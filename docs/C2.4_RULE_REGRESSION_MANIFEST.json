@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "c2.4-rule-regression-manifest-v1",
+  "release": "C2.4",
+  "status": "frozen",
+  "purpose": "固定真实证据、后备分位数计算口径和核心边界期望；不承诺公开项目或凸性线索数量。",
+  "realEvidenceFiles": [
+    {
+      "path": "reports/c2.1-age-threshold-analysis/market-observations.jsonl",
+      "bytes": 7952161,
+      "sha256": "f637e8bf48f6a3b038f347cc0bc8130ba0bc0d45b5dee2c7a74952f00d9f78e8",
+      "physicalRows": 13288,
+      "meaning": "六链五日龄组市场观察及重试记录；按networkId+tokenAddress取最后一条，success且有效日龄组才进入分位数。"
+    },
+    {
+      "path": "reports/c2.1-age-threshold-analysis/analysis-summary.json",
+      "bytes": 12924,
+      "sha256": "b7b589e55664a99c5b7d6a97c05a55bb7a9603153a419412cd3849e2c420d43b",
+      "meaning": "12,586个确定性样本、362个市场success和279个有效0—90天市场样本的既有分析摘要。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/sample-selection.jsonl",
+      "bytes": 65971,
+      "sha256": "9e9799f83291abaddb97f1a9950765657ba80be92200715a3f7f25977492a187",
+      "physicalRows": 49,
+      "meaning": "六链五日龄段固定真实强路径能力样本清单。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/quote-observations.jsonl",
+      "bytes": 33570,
+      "sha256": "884c087bf11446a7d92c83e1eb851c60959588182c64a8dea794908f2419820b",
+      "physicalRows": 49,
+      "meaning": "100美元标准卖出报价及真实失败分类。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/product-inputs.jsonl",
+      "bytes": 21458,
+      "sha256": "e74a9cf54de59d8df21cddc4a932f7e6f5f194f446f92aa1d322fe165a14d19a",
+      "physicalRows": 49,
+      "meaning": "产品使用映射能力；确定映射为0时不得形成产品使用路径。"
+    },
+    {
+      "path": "reports/c2.1-strong-path-input-probe/supply-inputs.jsonl",
+      "bytes": 29973,
+      "sha256": "631c094e1aa31ef222b9a4307d6ece97e4fff8b2de0777a3a1f33dfa3b995a42",
+      "physicalRows": 49,
+      "meaning": "供应与持币输入；单点快照不得冒充历史改善。"
+    },
+    {
+      "path": "reports/c2.1-path4-full-pool-supply-probe/path4-inputs.jsonl",
+      "bytes": 36615,
+      "sha256": "45f1850881f0892753faf247011dc6608c7922bc31b17bbbdee46faaf725068e",
+      "physicalRows": 49,
+      "meaning": "第四路径的已索引池活动、供应调整估值和可复算输入。"
+    },
+    {
+      "path": "docs/C2.2_FIRST_GATE_CORRECTNESS_REPAIR_20260812.json",
+      "bytes": 2151,
+      "sha256": "681e5c81d785941c7ac9f273f6636fb2024a3caebb489a0b6ba9ea9c13feb593",
+      "meaning": "C2.4冻结前第一关历史交接与真实漏斗修复基线。"
+    }
+  ],
+  "fallbackComputation": {
+    "dedupeKey": ["networkId", "tokenAddress"],
+    "recordSelection": "last_physical_record_for_each_dedupe_key",
+    "marketEligibility": "state_success_and_effective_age_band_in_0_90",
+    "quantileMethod": "sorted_finite_values_linear_interpolation_at_position_(n-1)*p",
+    "missingFailedUnsupportedOrUnitConflict": "excluded_not_zero",
+    "marketMetrics": {
+      "liquidityUsd": "bestPair.liquidityUsd",
+      "volumeUsd": "bestPair.volumeH24Usd",
+      "transactions": "bestPair.buysH24+bestPair.sellsH24",
+      "volumeLiquidityRatio": "bestPair.volumeH24Usd/bestPair.liquidityUsd"
+    },
+    "path4Metric": "relativeExpansion_where_indexedPoolPath4InputUsable_true",
+    "frozenValuesLocation": "docs/C2.4_RULE_CONFIG.json.ageBands"
+  },
+  "observedAssertions": {
+    "effectiveMarketSuccessAgeCounts": {
+      "age_0_2": 104,
+      "age_3_6": 77,
+      "age_7_13": 51,
+      "age_14_30": 28,
+      "age_31_90": 19
+    },
+    "fixedRealStrongPathProjects": 49,
+    "networkCounts": {
+      "arbitrum-mainnet": 2,
+      "bnb-mainnet": 24,
+      "ethereum-mainnet": 16,
+      "robinhood-mainnet": 3,
+      "base-mainnet": 3,
+      "solana-mainnet": 1
+    },
+    "standardSellQuote": {
+      "success": 34,
+      "no_data": 12,
+      "unsupported": 3,
+      "successAndLossPctLte10": 32,
+      "successAndLossPctGte20": 1
+    },
+    "verifiedProductUsageSeries": 0,
+    "historicalSupplyDemandImprovementComparable": 0,
+    "indexedPoolCoverageCompleteProjects": 49,
+    "historicalSupplySuccessProjects": 49,
+    "historicalSupplyUnitScaleStableProjects": 49
+  },
+  "requiredBoundaryCases": [
+    {
+      "id": "core_first_gate_class_d_without_product_evidence",
+      "expected": "first_gate_pass_and_backend_tracking_if_four_first_gate_checks_pass_but_never_public_without_later_evidence"
+    },
+    {
+      "id": "core_risk_pending_at_first_gate",
+      "expected": "first_gate_not_blocked_risk_remains_unknown_until_deep_tracking"
+    },
+    {
+      "id": "day_0_short_history",
+      "expected": "uses_only_real_completed_window_no_future_zero_no_age_weight"
+    },
+    {
+      "id": "day_90_candidate",
+      "expected": "first_gate_eligible_if_other_checks_pass"
+    },
+    {
+      "id": "day_91_with_historical_qualification",
+      "expected": "same_asset_id_migrates_to_continued_91_plus"
+    },
+    {
+      "id": "day_91_without_historical_qualification",
+      "expected": "stops_active_deep_collection_and_does_not_enter_continued_tracking"
+    },
+    {
+      "id": "quote_loss_exactly_15",
+      "expected": "public_exit_baseline_pass"
+    },
+    {
+      "id": "quote_loss_above_15_below_20",
+      "expected": "backend_only_not_public"
+    },
+    {
+      "id": "quote_loss_exactly_20",
+      "expected": "immediate_public_exit_as_severe_anomaly"
+    },
+    {
+      "id": "quote_missing_or_source_failure",
+      "expected": "backend_true_state_not_zero_not_project_failure"
+    },
+    {
+      "id": "github_only_project_evidence",
+      "expected": "can_satisfy_project_evidence_with_code_only_boundary_but_not_convexity_path_alone"
+    },
+    {
+      "id": "one_strong_path",
+      "expected": "active_project_possible_never_convexity_clue"
+    },
+    {
+      "id": "two_market_derived_paths_without_independent_quote",
+      "expected": "not_convexity_clue_unless_supply_or_indexed_pool_path_also_formed"
+    },
+    {
+      "id": "strong_bayes_without_two_paths",
+      "expected": "not_convexity_clue"
+    },
+    {
+      "id": "public_baseline_no_strong_path",
+      "expected": "observing_and_visible"
+    },
+    {
+      "id": "supply_current_snapshot_only",
+      "expected": "path_unavailable_not_not_formed"
+    },
+    {
+      "id": "supply_unit_scale_changed",
+      "expected": "affected_path_unavailable_and_severe_anomaly_processing"
+    },
+    {
+      "id": "unindexed_discovered_pool",
+      "expected": "display_count_reduce_confidence_do_not_fill_zero_or_reject"
+    },
+    {
+      "id": "same_window_repeated_scheduler_run",
+      "expected": "one_hysteresis_observation_only"
+    },
+    {
+      "id": "two_distinct_normal_exit_windows",
+      "expected": "exit_after_second_new_complete_window"
+    },
+    {
+      "id": "home_same_chain_rank_11",
+      "expected": "not_on_home_but_present_in_tracking_public_snapshot_and_all_opportunities"
+    },
+    {
+      "id": "public_without_complete_bayes",
+      "expected": "present_in_tracking_and_all_opportunities_but_not_home_top10"
+    },
+    {
+      "id": "home_both_lifecycle_pools",
+      "expected": "combined_same_chain_display_count_lte_10_not_10_each"
+    },
+    {
+      "id": "cross_chain_scores",
+      "expected": "no_cross_chain_leaderboard_or_direct_quality_comparison"
+    },
+    {
+      "id": "duplicate_name_symbol_different_chain",
+      "expected": "separate_assets_joined_only_by_stable_asset_id"
+    },
+    {
+      "id": "source_failure_during_refresh",
+      "expected": "preserve_last_complete_snapshot_and_backend_failure_state"
+    }
+  ],
+  "independentAcceptanceFixturesRequired": {
+    "rank11": true,
+    "publicWithoutBayes": true,
+    "day91Qualified": true,
+    "day91Unqualified": true,
+    "crossChainPair": true,
+    "duplicateNameDifferentAssetId": true,
+    "desktopSizes": ["1180x760", "1440x900_or_maximized"],
+    "mobileFixtures": false
+  },
+  "interpretationBoundary": [
+    "真实文件用于固定可复算输入和后备值，不是C2.4公开项目名单。",
+    "固定样本通过不承诺生产数据一定产生公开项目或凸性线索。",
+    "生产运行优先使用满足样本量的滚动比较组，只有不足时才使用冻结后备值。",
+    "no_data、unsupported、source_failure、quota_limited、configuration_missing和program_failure不得变成数值0。"
+  ]
+}

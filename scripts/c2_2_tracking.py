@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from bisect import bisect_left, bisect_right
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -17,13 +18,18 @@ from c2_2_bayes import (
     WindowObservation,
     factor_posterior,
     independent_confidence,
-    metric_z,
     observation_weight,
     posterior_update,
     posterior_difference_probability,
     robust_prior,
     total_evidence_score,
+    winsor_bounds,
+    winsorize,
+    logit,
+    _transform_raw,
 )
+from c2_1_rules import load_rules
+from c2_1_observation_state import latest_effective_market_rows
 
 
 INDICATOR_CONFIG = {
@@ -175,6 +181,12 @@ def _supply_reduction(pool: dict[str, Any] | None) -> float | None:
     payload = _json((pool or {}).get("payload_json"))
     previous = _finite(payload.get("previousSupplyRaw"))
     current = _finite(payload.get("currentSupplyRaw"))
+    previous_decimals = _finite(payload.get("previousDecimals"))
+    current_decimals = _finite(payload.get("currentDecimals"))
+    if previous is not None and previous_decimals is not None:
+        previous /= 10 ** int(previous_decimals)
+    if current is not None and current_decimals is not None:
+        current /= 10 ** int(current_decimals)
     if previous is None or current is None or previous <= 0:
         return None
     return (previous - current) / previous
@@ -211,7 +223,7 @@ def _row_metrics(market: dict[str, Any] | None, risk: dict[str, Any] | None, sup
     }
 
 
-def load_tracking_catalog(db_path: Path) -> dict[int, dict[str, Any]]:
+def load_tracking_catalog(db_path: Path, candidate_ids: set[int] | list[int] | None = None) -> dict[int, dict[str, Any]]:
     """Load only current C2.1 observations through a read-only SQLite URI."""
 
     db_path = Path(db_path)
@@ -220,12 +232,32 @@ def load_tracking_catalog(db_path: Path) -> dict[int, dict[str, Any]]:
     connection = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True, timeout=15)
     connection.row_factory = sqlite3.Row
     try:
-        eval_rows = [dict(row) for row in connection.execute("""
-            SELECT e.candidate_id,e.age_band,e.evaluated_at,c.network_id,
-                   c.token_address,c.mapped_asset_id,c.canonical_name,c.symbol
-            FROM evaluations e JOIN candidates c ON c.candidate_id=e.candidate_id
-            WHERE e.is_current=1
-        """)]
+        _, current_rule_hash = load_rules()
+        production_ready = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='candidate_production_records'"
+        ).fetchone()
+        production_join = "LEFT JOIN candidate_production_records p ON p.candidate_id=e.candidate_id" if production_ready else ""
+        production_current = """AND (
+          p.candidate_id IS NULL
+          OR (
+            datetime(e.evaluated_at)>=datetime(p.qualified_at)
+            AND datetime(e.evaluated_at)>=datetime(p.updated_at)
+          )
+        )""" if production_ready else ""
+        selected_ids = sorted({int(value) for value in (candidate_ids or [])})
+        selected_clause = (
+            f" AND e.candidate_id IN ({','.join('?' for _ in selected_ids)})"
+            if selected_ids else ""
+        )
+        eval_rows = [dict(row) for row in connection.execute(f"""
+          SELECT e.candidate_id,e.age_band,e.evaluated_at,e.paths_json,
+                 e.factor_directions_json,e.confidence_json,e.threshold_context_json,
+                 e.market_snapshot_json,e.hard_gate_json,e.display_state,e.rule_config_hash,
+                 c.network_id,c.token_address,c.mapped_asset_id,c.canonical_name,c.symbol
+          FROM evaluations e JOIN candidates c ON c.candidate_id=e.candidate_id
+          {production_join}
+          WHERE e.is_current=1 AND e.rule_config_hash=? {production_current} {selected_clause}
+        """, (current_rule_hash, *selected_ids))]
         candidate_ids = {int(row["candidate_id"]) for row in eval_rows}
         if not candidate_ids:
             return {}
@@ -235,7 +267,7 @@ def load_tracking_catalog(db_path: Path) -> dict[int, dict[str, Any]]:
         risk_rows = [dict(row) for row in connection.execute(f"SELECT * FROM risk_observations WHERE candidate_id IN ({placeholders})", args)]
         supply_rows = [dict(row) for row in connection.execute(f"SELECT * FROM supply_observations WHERE candidate_id IN ({placeholders})", args)]
         pool_rows = [dict(row) for row in connection.execute(f"SELECT * FROM pool_window_observations WHERE candidate_id IN ({placeholders})", args)]
-        market = _latest(market_rows)
+        market, _previous_market = latest_effective_market_rows(market_rows)
         risk = _latest(risk_rows)
         supply = _latest(supply_rows)
         pool = _latest(pool_rows)
@@ -305,8 +337,85 @@ def load_tracking_catalog(db_path: Path) -> dict[int, dict[str, Any]]:
                     "pool": [_public_pool(row) for row in pool_series.get(candidate_id, [])],
                     "risk": [_public_risk(row) for row in risk_series.get(candidate_id, [])],
                 },
+                "evaluation": {
+                    "evidencePaths": _json_value(evaluation.get("paths_json")) or [],
+                    "factorDirections": _json_value(evaluation.get("factor_directions_json")) or [],
+                    "dataConfidence": _json(evaluation.get("confidence_json")),
+                    "thresholdContext": _json(evaluation.get("threshold_context_json")),
+                    "marketSnapshot": _json(evaluation.get("market_snapshot_json")),
+                    "hardGate": _json(evaluation.get("hard_gate_json")),
+                    "displayState": evaluation.get("display_state") or "",
+                },
             }
         return catalog
+    finally:
+        connection.close()
+
+
+def load_tracking_candidates(db_path: Path) -> list[dict[str, Any]]:
+    """Load every C2.4 first-gate candidate; public eligibility is decided later."""
+
+    db_path = Path(db_path)
+    if not db_path.exists():
+        return []
+    connection = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True, timeout=15)
+    connection.row_factory = sqlite3.Row
+    try:
+        required = {
+            "candidate_production_records",
+            "candidate_qualification_members",
+            "candidate_qualification_batches",
+            "candidate_first_gate_queue",
+        }
+        present = {
+            str(row[0])
+            for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+        if not required.issubset(present):
+            return []
+        rows = connection.execute(
+            """
+            SELECT p.candidate_id,p.asset_id,p.project_id,p.t0_status,p.effective_t0,
+                   p.age_days,p.relationship_class,p.front_eligible,p.qualification_batch_id,
+                   p.qualified_at,c.network_id,c.canonical_name,c.symbol
+            FROM candidate_production_records p
+            JOIN candidate_qualification_members m
+              ON m.qualification_batch_id=p.qualification_batch_id
+             AND m.candidate_id=p.candidate_id
+            JOIN candidate_qualification_batches b
+              ON b.qualification_batch_id=p.qualification_batch_id
+             AND b.state='completed'
+            JOIN candidate_first_gate_queue fq
+              ON fq.candidate_id=p.candidate_id AND fq.state='completed'
+            JOIN candidates c ON c.candidate_id=p.candidate_id
+            WHERE p.tracking_eligible=1
+            ORDER BY p.asset_id,p.candidate_id
+            """
+        ).fetchall()
+        output = []
+        for row in rows:
+            relationship = str(row["relationship_class"] or "D")
+            project_id = (row["project_id"] or None) if relationship in {"A", "B", "C"} else None
+            output.append(
+                {
+                    "_candidateId": int(row["candidate_id"]),
+                    "_qualificationBatchId": row["qualification_batch_id"],
+                    "_frontEligible": bool(row["front_eligible"]),
+                    "assetId": row["asset_id"],
+                    "projectId": project_id,
+                    "canonicalName": row["canonical_name"] or row["symbol"] or "未命名候选",
+                    "symbol": row["symbol"] or "",
+                    "chainId": row["network_id"] or "",
+                    "t0": {
+                        "value": row["effective_t0"],
+                        "status": row["t0_status"],
+                    },
+                    "ageDays": row["age_days"],
+                    "relationshipClass": relationship,
+                    "qualifiedAt": row["qualified_at"],
+                }
+            )
+        return output
     finally:
         connection.close()
 
@@ -396,39 +505,166 @@ def load_main_database_facts(db_path: Path, asset_ids: set[str] | list[str]) -> 
         connection.close()
 
 
-def _prior_and_z(value: float | None, item: dict[str, Any], indicator: str, catalog: dict[int, dict[str, Any]]) -> tuple[Prior, float | None, str, int]:
+class _PreparedMetricCohort:
+    """Exact frozen metric transform with reusable sorted cohort state."""
+
+    def __init__(self, values: list[Any], kind: str, direction: str):
+        self.kind = kind
+        self.direction = direction
+        transformed = []
+        self.raw_values = []
+        for value in values:
+            finite = _finite(value)
+            if finite is None:
+                continue
+            try:
+                transformed.append(_transform_raw(finite, kind))
+                self.raw_values.append(finite)
+            except ValueError:
+                continue
+        self.values = sorted(transformed)
+        self.bounds = winsor_bounds(self.values) if self.values else None
+        cohort_z = [self.z(value, include_current=False) for value in self.raw_values]
+        self.prior = robust_prior([value for value in cohort_z if value is not None])
+
+    def _bounds_with_value(self, value: float) -> tuple[float, float]:
+        base = self.values
+        position = bisect_left(base, value)
+        size = len(base) + 1
+
+        def virtual(index: int) -> float:
+            if index < position:
+                return base[index]
+            if index == position:
+                return value
+            return base[index - 1]
+
+        def quantile(probability: float) -> float:
+            if size == 1:
+                return virtual(0)
+            point = (size - 1) * probability
+            lower_index = int(point)
+            upper_index = min(size - 1, lower_index + 1)
+            fraction = point - lower_index
+            lower_value = virtual(lower_index)
+            return lower_value + (virtual(upper_index) - lower_value) * fraction
+
+        return quantile(0.01), quantile(0.99)
+
+    def z(self, value: Any, *, include_current: bool) -> float | None:
+        finite = _finite(value)
+        if finite is None or not self.values:
+            return None
+        try:
+            current = _transform_raw(finite, self.kind)
+        except ValueError:
+            return None
+        lower, upper = self._bounds_with_value(current) if include_current else self.bounds
+        current = winsorize(current, lower, upper)
+        size = len(self.values) + int(include_current)
+
+        def less_than(target: float) -> int:
+            return bisect_left(self.values, target) + int(include_current and _transform_raw(finite, self.kind) < target)
+
+        def less_or_equal(target: float) -> int:
+            return bisect_right(self.values, target) + int(include_current and _transform_raw(finite, self.kind) <= target)
+
+        if size == 1:
+            percentile = 0.5
+        elif lower == upper:
+            percentile = 0.5
+        elif current <= lower:
+            equal = less_or_equal(lower)
+            percentile = (equal / 2.0) / size
+        elif current >= upper:
+            less = less_than(upper)
+            percentile = (less + ((size - less) / 2.0)) / size
+        else:
+            less = less_than(current)
+            equal = less_or_equal(current) - less
+            percentile = (less + (equal / 2.0)) / size
+        if self.direction == "negative":
+            percentile = 1.0 - percentile
+        return logit(percentile)
+
+
+def build_tracking_cohort_index(catalog: dict[int, dict[str, Any]]) -> dict[str, Any]:
+    chain_counts: dict[tuple[str, str], int] = defaultdict(int)
+    age_counts: dict[str, int] = defaultdict(int)
+    chain_values: dict[tuple[str, str, str], list[Any]] = defaultdict(list)
+    age_values: dict[tuple[str, str], list[Any]] = defaultdict(list)
+    for row in catalog.values():
+        network = row.get("networkId") or ""
+        age_band = row.get("ageBand") or ""
+        chain_counts[(network, age_band)] += 1
+        age_counts[age_band] += 1
+        metrics = row.get("metrics") or {}
+        for indicator in INDICATOR_CONFIG:
+            value = metrics.get(indicator)
+            if _finite(value) is None:
+                continue
+            chain_values[(network, age_band, indicator)].append(value)
+            age_values[(age_band, indicator)].append(value)
+    return {
+        "chainCounts": dict(chain_counts),
+        "ageCounts": dict(age_counts),
+        "chainValues": dict(chain_values),
+        "ageValues": dict(age_values),
+        "prepared": {},
+    }
+
+
+def _prior_and_z(
+    value: float | None,
+    item: dict[str, Any],
+    indicator: str,
+    catalog: dict[int, dict[str, Any]],
+    cohort_index: dict[str, Any] | None = None,
+) -> tuple[Prior, float | None, str, int]:
     kind, direction = INDICATOR_CONFIG[indicator]
     candidate_id = int(item.get("_candidateId") or 0)
     current = catalog.get(candidate_id) or {}
     network = current.get("networkId") or item.get("chainId") or ""
     age_band = current.get("ageBand") or item.get("ageBand") or ""
-    same_chain = [row for row in catalog.values() if row.get("networkId") == network and row.get("ageBand") == age_band]
-    same_age = [row for row in catalog.values() if row.get("ageBand") == age_band]
-    cohort_rows = same_chain if len(same_chain) >= 20 else same_age if len(same_age) >= 50 else []
-    fallback = not cohort_rows
-    cohort_values = [row.get("metrics", {}).get(indicator) for row in cohort_rows]
-    cohort_values = [row for row in cohort_values if _finite(row) is not None]
-    current_values = [row.get("metrics", {}).get(indicator) for row in cohort_rows]
-    z = metric_z(value, cohort_values + [value] if value is not None else cohort_values, kind=kind, direction=direction) if value is not None and cohort_values else None
-    # A cohort percentile needs the current value and comparison values, but the
-    # prior is estimated from the comparison z values only.
-    cohort_z = [metric_z(candidate, cohort_values, kind=kind, direction=direction) for candidate in cohort_values] if cohort_values else []
-    cohort_z = [float(candidate) for candidate in cohort_z if candidate is not None]
-    prior = robust_prior(cohort_z, fallback=fallback)
-    scope = "same_chain_same_age_band_30d" if same_chain and len(same_chain) >= 20 else "same_age_band_six_chains_30d" if same_age and len(same_age) >= 50 else "fallback"
-    return prior, z, scope, len(cohort_rows)
+    cohort_index = cohort_index or build_tracking_cohort_index(catalog)
+    same_chain_count = int(cohort_index["chainCounts"].get((network, age_band), 0))
+    same_age_count = int(cohort_index["ageCounts"].get(age_band, 0))
+    if same_chain_count >= 20:
+        key = ("chain", network, age_band, indicator)
+        values = cohort_index["chainValues"].get((network, age_band, indicator), [])
+        scope = "same_chain_same_age_band_30d"
+        sample_size = same_chain_count
+    elif same_age_count >= 50:
+        key = ("age", age_band, indicator)
+        values = cohort_index["ageValues"].get((age_band, indicator), [])
+        scope = "same_age_band_six_chains_30d"
+        sample_size = same_age_count
+    else:
+        return Prior(0.0, 1.0, "fallback", 0), None, "fallback", 0
+    prepared = cohort_index["prepared"].get(key)
+    if prepared is None:
+        prepared = _PreparedMetricCohort(values, kind, direction)
+        cohort_index["prepared"][key] = prepared
+    z = prepared.z(value, include_current=True) if value is not None else None
+    return prepared.prior, z, scope, sample_size
 
 
-def build_bayes_evidence(item: dict[str, Any], catalog: dict[int, dict[str, Any]], previous: dict[str, Any] | None = None) -> dict[str, Any]:
-    candidate_id = _candidate_id(item.get("projectId"))
+def build_bayes_evidence(
+    item: dict[str, Any],
+    catalog: dict[int, dict[str, Any]],
+    previous: dict[str, Any] | None = None,
+    cohort_index: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    candidate_id = int(item.get("_candidateId") or 0) or _candidate_id(item.get("projectId"))
     item_for_calc = {**item, "_candidateId": candidate_id}
     record = catalog.get(candidate_id or -1, {})
+    cohort_index = cohort_index or build_tracking_cohort_index(catalog)
     indicator_posteriors: dict[str, Posterior] = {}
     indicator_payload: dict[str, Any] = {}
     for factor in FACTOR_INDICATORS.values():
         for indicator in factor:
             value = (record.get("metrics") or {}).get(indicator)
-            prior, z, scope, sample_size = _prior_and_z(value, item_for_calc, indicator, catalog)
+            prior, z, scope, sample_size = _prior_and_z(value, item_for_calc, indicator, catalog, cohort_index)
             observations: list[WindowObservation] = []
             historical = list(record.get("metricObservations") or [])
             if historical:
@@ -436,7 +672,7 @@ def build_bayes_evidence(item: dict[str, Any], catalog: dict[int, dict[str, Any]
                     observed_value = (observation.get("metrics") or {}).get(indicator)
                     if observed_value is None:
                         continue
-                    _obs_prior, observation_z, _obs_scope, _obs_sample = _prior_and_z(observed_value, item_for_calc, indicator, catalog)
+                    _obs_prior, observation_z, _obs_scope, _obs_sample = _prior_and_z(observed_value, item_for_calc, indicator, catalog, cohort_index)
                     weight = observation_weight(
                         observation.get("sourceStatus") or "no_data",
                         independent_source_count=int(observation.get("sourceCount") or 0),

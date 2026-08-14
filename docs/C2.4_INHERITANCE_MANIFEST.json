@@ -1,0 +1,297 @@
+{
+  "schemaVersion": "c2.4-inheritance-manifest-v1",
+  "release": "C2.4",
+  "status": "frozen",
+  "baselineCapturedAt": "2026-08-13T10:43:23+08:00",
+  "defaultRule": "inherit_and_adapt_unless_explicitly_replaced_or_user_approved_for_deletion",
+  "approvedDeletions": [],
+  "routeCount": 29,
+  "treatments": {
+    "current_main_entry": "适配C2.4数据后作为当前主入口",
+    "context_function": "保留功能并从相关主页面进入，不占一级导航",
+    "explicit_replacement": "迁移到明确新承载位置，保留可达后继和返回路径",
+    "retained_inactive": "保留代码和历史但不进入当前界面，注明原因与重新启用条件"
+  },
+  "routes": [
+    {
+      "path": "app/candidate-pool.html",
+      "bytes": 5773,
+      "sha256": "a2e0567898991c5a10e42292bdd39fa54818246d083440948bbbed2469ad6e8d",
+      "treatment": "current_main_entry",
+      "c2_4Location": "凸性机会中心",
+      "producer": "complete_public_opportunity_snapshot",
+      "acceptance": "首页每链合计前10只是展示切片；全部机会等于完整公开集合；第11名不丢失"
+    },
+    {
+      "path": "app/change-explanations.html",
+      "bytes": 4122,
+      "sha256": "43b9a0ce34ab85e4711d9a05e8a868f8f01443b9c56949e6dc7319e1fbb51de5",
+      "treatment": "current_main_entry",
+      "c2_4Location": "前台重要变化",
+      "producer": "public_decision_change_snapshot",
+      "acceptance": "链与生命周期筛选可用，只显示改变公开判断的变化"
+    },
+    {
+      "path": "app/project-detail.html",
+      "bytes": 4003,
+      "sha256": "3eff7d30d8d34d7c4c003cd962bfece225c3996befcf87965ff3129c7ec76615",
+      "treatment": "context_function",
+      "c2_4Location": "从机会、变化和列表进入",
+      "producer": "public_opportunity_detail_with_tracking_evidence",
+      "acceptance": "首屏回答进入理由状态理由和失效条件，返回恢复上下文，外链交默认浏览器"
+    },
+    {
+      "path": "app/workbench.html",
+      "bytes": 15004,
+      "sha256": "8eca818495a53c001ee1209bda550f75923be89b41cef95d7149570f01174c8c",
+      "treatment": "current_main_entry",
+      "c2_4Location": "工作台概览",
+      "producer": "c2_4_admin_funnel_summary",
+      "acceptance": "只显示当前两作业持续跟踪公开结果和真实待处理事项"
+    },
+    {
+      "path": "app/new-token-update.html",
+      "bytes": 1990,
+      "sha256": "89039717868b20b5962745d967ab31dba07a338d15b9a42573ec2496e28342dc",
+      "treatment": "current_main_entry",
+      "c2_4Location": "更新中心/90天候选初筛",
+      "producer": "candidate_initial_screen_job",
+      "acceptance": "独立手动自动设置断点进度心跳和本作业来源重试"
+    },
+    {
+      "path": "app/update-center.html",
+      "bytes": 13235,
+      "sha256": "00273e0729611ddd85ff58baa955033321c30550a2dd1b03c63a7032a42fd55c",
+      "treatment": "current_main_entry",
+      "c2_4Location": "更新中心/凸性跟踪",
+      "producer": "deep_tracking_job",
+      "acceptance": "独立设置与单项重试，显示90天内和90天后持续跟踪完整漏斗"
+    },
+    {
+      "path": "app/project-master-pool.html",
+      "bytes": 8435,
+      "sha256": "ff27091c6e362e7672a2c96f2344b49024c27f20b4806eef7414e226135ac26c",
+      "treatment": "current_main_entry",
+      "c2_4Location": "候选与项目/项目队列",
+      "producer": "candidate_tracking_public_join_by_asset_id",
+      "acceptance": "按assetId显示候选跟踪公开生命周期，不按名称合并"
+    },
+    {
+      "path": "app/source-discovery.html",
+      "bytes": 6448,
+      "sha256": "90aa99cfc60288d9c2120eba2506000dd16ff62b09de2674d45f1d67bc012a51",
+      "treatment": "context_function",
+      "c2_4Location": "候选与项目/项目发现",
+      "producer": "current_candidate_discovery_and_t0_evidence",
+      "acceptance": "读取当前候选与T0证据，不读取旧静态发现快照"
+    },
+    {
+      "path": "app/network-discovery.html",
+      "bytes": 5473,
+      "sha256": "cbeec3c0490e418a0cbb66229c32ee619a5b43f20d9a0974bf10b46ebfce3ef0",
+      "treatment": "context_function",
+      "c2_4Location": "候选与项目/链上发现",
+      "producer": "formal_six_chain_candidate_coverage",
+      "acceptance": "六链覆盖候选和真实零结果正确，不声称全市场"
+    },
+    {
+      "path": "app/discovery-funnel.html",
+      "bytes": 6236,
+      "sha256": "af01e11906ce219298423e8253e4672057283a497950432c92c14aff27c238fb",
+      "treatment": "context_function",
+      "c2_4Location": "候选与项目/发现漏斗",
+      "producer": "same_cutoff_core_set_reconciliation",
+      "acceptance": "历史底座初筛跟踪公开同批次数量和assetId差集可复算"
+    },
+    {
+      "path": "app/weak-signal-inbox.html",
+      "bytes": 5674,
+      "sha256": "055255ba3a323fecda3fd7f39db74476149d4be2b6276b1c74ac3244c2918e1e",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "候选与项目/补证与待跟踪",
+      "producer": "current_evidence_gap_and_pending_tracking_queue",
+      "acceptance": "只显示缺项目证据待来源和未完成公开底线对象，不用社交热度替代证据"
+    },
+    {
+      "path": "app/evidence-ledger.html",
+      "bytes": 5863,
+      "sha256": "c3aca5d9ad6304b5688838ecaa032e10f295c3b2b8ff1296b575473e64dad528",
+      "treatment": "current_main_entry",
+      "c2_4Location": "证据与来源/证据账本",
+      "producer": "asset_evidence_ledger",
+      "acceptance": "按assetId来源观察时间用途显示当前证据与历史"
+    },
+    {
+      "path": "app/source-registry.html",
+      "bytes": 4464,
+      "sha256": "b939f27fa818bda39f203299c4bd4baaae1f92f0503c82452af2ac8c18cb3bfe",
+      "treatment": "current_main_entry",
+      "c2_4Location": "证据与来源/信源目录",
+      "producer": "current_source_health_by_job_and_impact",
+      "acceptance": "七类状态分开，来源按作业归属且显示影响层"
+    },
+    {
+      "path": "app/source-adapter.html",
+      "bytes": 5709,
+      "sha256": "0de08915c0490adc055b527ab63140bd298e63ad12d39502a7b05037207a7990",
+      "treatment": "context_function",
+      "c2_4Location": "证据与来源/证据接入",
+      "producer": "c2_4_field_producer_registry",
+      "acceptance": "只显示当前字段生产者最近成功能力边界和单项恢复"
+    },
+    {
+      "path": "app/high-value-sources.html",
+      "bytes": 4676,
+      "sha256": "1bf5eed5f07f73b51fe8c87ebda672ecde3394c2b2830fcfa0584ed3fdb03c4d",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "证据与来源/正式项目证据",
+      "producer": "attributable_project_evidence",
+      "acceptance": "项目关系代码部署产品业务和链上使用证据可归属，不使用高价值措辞"
+    },
+    {
+      "path": "app/data-backbone.html",
+      "bytes": 6229,
+      "sha256": "f64e0b198888c5a3133e8606921d57c544d74928c4bac100410ac7ef9bba8bcb",
+      "treatment": "current_main_entry",
+      "c2_4Location": "证据与来源/数据主干",
+      "producer": "two_database_atomic_snapshot_and_cursor_status",
+      "acceptance": "两库游标断点时间完整性正确，不展示旧版本数量"
+    },
+    {
+      "path": "app/monitoring-infrastructure.html",
+      "bytes": 5375,
+      "sha256": "501f2d77e10c403ae534eb2b413af9f03efe7d4f8adf71f639e95df66ee1a40b",
+      "treatment": "current_main_entry",
+      "c2_4Location": "持续跟踪/监控基础",
+      "producer": "current_deep_and_continued_tracking_targets",
+      "acceptance": "只监控当前深度跟踪和90天后持续跟踪assetId"
+    },
+    {
+      "path": "app/catalyst-paths.html",
+      "bytes": 5567,
+      "sha256": "cf986bca3bbcdbf3d37be510f8aaa4820b9b4ce74298d8cf5d04f7cd690db79e",
+      "treatment": "context_function",
+      "c2_4Location": "持续跟踪/催化与失效及项目详情",
+      "producer": "program_verifiable_catalyst_invalidation_watch_conditions",
+      "acceptance": "只保留可程序验证条件，不生成投资动作"
+    },
+    {
+      "path": "app/action-gaps.html",
+      "bytes": 1707,
+      "sha256": "f58918a16033349c46d0d409c1bbf13878877263abfe0c0e209c38bdc71ef308",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "持续跟踪/当前限制及项目详情",
+      "producer": "risk_exit_evidence_and_invalidation_limits",
+      "acceptance": "移除建仓仓位和行动责任语言，只保留程序限制"
+    },
+    {
+      "path": "app/decision-quality.html",
+      "bytes": 1699,
+      "sha256": "facad9a15a68a53622cdca9829178ea749f5d100c595eecc92a1cfbc8831f75e",
+      "treatment": "current_main_entry",
+      "c2_4Location": "判断规则与质量/判断质量",
+      "producer": "current_bayes_confidence_and_time_outcomes",
+      "acceptance": "显示贝叶斯可信度固定样本和7/14/30天结果，不宣称自动变准"
+    },
+    {
+      "path": "app/rules-replay.html",
+      "bytes": 4498,
+      "sha256": "90fb3b2758152a4060c7f816e4231a1a219d4aa59116f887d51c118c78698495",
+      "treatment": "current_main_entry",
+      "c2_4Location": "判断规则与质量/规则回放",
+      "producer": "c2_4_deterministic_rule_replay",
+      "acceptance": "复算宽初筛公开底线四路径第91天迁移和同链排名"
+    },
+    {
+      "path": "app/scan-center.html",
+      "bytes": 6345,
+      "sha256": "7d356cc65a7eeb12fb0adada22e9cb85697a94c6a05730ba08f80a63fed826f4",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "候选与项目/链上发现和发现漏斗",
+      "producer": "formal_six_chain_candidate_coverage",
+      "acceptance": "旧扫描入口有可达后继且不启动新全量回扫"
+    },
+    {
+      "path": "app/screening-console.html",
+      "bytes": 13834,
+      "sha256": "79a0f398831b7597eaaaa12c7ea50d79df0b910e14afa345516da1809ad627ad",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/规则回放",
+      "producer": "c2_4_deterministic_rule_replay",
+      "acceptance": "旧门槛控制台迁移到当前初筛和公开底线回放"
+    },
+    {
+      "path": "app/four-layer-screening.html",
+      "bytes": 4558,
+      "sha256": "c391f488819f9d8456ad596c3c3b13e657e3cf71ee67ed7d0adee9640ac05de2",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/三阶段主链与四条路径",
+      "producer": "c2_4_rule_explanation",
+      "acceptance": "保留分层解释，内容改为两关公开底线和四路径"
+    },
+    {
+      "path": "app/gold-calibration.html",
+      "bytes": 4778,
+      "sha256": "e04609729939c424d6cc822d666627cc6f2308d455576d6f300c9c88254852e1",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/固定真实样本",
+      "producer": "frozen_real_evidence_and_boundary_fixtures",
+      "acceptance": "不使用黄金或主观标签，固定真实样本哈希和边界回归"
+    },
+    {
+      "path": "app/real-case-calibration.html",
+      "bytes": 4725,
+      "sha256": "27cd2d06337aec00162b9d57ca3b9d3599e60487eb4fed789fb8667beeb07cf4",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/时间外结果",
+      "producer": "frozen_7_14_30_day_outcomes",
+      "acceptance": "真实时间外结果可看，程序不自动调参"
+    },
+    {
+      "path": "app/model-acceptance.html",
+      "bytes": 5989,
+      "sha256": "68fd7b166b15ade3f77b320007d3aadefbdd5ceba8a4beab42fb5efd54143993",
+      "treatment": "explicit_replacement",
+      "c2_4Location": "判断规则与质量/发布验收",
+      "producer": "deterministic_core_rule_and_fixed_fixture_acceptance",
+      "acceptance": "不使用大模型业务判断，按Tier0到4显示发布验收"
+    },
+    {
+      "path": "app/data-dictionary.html",
+      "bytes": 4213,
+      "sha256": "65cc10ec573604f79fa93bbec57d593014f161af79fdc1712cd9dcaa410cfa01",
+      "treatment": "current_main_entry",
+      "c2_4Location": "系统设置与日志",
+      "producer": "current_settings_tasks_databases_backups_temp_and_field_dictionary",
+      "acceptance": "显示当前设置日志数据库备份临时产物和字段解释"
+    },
+    {
+      "path": "app/manual-review.html",
+      "bytes": 9399,
+      "sha256": "0e5b83dc6670d16cbfdefbeac156d508ac1813afb42816b2e9a9b37a97eed503",
+      "treatment": "retained_inactive",
+      "c2_4Location": "无当前入口，保留历史与回滚资产",
+      "producer": "none_in_zero_manual_product",
+      "acceptance": "当前导航不可达且不泄漏旧数据；只有用户改变零人工定位并重新冻结才可启用"
+    }
+  ],
+  "approvedReplacements": [
+    "90天新币筛选改为90天候选初筛",
+    "第一关项目证据资格改为宽初筛加第二关公开底线",
+    "机会中心从第一关或待跟踪对象改为只读第二关公开结果",
+    "第91天全部退出改为合格项目转入持续跟踪池",
+    "首页跨链最多8项改为每链合计同链前10展示切片",
+    "交易与流动性合并路径改为两条并增加独立来源防重复",
+    "不可用产品使用强路径改为可选增强证据",
+    "旧页面全量露出改为七组现役入口加正式继承账本",
+    "技术化更新状态改为普通用户可操作表达"
+  ],
+  "releaseChecks": [
+    "every_existing_route_has_exactly_one_treatment",
+    "approved_deletion_count_is_zero",
+    "every_visible_route_uses_current_c2_4_producer_cutoff_and_terminology",
+    "every_explicit_replacement_has_reachable_successor_and_return_path",
+    "retained_inactive_route_cannot_leak_stale_data",
+    "baseline_hash_drift_is_explained_by_authorized_implementation_change"
+  ]
+}

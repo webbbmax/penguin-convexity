@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "c1.7-acceptance-manifest-v1",
+  "generatedDate": "2026-08-02",
+  "product": "企鹅投研-凸性",
+  "migrationRelease": "M1.0",
+  "convexityRelease": "C1.7",
+  "scope": "最大漏斗数据主干一期",
+  "baseline": {
+    "path": "backups/c1.7-00-baseline-20260801T042722Z",
+    "databaseBytes": 184733696,
+    "databaseSha256": "a9e0f9f0182837da3509b63f14a113d8ce8eaac2b6cdf1825381b43bdbdf770d",
+    "projects": 589,
+    "candidateCases": 590,
+    "activeSnapshots": 26,
+    "inventory": "backups/c1.7-00-baseline-20260801T042722Z/project-inventory.json"
+  },
+  "database": {
+    "path": "data/convexity.db",
+    "bytes": 213843968,
+    "sha256": "b591940b812b5d9d9109617d8be4ec5b1cc055a408f405dcb9df849b61933fa2",
+    "integrityCheck": "ok",
+    "foreignKeyErrors": 0,
+    "businessTables": 54,
+    "schemaMigration": 17,
+    "rowCounts": {
+      "projects": 589,
+      "candidateCases": 590,
+      "rawEvents": 15601,
+      "normalizedEventsV2": 15601,
+      "sourceDiscoveries": 11239,
+      "sourceAdapterRecords": 19946,
+      "evidenceItems": 2977,
+      "evidenceLineage": 54584,
+      "weakSignalsCurrent": 11400,
+      "weakSignalsHistorical": 10514,
+      "monitoringTargetsCurrent": 2793,
+      "monitoringTargetsHistorical": 1492,
+      "catalystPathsCurrent": 590,
+      "catalystPathsHistorical": 376,
+      "sources": 30,
+      "watchers": 2705,
+      "entityNodes": 2913,
+      "entityEdges": 2317,
+      "orphanEvidencePending": 151,
+      "sourceCursors": 30,
+      "sourceHealthCurrent": 30,
+      "sourceHealthHistory": 36,
+      "eventReplayRuns": 12,
+      "eventAttributionHistory": 15450
+    }
+  },
+  "continuity": {
+    "traceableRawEvents": 15601,
+    "normalizedEvents": 15601,
+    "backlog": 0,
+    "openGaps": 0,
+    "sourceHealth": {
+      "healthy": 25,
+      "trueZero": 1,
+      "unknown": 4
+    },
+    "sourceAdapterHistoricalMissingRaw": 166
+  },
+  "collectionMainlines": {
+    "git": {"registeredWatchers": 280, "runnableWatchers": 18, "events": 309},
+    "release": {"registeredWatchers": 280, "runnableWatchers": 18, "events": 40},
+    "package": {"registeredWatchers": 280, "runnableWatchers": 18, "events": 17},
+    "evm": {"registeredWatchers": 277, "runnableWatchers": 170, "events": 1024},
+    "solana": {"registeredWatchers": 21, "runnableWatchers": 20, "events": 117}
+  },
+  "activeArtifacts": {
+    "htmlPages": 26,
+    "snapshotFiles": 27,
+    "pythonTestFiles": 56,
+    "localRoutes": 29
+  },
+  "changeInventory": {
+    "newFiles": [
+      "app/data-backbone-chip.js",
+      "app/data-backbone.html",
+      "app/data-backbone.js",
+      "app/data-backbone-snapshot.js",
+      "docs/C1.7_ACCEPTANCE_MANIFEST.json",
+      "scripts/data_backbone.py",
+      "scripts/test_c1_7_data_backbone.py",
+      "scripts/test_data_backbone.py",
+      "scripts/test_startup_readiness.py"
+    ],
+    "modifiedProductAndRuntimeFiles": [
+      "app/candidate-pool.html",
+      "app/styles.css",
+      "app/workbench-nav.js",
+      "app/workbench.html",
+      "desktop/index.html",
+      "scripts/launch-convexity.ps1",
+      "scripts/init_db.py",
+      "scripts/rebuild_production_snapshots.py",
+      "scripts/refresh_candidate_pool.py",
+      "scripts/serve_local.py",
+      "scripts/update_tasks.py",
+      "storage/data-dictionary.json",
+      "storage/schema.sql"
+    ],
+    "modifiedMemoryFiles": [
+      "AGENTS.md",
+      "README.md",
+      "docs/DECISIONS.md",
+      "docs/MIGRATION_MANIFEST.json",
+      "docs/PROJECT_MEMORY.md",
+      "docs/RUNBOOK.md",
+      "docs/SOURCE_THREAD_INDEX.md",
+      "docs/STATUS.md"
+    ],
+    "modifiedRegressionTests": [
+      "scripts/test_c1_3_release_closure.py",
+      "scripts/test_c1_4_release_closure.py",
+      "scripts/test_c1_5_release_closure.py",
+      "scripts/test_c1_6_3_catalyst_trade_paths.py",
+      "scripts/test_c1_6_4_monitoring_infrastructure.py",
+      "scripts/test_c1_6_5_weak_signal_inbox.py",
+      "scripts/test_c1_6_6_release_closure.py",
+      "scripts/test_c1_6_correctness.py",
+      "scripts/test_complete_user_flow.py",
+      "scripts/test_m1_migration.py",
+      "scripts/test_navigation_stability.py",
+      "scripts/test_schema.py",
+      "scripts/test_update_center.py",
+      "scripts/test_visual_readability.py",
+      "scripts/test_workbench.py"
+    ],
+    "regeneratedArtifacts": [
+      "data/convexity.db",
+      "app/*snapshot.js (27 active snapshot files)"
+    ]
+  },
+  "startupReadiness": {
+    "listenerAvailableBeforeBackgroundRebuild": true,
+    "observedSecondsToBackgroundStart": 1.77,
+    "observedBackgroundRebuildSeconds": 18.02,
+    "previousSynchronousBlockingSeconds": 41.55,
+    "backgroundState": "success",
+    "fallback": "失败时继续提供上次有效快照"
+  },
+  "keyFileHashes": {
+    "storage/schema.sql": "4a88eda2d778723a4d7d82b6bbaf8163754c285d45cf7de1e9a660f26b550853",
+    "storage/data-dictionary.json": "9dd5dd7ec5b1783459f5e6da9aa08d1343f838f37ba239b9803276d44e9a9cf8",
+    "scripts/data_backbone.py": "46717b6e3e062193fb582d1cea16dec106c7f7dff11bf4d365522c25edf7ec33",
+    "scripts/test_data_backbone.py": "7ea9e110e169b64ce87a585f85961b23c6c842d5087447fd5acb2f37680f905b",
+    "scripts/test_c1_7_data_backbone.py": "d1055dfbac16fb601d1c28fdd562f7aba06eb2d7c08f9fc42e198544f4e9ebf7",
+    "app/data-backbone.html": "497d370aa33d1ee3e1e9df09380c77329047c90e0df02c3eae77fccab3c60dd4",
+    "app/data-backbone.js": "936e0de68c28a0c93e892d9ad897b6f8f740e573d32e25ceb7751bf82cd1072f",
+    "app/data-backbone-snapshot.js": "33acef9b8a40245ed2f411f51120d81e7a0ba6f5c4b868b06c0084148f2a294f",
+    "scripts/serve_local.py": "0dabd2269db5dc853caa1877c6923e2e7e17b87c5b6744f9abbbc4c6f9bda4f2",
+    "scripts/init_db.py": "499d60ff4389399d39bf754732d7b0f3d8464e7911438a26cc0ec5dd9b2254d1",
+    "scripts/test_startup_readiness.py": "8bb0799beff3d37d09fecbcd2ae383aa714a178caec8ebe92e0682fc44991808"
+  },
+  "verification": {
+    "fullPython": {"total": 56, "passed": 56, "failed": 0},
+    "localRoutes": {"total": 29, "passed": 29, "failed": 0},
+    "sqlite": {"integrity": "ok", "foreignKeyErrors": 0},
+    "realUi": {
+      "sevenSectionNavigation": "passed",
+      "detailEnterAndReturn": "passed",
+      "filterMemoryAcrossReloadAndReturn": "passed",
+      "dataBackbonePage": "passed"
+    },
+    "windowsDesktop": {
+      "launch": "passed",
+      "singleInstance": "passed",
+      "windowPositionSave": "passed",
+      "windowPositionRestore": "passed"
+    }
+  },
+  "boundaries": {
+    "changesInvestmentConclusions": false,
+    "changesActionLanguage": false,
+    "changesSevenSectionOrder": false,
+    "otherBusinessRuntimeReferences": false,
+    "plaintextSecrets": false,
+    "nextVersionStarted": false
+  }
+}

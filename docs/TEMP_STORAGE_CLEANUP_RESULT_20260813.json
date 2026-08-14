@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "convexity-temp-storage-cleanup-result-v1",
+  "completedAt": "2026-08-13",
+  "authorization": "用户明确要求清理第一组24.122GiB临时副本并建立后续机制",
+  "deletion": {
+    "target": "runtime/c2.2-first-gate-acceptance",
+    "method": "exact absolute paths; no glob; no recursive broad target",
+    "permanent": true,
+    "recoverableFromRecycleBin": false,
+    "files": [
+      {
+        "path": "runtime/c2.2-first-gate-acceptance/failed-refresh-loop-run.db",
+        "bytes": 8633311232
+      },
+      {
+        "path": "runtime/c2.2-first-gate-acceptance/failed-slow-run.db",
+        "bytes": 8589312000
+      },
+      {
+        "path": "runtime/c2.2-first-gate-acceptance/pipeline-before-repair.db",
+        "bytes": 8678371328
+      }
+    ],
+    "totalBytes": 25900994560,
+    "totalGiB": 24.122,
+    "targetExistsAfter": false,
+    "measuredFreeSpaceIncreaseGiB": 24.122
+  },
+  "runtimeContinuity": {
+    "candidateProductionPid": 39436,
+    "desktopPid": 33248,
+    "localServicePid": 34976,
+    "sameProcessesAliveAfter": true,
+    "firstGateProcessedBefore": 18486,
+    "firstGateProcessedImmediateAfter": 18494,
+    "firstGateProcessedFinalCheck": 18581,
+    "firstGateFailedFinalCheck": 0
+  },
+  "prevention": {
+    "managedRoot": "runtime/temp-artifacts",
+    "policy": "docs/TEMP_ARTIFACT_RETENTION_POLICY.json",
+    "implementation": "scripts/temp_artifact_retention.py",
+    "existingSchedulerReused": "PenguinConvexity-C1.8-Scheduler",
+    "newWindowsTaskCreated": false,
+    "fullSweepMaximumFrequencyHours": 24,
+    "formalPathsStructurallyExcluded": true
+  },
+  "verification": {
+    "retentionTests": "8/8 passed",
+    "existingSchedulerContractTests": "2/2 passed",
+    "firstRealSweep": {
+      "registered": 0,
+      "due": 0,
+      "blocked": 0,
+      "unregistered": 0
+    },
+    "scheduledTaskLastRun": "2026-08-13 10:00:01 Asia/Shanghai",
+    "scheduledTaskLastResult": 0,
+    "enabledLongTermProductSchedulers": 1
+  },
+  "notDeleted": [
+    "data/c2.1-pipeline.db",
+    "data/convexity.db",
+    "backups",
+    "runtime/gate0-shadow/backfill/background/runs/gate0-solfinal-20260809T045924Z-f7bbd2",
+    "runtime/gate0-shadow/backfill/rejected",
+    "runtime/c2.3-acceptance",
+    "runtime/cache"
+  ]
+}

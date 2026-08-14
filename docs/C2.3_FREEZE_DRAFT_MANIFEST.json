@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "c2.3-freeze-draft-manifest-v1",
+  "release": "C2.3",
+  "status": "confirmed_and_formalized",
+  "confirmedAt": "2026-08-12T11:07:22+08:00",
+  "userAuthorization": "冻结吧",
+  "purpose": "保存用户确认的C2.3大白话范围；正式实现权威为C2.3需求锁。",
+  "hashAlgorithm": "SHA-256",
+  "file": {
+    "path": "docs/C2.3_FREEZE_DRAFT.md",
+    "sha256": "e15b2f20da6376dda0c3792186213990cfd5a7e133eb067268ac2b735adbcf2e",
+    "bytes": 15544
+  },
+  "requirementsLock": "docs/C2.3_REQUIREMENTS_LOCK.json",
+  "productCodeAuthorized": false
+}

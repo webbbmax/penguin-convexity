@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "c2.2-candidate-production-repair-implementation-status-v1",
+  "repairId": "c2.2-candidate-production-repair-v1",
+  "status": "independent_acceptance_complete_released",
+  "implementationAuthorized": true,
+  "implementationAuthorization": "开始候选生产化修复开发",
+  "implementationStartedAt": "2026-08-11T19:26:34.7888430+08:00",
+  "implementationCompletedAt": "2026-08-11T20:12:46+08:00",
+  "requirementsLock": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_REQUIREMENTS_LOCK.json",
+  "implementationBaseline": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_IMPLEMENTATION_BASELINE.json",
+  "formalHistoricalScanAuthorized": true,
+  "formalHistoricalScanStarted": true,
+  "formalHistoricalScanAuthorization": {
+    "authorizationText": "授权正式处理这 459 万条历史候选",
+    "authorizedAt": "2026-08-11T20:54:28+08:00",
+    "startedAt": "2026-08-11T20:57:54+08:00",
+    "initialWorkerPid": 41944,
+    "runId": "candidate-production-20260811T125754Z-72484a",
+    "historicalPartitions": 920,
+    "historicalCandidates": 4585955,
+    "dailyPartitions": 6,
+    "dailyCandidates": 4259,
+    "performanceIndexRepair": "idx_candidate_scan_members_candidate(candidate_id, partition_id)",
+    "candidateProductionTestsAfterRepair": "14/14 passed",
+    "schedulerAutoResumeAuthorizedHistory": true,
+    "gate0Rerun": false,
+    "mainDatabaseWriteAuthorized": false
+  },
+  "databaseMigration": {
+    "status": "schema_only_completed",
+    "candidateCount": 4590214,
+    "productionRecordCount": 0,
+    "partitionCount": 0,
+    "runCount": 0,
+    "backup": "backups/c2.1-pipeline-pre-candidate-production-20260811T200500.db",
+    "backupSha256": "71adf4864e57d5fd00164f0dc0894a2aa1faf904687bbdd9aaa673eee4290327",
+    "currentDatabaseSha256": "80e1f5439f15900b22b3c6639263308e5a589f990dbfe88df6e876e9d8866fd2"
+  },
+  "selfTest": {
+    "candidateProductionTests": "12/12 passed",
+    "allNonReleasePythonTestFiles": "83/83 passed",
+    "c22Acceptance": "8/8 passed",
+    "browserDesktopViewports": "4/4 passed_no_post",
+    "browserManifestSha256": "49052b036522f3d80132d57c114f6631fa6226a6f7e69dd43921862a943b019f",
+    "unauthorizedHistoryStart": "HTTP 409 and database counts unchanged",
+    "javascriptSyntax": "passed",
+    "pythonCompilation": "passed",
+    "releaseManifestUpdated": true
+  },
+  "independentAcceptance": {
+    "startedAt": "2026-08-11T20:13:00+08:00",
+    "lastCheckedAt": "2026-08-11T20:39:19+08:00",
+    "acceptedAt": "2026-08-11T20:39:19+08:00",
+    "releasedAt": "2026-08-11T20:39:19+08:00",
+    "status": "complete_released",
+    "fixedDefects": [
+      "上游交易池已索引但买卖笔数缺失时，原实现误判为waiting_for_trades；已修复为source_pending/no_data并保持缺失值为null"
+    ],
+    "independentFixedSampleTests": "10/10 passed after repair",
+    "candidateProductionRegression": "12/12 passed",
+    "allNonReleasePythonTestFiles": "83/83 passed",
+    "browserDesktopViewports": "4/4 passed_no_post",
+    "browserManifestSha256": "49052b036522f3d80132d57c114f6631fa6226a6f7e69dd43921862a943b019f",
+    "databaseIntegrity": "both databases ok; foreign keys 0; production records partitions runs and qualification batches all 0",
+    "unauthorizedHistoryStart": "HTTP 409; before and after counts unchanged",
+    "desktopGate": "passed: official desktop shortcut launch, singleton, window-state save and restore",
+    "releaseManifestUpdated": true,
+    "releaseAuthorized": true
+  },
+  "implementationReport": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_IMPLEMENTATION_REPORT.md",
+  "independentAcceptanceReport": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_INDEPENDENT_ACCEPTANCE.md",
+  "nextGate": "正式历史候选扫描正在隐藏后台运行；只读监测分片、断点、来源状态和资格批次，完成前不得重复启动"
+}

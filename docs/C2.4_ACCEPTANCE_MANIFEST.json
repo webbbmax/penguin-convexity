@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "c2.4-acceptance-manifest-v1",
+  "release": "C2.4",
+  "name": "普通用户体验与机会发布重构",
+  "status": "independent_acceptance_passed_unreleased",
+  "acceptedAt": "2026-08-13T17:26:12+08:00",
+  "published": false,
+  "requirementsLock": "docs/C2.4_REQUIREMENTS_LOCK.json",
+  "requirementSetSha256": "411f084d726cfb599536169ec0dcd9fc2d10d6f15e92f0df821385d2d2dbddc0",
+  "frozenRequirementHashesVerified": true,
+  "summary": {
+    "acceptanceCriteriaPassed": 79,
+    "acceptanceCriteriaFailed": 0,
+    "tier0Failures": 0,
+    "tier1Failures": 0,
+    "initialBlockingDefectsFound": 2,
+    "initialBlockingDefectsRepaired": 2,
+    "releaseAuthorized": false
+  },
+  "groups": [
+    {"group": "A", "passed": ["A01", "A02", "A03", "A04", "A05"]},
+    {"group": "B", "passed": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B11"]},
+    {"group": "C", "passed": ["C01", "C02", "C03", "C04", "C05", "C06", "C07"]},
+    {"group": "D", "passed": ["D01", "D02", "D03", "D04", "D05", "D06", "D07", "D08"]},
+    {"group": "E", "passed": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12"]},
+    {"group": "F", "passed": ["F01", "F02", "F03", "F04", "F05", "F06"]},
+    {"group": "G", "passed": ["G01", "G02", "G03", "G04", "G05", "G06", "G07", "G08", "G09", "G10"]},
+    {"group": "H", "passed": ["H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08"]},
+    {"group": "I", "passed": ["I01", "I02", "I03", "I04", "I05", "I06"]},
+    {"group": "J", "passed": ["J01", "J02", "J03", "J04", "J05", "J06"]}
+  ],
+  "blockingDefectsAndRepairs": [
+    {
+      "id": "C24-IA-01",
+      "severity": "tier1_rule_correctness",
+      "defect": "四条强证据路径没有真正使用冻结的动态同链同日龄比较组；数值0还会被错误替换为后备阈值。",
+      "repair": "按同链同日龄近30天、六链同日龄近30天、固定后备值三级取样，保留真实0，并把实际比较组、样本量和阈值写入快照。",
+      "verification": "独立审计不导入实现资格函数，从只读底层记录重算比较组和公开状态；差异与比较组不一致均为0。"
+    },
+    {
+      "id": "C24-IA-02",
+      "severity": "tier0_public_eligibility",
+      "defect": "项目官网原始HTML中的脚本依赖链接及GitHub个人主页被误当成项目官方仓库，导致错误项目证据进入公开资格。",
+      "repair": "只接受官网可点击的明确owner/repository链接；脚本内URL和个人主页不再合格；对既有映射逐项复核并可回滚修复。",
+      "verification": "复核38个官网映射，撤回15个无明确仓库映射；撤回2个受影响公开项目，最终公开集合由独立审计重算为1。"
+    }
+  ],
+  "independentCoreAudit": {
+    "path": "reports/c2.4-independent-acceptance/core-audit.json",
+    "bytes": 5405,
+    "sha256": "4787562b8943828952830118d89daa38be1bdcb9479fd208661a0173c6f51562",
+    "status": "passed",
+    "databaseMode": "read_only_query_only",
+    "implementationQualificationImports": 0,
+    "dataCutoffAt": "2026-08-13T09:14:13.265165Z",
+    "counts": {
+      "inputCandidates": 4592870,
+      "firstGatePassedHistory": 21062,
+      "firstGateCurrentQueue": 21048,
+      "tracking": 21048,
+      "completedTrackingAssessed": 611,
+      "public": 1,
+      "homeDerived": 0,
+      "unrankedPublic": 1
+    },
+    "differenceCounts": {
+      "expectedQueueNotSnapshot": 0,
+      "snapshotQueueNotExpected": 0,
+      "expectedHistoryNotSnapshot": 0,
+      "snapshotHistoryNotExpected": 0,
+      "expectedTrackingNotSnapshot": 0,
+      "snapshotTrackingNotExpected": 0,
+      "expectedPublicNotSnapshot": 0,
+      "snapshotPublicNotExpected": 0,
+      "publicNotTracked": 0,
+      "allOpportunitiesNotPublic": 0,
+      "publicNotAllOpportunities": 0
+    },
+    "duplicateCounts": {"history": 0, "queue": 0, "tracking": 0, "public": 0, "allOpportunities": 0},
+    "stateMismatches": 0,
+    "cohortMismatches": 0
+  },
+  "snapshotSet": {
+    "candidate": {"path": "app/c2-4-candidate-snapshot.js", "buildId": "c24-candidate-e37a29b32be3760a", "sha256": "0848cab2c43ebe1df5f7371e2e7e8c4d1ffa5f81198498f44a7fb5e89a51009b"},
+    "tracking": {"path": "app/c2-4-tracking-snapshot.js", "buildId": "c24-tracking-00a38c45ba4bb3c0", "sha256": "6133aeabab146d7cadffb671f57b6069ebc935dfb3816eff08dd72fffa8b9586"},
+    "public": {"path": "app/c2-4-front-snapshot.js", "buildId": "c24-public-0fd5298f2bc0b098", "sha256": "ff8ad6fec86fe843bb5d681dcaf79bca881aa87a8bdfd12983ffd006ef865fae"},
+    "admin": {"path": "app/c2-4-admin-snapshot.js", "buildId": "c24-admin-787e3342203a94e4", "sha256": "c0632caeeb5b8889cfc31006cd7ad0128f20aace115d5d2c355af92d7703d527"}
+  },
+  "sourceAttributionRepair": {
+    "result": {"path": "reports/c2.4-independent-acceptance/github-attribution-repair-result.json", "bytes": 1567, "sha256": "27b859d6b80a920af4b9fc51a09eebde8ded073558d1f4b7d0a933c7122444ca"},
+    "rowBackup": {"path": "reports/c2.4-independent-acceptance/github-attribution-repair-backup.json", "bytes": 348671, "sha256": "a8977a3e51d2e04a0be2be947e0fced9b6d9916623842501e356bf9776fd52ba"},
+    "websiteMappingsRechecked": 38,
+    "explicitRepositoryLinksFound": 23,
+    "websiteMappingsRetracted": 15,
+    "publicMappingsRetracted": 2,
+    "remainingQualifyingGithubEvidence": 23
+  },
+  "verification": {
+    "pythonTargeted": {"passed": 98, "failed": 0, "liveServiceInitiallySkipped": 2},
+    "liveServiceRerun": {"passed": 2, "failed": 0, "routesServed": 29, "routesFailed": 0},
+    "javascriptSyntax": {"passed": 3, "failed": 0},
+    "databaseQuickCheck": {
+      "main": {"path": "data/convexity.db", "bytes": 559009792, "status": "ok", "foreignKeyErrors": 0},
+      "pipeline": {"path": "data/c2.1-pipeline.db", "bytes": 10160648192, "status": "ok", "foreignKeyErrors": 0}
+    },
+    "desktop": {
+      "coldStart": "passed",
+      "duplicateSingleInstance": "passed",
+      "closeAndReopen": "passed",
+      "windowMemory": "passed",
+      "viewport1180x760": "passed",
+      "maximizedViewport": "passed",
+      "horizontalOverflow": 0,
+      "externalLinkDefaultBrowser": "passed",
+      "detailBackContext": "passed",
+      "updateButtonsClicked": 0
+    },
+    "backgroundIsolation": {
+      "candidatePidAtClose": 39824,
+      "pageServicePidAtClose": 37108,
+      "desktopPidAtClose": 43916,
+      "desktopInstanceCount": 1,
+      "candidateRestarted": false,
+      "serviceRestarted": false,
+      "gate0Or459mRescanStarted": false
+    }
+  },
+  "releaseCandidate": {
+    "desktopExecutable": {"path": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe", "bytes": 433152, "sha256": "6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868"},
+    "frontScript": {"path": "app/c2-4-front.js", "sha256": "5e96095bce729833cc3927c8af200f37eb28da56db83872932c54cef2d9fba51"},
+    "adminScript": {"path": "app/c2-4-admin.js", "sha256": "0a664b088d6ccac109d9e33413f2dbf82284b2ea7e459b14c039ec0f0a940f6b"},
+    "desktopCandidateMatchesAcceptedHashes": true
+  },
+  "knownProgramBoundaries": [
+    "当前唯一公开项目没有完整可复算贝叶斯观测，因此保留在全部机会但不进入首页同链排名。",
+    "GitHub证据现在只证明官网明确链接了某个代码仓库，程序仍不能证明仓库内容代表真实产品、团队可信或值得投资。",
+    "候选后台仍在运行，后续快照数量会变化；本清单中的集合数量只对应统一截止时间。"
+  ],
+  "report": "docs/C2.4_FINAL_ACCEPTANCE.md",
+  "nextAllowedStage": "user_decides_second_acceptance_or_explicit_c2_4_release"
+}

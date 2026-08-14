@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "c2.4-development-manifest-v1",
+  "release": "C2.4",
+  "name": "普通用户体验与机会发布重构",
+  "status": "development_self_test_complete_waiting_independent_acceptance",
+  "generatedAt": "2026-08-13T12:55:00+08:00",
+  "published": false,
+  "requirementsLock": "docs/C2.4_REQUIREMENTS_LOCK.json",
+  "requirementSetSha256": "411f084d726cfb599536169ec0dcd9fc2d10d6f15e92f0df821385d2d2dbddc0",
+  "frozenRequirementHashesVerified": true,
+  "developmentReport": {
+    "path": "docs/C2.4_DEVELOPMENT_SELF_TEST.md",
+    "bytes": 7026,
+    "sha256": "722feed4deb08b5a85f0607f9a33529bfdc31e163a70531e77ec049d447cc14e"
+  },
+  "phase": {
+    "path": "docs/C2.4_PHASE.json",
+    "bytes": 2129,
+    "sha256": "005e0d52e072a4a5ef44a5c6edeb3e4adeb0cf9245c52d752d3f8156a7952ce7"
+  },
+  "snapshotSet": {
+    "generatedAt": "2026-08-13T04:51:12.894035Z",
+    "dataCutoffAt": "2026-08-13T04:48:42.072176Z",
+    "candidate": {
+      "path": "app/c2-4-candidate-snapshot.js",
+      "buildId": "c24-candidate-91d9a762da737176",
+      "sha256": "4af72bd20cd8d0ff38c2c6f86969dae09ef9e5635f97dd34a067629438c7b879"
+    },
+    "tracking": {
+      "path": "app/c2-4-tracking-snapshot.js",
+      "buildId": "c24-tracking-ef64ad4bb2110d35",
+      "sha256": "74e6e6d771f12475202eca6350c34f830ecec1b353ac110eb2294e477019846f"
+    },
+    "public": {
+      "path": "app/c2-4-front-snapshot.js",
+      "buildId": "c24-public-cc668b7bdcbeebb8",
+      "sha256": "896fcd4b4a73b6dbe54927a774e0a6c0b121ec2c06cc1e80db4e4e13c752a12e"
+    },
+    "admin": {
+      "path": "app/c2-4-admin-snapshot.js",
+      "buildId": "c24-admin-9bb849af2623bdf3",
+      "sha256": "e1fcab1ff334060ff32c9922a93866221b5c70123ddf5aa09d02c8d86271bb7c"
+    }
+  },
+  "collectionReconciliation": {
+    "inputCandidates": 4591622,
+    "firstGatePassedHistory": 19620,
+    "firstGateCurrentQueue": 19620,
+    "tracking": 19620,
+    "public": 2,
+    "homeDerived": 0,
+    "unrankedPublic": 2,
+    "continued91Plus": 0,
+    "differenceCounts": {
+      "publicNotTracked": 0,
+      "newTrackedNotQueued": 0,
+      "trackedNotFirstGateHistory": 0,
+      "continuedMissingHistory": 0
+    }
+  },
+  "implementationFiles": [
+    {"path": "app/c2-4-front.js", "sha256": "711dcfe5a064ff12655f628cba33271c76af55378abdfa90b945d6a945af5f41"},
+    {"path": "app/c2-4-admin.js", "sha256": "2b81bfd1ca37288a25a812e3b6f1de70b18035140c90cef578bbdbd1daea6b98"},
+    {"path": "app/c2-4.css", "sha256": "f2a48d6b993b94b63f48d24fe2ccc1eb903ca24a13f41ba6f88a763ad4399f2c"},
+    {"path": "app/workbench-nav.js", "sha256": "71d98e11ba61caeee6501d53308a8213dd231292ecb9c6471b1a749785cb4518"},
+    {"path": "app/candidate-pool.html", "sha256": "f40cd762eecb1b9557511719c0fdea256c6574aea350a6b57b4ed0f7dc0744ec"},
+    {"path": "app/change-explanations.html", "sha256": "00704a8d5d841cbcfb8a1d53db567c32524a6c60d204ebf8a40bda7a05370a13"},
+    {"path": "app/project-detail.html", "sha256": "158f726fcf1eb994e7754d6e2cd0aebf4180ef4f403a09285cacd08865d42133"},
+    {"path": "app/c1-9-progress.js", "sha256": "3691f233a081773d79f05b8aa6055710a0ef12dd8b938f6bd4f3f49b6a778723"},
+    {"path": "app/c2-1-admin.js", "sha256": "42c856801870a1d458d5b1dcdb6014601f714202418421b798087475a5f1fef3"},
+    {"path": "app/c2-2-admin.js", "sha256": "c7e4a0385f2cbb35b76fb320b16e5387f9deeee3bd7321b3567fd80036279c20"},
+    {"path": "app/update-center.js", "sha256": "22a52f33dd9c9804a23de047006ecfb78dc42c52507a30f4115bbf2a6f50105b"},
+    {"path": "scripts/c2_4_rules.py", "sha256": "7a45602e6b4e260d0f5ecbe17810c35ce66826a3dcee02226e278fc50637140c"},
+    {"path": "scripts/c2_4_tracking.py", "sha256": "263488046d2c1eed1f8bd99eaa02141f09dea1c8d87076f4bd34d2d6b9a5f89f"},
+    {"path": "scripts/build_c2_4_snapshots.py", "sha256": "0811a2e810afecc302ddc8dcd2099f156518b2ac178b7b12915f56daf9bc9bd5"},
+    {"path": "scripts/candidate_production.py", "sha256": "fe5e39f4d59389ba36e5f5efe1e9fa840a900507e85fb8568e1989b675aef544"},
+    {"path": "scripts/c2_1_enrichment.py", "sha256": "62e6e0cc62d68473c91fa293072234ee5157619b023bf64a4e1aa80941924b6f"},
+    {"path": "scripts/c2_2_candidate_tracking.py", "sha256": "0c1e0458503822865b380e356e8d410d11f755e420008a202180b9b6510e5383"},
+    {"path": "scripts/c2_2_tracking.py", "sha256": "1adbb5a9b3de0a68caed892ea326ba7f567275b21c17a100eda8d4f13cce47ba"},
+    {"path": "scripts/run_c2_2_update.py", "sha256": "dd10cfe158e4edcfdca29830b86a7f34c039001021549920099ca86a0471c4de"},
+    {"path": "scripts/serve_local.py", "sha256": "53b2cb8b0e45e093bd8ab9c9dacc88247dce4221372013017958edb160fc552d"},
+    {"path": "storage/c2.4-tracking.sql", "sha256": "641f0403e7698750f1857ef6c966ce32ed474d193a6b9bedcff9007a0d36347c"}
+  ],
+  "testFiles": [
+    {"path": "scripts/test_c2_4_rules.py", "sha256": "3f46ecf514c23ad04736c0e8b05b286df9fbae8bc55bd00a6a27cefd2364232e"},
+    {"path": "scripts/test_c2_4_tracking.py", "sha256": "161eaea1f81b38bab9af5364d6aa3dd38b76b846eea32b247a8f9fe00cfea305"},
+    {"path": "scripts/test_c2_4_runtime.py", "sha256": "0a0017702926d68f1705f67bcbb452c6fc9ce46ed8d4797b1c71f6bdc4f27b8a"},
+    {"path": "scripts/test_c2_4_snapshots.py", "sha256": "0b1c3d87d25c291f27fc57d0660c57548e16bc80ad1072a3e4293d8cf64492b9"},
+    {"path": "scripts/test_c2_4_acceptance.py", "sha256": "4d62bb2d253835aa84ad5c8af7609eacc6a42b9a9328157f0accadd228d0e7a3"},
+    {"path": "scripts/test_c2_4_real_samples.py", "sha256": "c732db5a44711a5f6dabefeae37e9f67cec1c6182d3c582dc8999bdc2140248e"},
+    {"path": "scripts/test_candidate_production.py", "sha256": "d320159d6c4523dd5c1c2a5259d874af7d506125fb467a34adbb8742dac542ae"},
+    {"path": "scripts/test_c2_2_core_pipeline.py", "sha256": "235f7c68e24d67a854fbcf2b2b0b64dd2230210232724d7cd754e3ed55822843"},
+    {"path": "scripts/test_c2_2_runtime.py", "sha256": "bb99c0859eab562d1798192d9ce7f98ec030f486bc25d105c81cf0df0b9f5546"},
+    {"path": "scripts/test_c2_2_snapshots.py", "sha256": "856e796b51a0994438d5c6e33548b8917dac765fa1aecbdede2e17833e27cd25"},
+    {"path": "scripts/test_c2_2_tracking_repair.py", "sha256": "652b1adc10f82fdbba2e7f5fc7c2634d48e5c9f87b8eafda051d0787fe7d0778"}
+  ],
+  "verification": {
+    "pythonCoreAndInheritance": {"passed": 105, "failed": 0},
+    "c24StaticAndLocalService": {"passed": 11, "failed": 0},
+    "dotnetDesktopHost": {"passed": 12, "failed": 0},
+    "databaseQuickCheck": {"main": "ok", "candidatePipeline": "ok", "foreignKeyErrors": 0},
+    "inheritedRoutes": {"total": 29, "passed": 29},
+    "realBrowserDevelopmentPaths": "passed",
+    "productionUpdatesTriggeredByAcceptance": false,
+    "gate0OrHistoricalRescanStarted": false,
+    "officialShortcutChanged": false
+  },
+  "knownBoundaries": [
+    "当前只有11个对象已有完整深度窗口，19618个仍等待公开底线；开发阶段未启动全量跟踪更新。",
+    "两个公开项目均缺完整可复算贝叶斯观测，因此保留在全部机会但不进入首页排名。",
+    "真实WPF双尺寸、正式快捷方式、重复启动、窗口记忆和默认浏览器外链留给独立终验重新执行。",
+    "历史候选进程继续运行，独立终验必须按新的统一截止时间重建并重算集合。"
+  ],
+  "nextAllowedStage": "c2.4_independent_acceptance"
+}

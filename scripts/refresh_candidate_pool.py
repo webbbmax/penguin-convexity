@@ -2839,7 +2839,7 @@ def refresh_candidates(
         and "formal_market_exit" not in selected_components
         else []
     )
-    notify("high_value_evidence", "正在发现项目与高价值证据")
+    notify("evidence", "正在检查证据链接健康")
     evidence_results = (
         collect_evidence_data(fixture, timeout=timeout)
         if "evidence" in selected_components
@@ -2987,7 +2987,8 @@ def refresh_candidates(
         result["identityAliases"] = sync_project_identity_aliases(connection)
         result["sourceAdapter"] = run_source_adapter(connection)
         result["evidenceLineage"] = sync_evidence_lineage(connection)
-        notify("monitoring_infrastructure", "正在检查监控与数据健康")
+        notify("monitoring_infrastructure", "正在检查监控目标")
+        notify("data_backbone", "正在规范化数据主干并检查连续性")
         result["dataBackbone"] = sync_refresh_data_backbone(
             connection,
             selected_components,
@@ -3093,57 +3094,60 @@ def refresh_candidates(
         integrity = connection.execute("PRAGMA integrity_check").fetchone()[0]
         if integrity != "ok":
             raise RuntimeError(f"SQLite 完整性检查失败：{integrity}")
-        notify("page_snapshot_rebuild", "正在发布最新页面")
-        write_pool_snapshot(
-            build_pool_snapshot(
-                connection,
-                fixture,
-                production_only=production_mode,
-            ),
-            pool_snapshot_path,
-        )
-        write_discovery_snapshot(build_discovery_snapshot(connection))
-        write_master_pool_snapshot(build_master_pool_snapshot(connection))
-        write_project_detail_snapshot(build_project_detail_snapshot(connection))
-        write_scan_center_snapshot(build_scan_center_snapshot(connection))
-        write_manual_review_snapshot(build_manual_review_snapshot(connection))
-        write_runtime_snapshot(connection, runtime_snapshot_path)
-        write_high_value_snapshot(build_high_value_snapshot(connection))
-        write_source_discovery_snapshot(
-            build_source_discovery_snapshot(connection)
-        )
-        write_evidence_ledger_snapshot(
-            build_evidence_ledger_snapshot(connection)
-        )
-        write_source_adapter_snapshot(
-            build_source_adapter_snapshot(
-                connection,
-                result["sourceAdapter"],
+        if task.get("publishLegacySnapshots", True):
+            notify("page_snapshot_rebuild", "正在发布最新页面")
+            write_pool_snapshot(
+                build_pool_snapshot(
+                    connection,
+                    fixture,
+                    production_only=production_mode,
+                ),
+                pool_snapshot_path,
             )
-        )
-        write_catalyst_trade_path_snapshot(
-            build_catalyst_trade_path_snapshot(connection)
-        )
-        write_monitoring_infrastructure_snapshot(
-            build_monitoring_infrastructure_snapshot(connection)
-        )
-        write_weak_signal_snapshot(build_weak_signal_snapshot(connection))
-        write_data_backbone_snapshot(build_data_backbone_snapshot(connection))
+            write_discovery_snapshot(build_discovery_snapshot(connection))
+            write_master_pool_snapshot(build_master_pool_snapshot(connection))
+            write_project_detail_snapshot(build_project_detail_snapshot(connection))
+            write_scan_center_snapshot(build_scan_center_snapshot(connection))
+            write_manual_review_snapshot(build_manual_review_snapshot(connection))
+            write_runtime_snapshot(connection, runtime_snapshot_path)
+            write_high_value_snapshot(build_high_value_snapshot(connection))
+            write_source_discovery_snapshot(
+                build_source_discovery_snapshot(connection)
+            )
+            write_evidence_ledger_snapshot(
+                build_evidence_ledger_snapshot(connection)
+            )
+            write_source_adapter_snapshot(
+                build_source_adapter_snapshot(
+                    connection,
+                    result["sourceAdapter"],
+                )
+            )
+            write_catalyst_trade_path_snapshot(
+                build_catalyst_trade_path_snapshot(connection)
+            )
+            write_monitoring_infrastructure_snapshot(
+                build_monitoring_infrastructure_snapshot(connection)
+            )
+            write_weak_signal_snapshot(build_weak_signal_snapshot(connection))
+            write_data_backbone_snapshot(build_data_backbone_snapshot(connection))
     finally:
         connection.close()
-    notify("machine_research_scoring", "正在生成研究结论与催化摘要")
-    write_four_layer_snapshot(
-        build_four_layer_snapshot(
-            pool_snapshot_path,
-            DEFAULT_GOLD_INPUT_PATH,
-            DEFAULT_GOLD_EXPECTED_PATH,
-        ),
-        FOUR_LAYER_OUTPUT_PATH,
-    )
-    rebuild_discovery_funnel_snapshot(db_path=db_path)
-    rebuild_opportunity_center_snapshot(candidate_path=pool_snapshot_path)
-    rebuild_research_route_snapshot()
-    rebuild_tracking_tasks_snapshot(db_path=db_path)
+    publish_legacy_snapshots = task.get("publishLegacySnapshots", True)
+    if publish_legacy_snapshots:
+        notify("machine_research_scoring", "正在生成研究结论与催化摘要")
+        write_four_layer_snapshot(
+            build_four_layer_snapshot(
+                pool_snapshot_path,
+                DEFAULT_GOLD_INPUT_PATH,
+                DEFAULT_GOLD_EXPECTED_PATH,
+            ),
+            FOUR_LAYER_OUTPUT_PATH,
+        )
+        rebuild_discovery_funnel_snapshot(db_path=db_path)
+        rebuild_opportunity_center_snapshot(candidate_path=pool_snapshot_path)
+        rebuild_research_route_snapshot()
+        rebuild_tracking_tasks_snapshot(db_path=db_path)
     notify("tracking", "正在完成跟踪并发布页面快照")
     tracking_result = None
     if "tracking" in selected_components:
@@ -3157,8 +3161,9 @@ def refresh_candidates(
         result["explanation"] = (
             f"{result['explanation']} {tracking_result['explanation']}"
         )
-        rebuild_tracking_tasks_snapshot(db_path=db_path)
-        rebuild_opportunity_center_snapshot(candidate_path=pool_snapshot_path)
+        if publish_legacy_snapshots:
+            rebuild_tracking_tasks_snapshot(db_path=db_path)
+            rebuild_opportunity_center_snapshot(candidate_path=pool_snapshot_path)
         connection = sqlite3.connect(db_path)
         connection.row_factory = sqlite3.Row
         try:
@@ -3171,16 +3176,18 @@ def refresh_candidates(
                 result["errors"] = run_row["error_count"]
         finally:
             connection.close()
-        rebuild_tracking_tasks_snapshot(db_path=db_path)
-    rebuild_update_snapshots(db_path=db_path)
-    rebuild_change_explanations_snapshot(db_path=db_path)
-    rebuild_model_acceptance_snapshot()
-    try:
-        result["decisionQuality"] = build_decision_quality_snapshots(db_path=db_path)
-    except Exception as error:
-        # C2.0 is a read-only derived layer; do not turn a completed business
-        # refresh into a false collection failure when its projection fails.
-        result["decisionQuality"] = {"status": "failed", "error": str(error)}
+        if publish_legacy_snapshots:
+            rebuild_tracking_tasks_snapshot(db_path=db_path)
+    if publish_legacy_snapshots:
+        rebuild_update_snapshots(db_path=db_path)
+        rebuild_change_explanations_snapshot(db_path=db_path)
+        rebuild_model_acceptance_snapshot()
+        try:
+            result["decisionQuality"] = build_decision_quality_snapshots(db_path=db_path)
+        except Exception as error:
+            # C2.0 is a read-only derived layer; do not turn a completed business
+            # refresh into a false collection failure when its projection fails.
+            result["decisionQuality"] = {"status": "failed", "error": str(error)}
     return result
 
 

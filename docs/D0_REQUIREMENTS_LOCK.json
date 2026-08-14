@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "d0-requirements-lock-v1",
+  "release": "D0",
+  "name": "开发体系重置0",
+  "releaseType": "engineering_governance_not_product_release",
+  "status": "frozen",
+  "frozenAt": "2026-08-14T11:48:05+08:00",
+  "userAuthorization": "按冻结稿冻结开发体系重置0",
+  "currentProductReleaseRemains": "C2.4",
+  "hashAlgorithm": "SHA-256",
+  "requirementSetCanonicalization": "按documents顺序，以path:lowercase_sha256逐行连接，行间使用LF，末尾无换行",
+  "requirementSetSha256": "48316081f5851afad07674a54dbc733b261bf64d3bb28d1a8ea60fde9f87fc3b",
+  "documents": [
+    {
+      "path": "docs/D0_FREEZE_DRAFT.md",
+      "role": "用户确认的大白话目标、四项选择、允许范围、禁区、程序上限与完成条件",
+      "bytes": 9687,
+      "sha256": "f83bd2452b7be5a61897068c4af8916c0a273ca851c8692e60a21d02f5a117b6"
+    },
+    {
+      "path": "docs/D0_DEVELOPMENT_WORKFLOW.md",
+      "role": "D0及未来版本的任务、Git、工作区、需求追踪、测试、候选与发布门禁",
+      "bytes": 5170,
+      "sha256": "2149177d648d5d79a89b59046a8fd360e139fd0e28e1bd7807697607c650698a"
+    },
+    {
+      "path": "docs/D0_ACCEPTANCE_PLAN.md",
+      "role": "现状分类、去敏基线、当前真相、门禁、工作区、回滚和正式桌面独立验收",
+      "bytes": 5362,
+      "sha256": "d46150bc65d71719fa36c4f9ed9d1506fb2aed9264ff64245880c4e741ac3816"
+    }
+  ],
+  "inheritedFrozenDependencies": [
+    {
+      "path": "docs/C2.4_REQUIREMENTS_LOCK.json",
+      "sha256": "9c41e39b4311bef4cfcc3111cabda16c0f43e87129ac5fe4089688d58546d447",
+      "purpose": "C2.4产品范围继续冻结，D0不得改写业务、规则、页面和数据合同"
+    },
+    {
+      "path": "docs/C2.4_RELEASE_MANIFEST.json",
+      "sha256": "c60fb206218db4d22cbdb40b1a36619f7f6a194721fba301b4b0662965e9d290",
+      "purpose": "保留当前单机单目录发布事实、候选哈希和回滚边界"
+    },
+    {
+      "path": "docs/MODEL_HANDOFF_PROTOCOL.md",
+      "sha256": "6e9bc11c80b83add05e705ec2885f7396cf3278643e55fa93ffc2fb74a310515",
+      "purpose": "模型由用户决定，阶段门禁与模型选择分离"
+    },
+    {
+      "path": "docs/TEST_PRIORITY_POLICY.json",
+      "sha256": "d4f155782cbb09a224fe7498501c37a0b6dc9ecbd9536a238d2ab4964ab25148",
+      "purpose": "Tier 0核心链优先，低优先级通过数不得抵消核心失败"
+    },
+    {
+      "path": "docs/TEMP_ARTIFACT_RETENTION_POLICY.json",
+      "sha256": "ef141ba04314bfd186082045deb2d6c31fc2cec39270ffe58bbe2edd259037c1",
+      "purpose": "未知文件不删除，临时产物只按登记和安全保留规则清理"
+    }
+  ],
+  "freezeSnapshot": {
+    "capturedAt": "2026-08-14T11:48:05+08:00",
+    "branch": "main",
+    "gitStatusEntries": 154,
+    "trackedChangedEntries": 45,
+    "untrackedEntries": 109,
+    "commitCount": 2,
+    "latestCommit": "a302c6b",
+    "latestCommitSubject": "feat: release C2.2 tracking integration",
+    "interpretation": "这是D0执行前的现状审计，不把154项整体视为可提交内容。"
+  },
+  "frozenChoices": {
+    "newProductVersion": false,
+    "visibleProductReleaseChanges": false,
+    "officialRoot": "F:\\codex项目\\企鹅投研\\凸性",
+    "authorizedFutureWorktreeRoot": "F:\\codex项目\\企鹅投研\\凸性-worktrees",
+    "worktreesContainProductionDatabase": false,
+    "publicGitHubPushAfterSecretScanAndAcceptance": true,
+    "reconstructedBaselineCertifiesBusinessCorrectness": false,
+    "defaultNormalVersionTasks": [
+      "planning_and_freeze",
+      "implementation_and_self_test",
+      "independent_acceptance_and_release"
+    ],
+    "modelBinding": false,
+    "tier0BlocksLowerPriorityWork": true,
+    "unknownFileDeletionAllowed": false,
+    "fullHistoricalRegressionByDefault": false,
+    "longTaskMinimumForRecoveryContractMinutes": 15
+  },
+  "implementationAuthority": "等待用户另行明确回复‘开始开发体系重置0’。本次冻结不授权分类、清理、创建worktree、改造AGENTS结构、提交、合并、打标签或推送GitHub。",
+  "finalAuthority": "D0必须完成独立验收计划的全部阻断检查；形成干净main、重建基线、门禁反向测试、真实桌面只读验收和代码回滚演练后，才可标记完成。",
+  "immutableBoundaries": [
+    "D0不是C2.5，当前用户可见版本保持C2.4",
+    "不修复或调整六条链、第一关、第二关、四路径、贝叶斯或前后台UI",
+    "不写两个正式业务数据库，不重跑Gate0、459万或90天历史扫描",
+    "不停止、重启或改变现役后台任务、唯一调度器和用户暂停设置",
+    "未知文件分类前不删除，禁止git reset --hard和整目录覆盖",
+    "公开GitHub不得包含明文密钥、数据库、日志、缓存或运行状态",
+    "重建基线只准确保存当前事实，不宣称已知业务问题全部正确",
+    "模型由用户决定，阶段责任不绑定模型"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "c2.4-pre-acceptance-desktop-repair-v1",
+  "release": "C2.4",
+  "generatedAt": "2026-08-13T13:09:55.0790974+08:00",
+  "status": "repaired_and_real_desktop_path_verified_waiting_independent_acceptance",
+  "published": false,
+  "problem": {
+    "userVisible": "正式桌面入口显示本地服务没有通过身份检查",
+    "reproducedFromLog": true,
+    "rootCause": "C2.4本地服务返回experienceRelease=C2.4，但WPF桌面壳仍硬编码要求C2.2，因此把本项目服务误判为身份不一致。",
+    "affectedBoundary": "桌面容器与本地HTTP健康接口的体验版本身份契约",
+    "backgroundDataJobsAffected": false
+  },
+  "repair": {
+    "serviceExpectedExperienceRelease": "C2.4",
+    "frozenRequirementsChanged": false,
+    "businessRulesOrDatabaseChanged": false,
+    "officialShortcutTargetChanged": false,
+    "officialShortcutTargetRebuilt": true
+  },
+  "files": [
+    {
+      "path": "desktop-host/PenguinConvexity.Desktop/ServiceHealthProbe.cs",
+      "bytes": 2831,
+      "sha256": "6474311cbf211eb02d23ed0fbcdf228bff5f5a6c94e40295a50c2113618bfa6e"
+    },
+    {
+      "path": "desktop-host/PenguinConvexity.Desktop.Tests/ContainerContractTests.cs",
+      "bytes": 3383,
+      "sha256": "fad560105e759d1ec2b9e484f6e3b997e17000bd3fec82941d140f522e2e3af1"
+    },
+    {
+      "path": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+      "bytes": 433152,
+      "sha256": "6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868"
+    }
+  ],
+  "verification": {
+    "redTestBeforeRepair": {
+      "passed": 11,
+      "failed": 1,
+      "failure": "C2.4健康响应被错误判为IdentityMismatch"
+    },
+    "desktopContractAfterRepair": {
+      "passed": 12,
+      "failed": 0
+    },
+    "selfContainedBuild": {
+      "sdk": "10.0.400",
+      "runtime": "win-x64",
+      "succeeded": true
+    },
+    "liveHealth": {
+      "product": "企鹅投研-凸性",
+      "status": "ready",
+      "migrationRelease": "M1.0",
+      "convexityRelease": "C1.7",
+      "experienceRelease": "C2.4"
+    },
+    "officialDesktopShortcut": {
+      "coldStartPassed": true,
+      "realOpportunityHomeVisible": true,
+      "duplicateLaunchSingleInstancePassed": true,
+      "duplicateActivationMs": 141,
+      "desktopHostCount": 1,
+      "productPageStatus": 200,
+      "opportunityPageStatus": 200
+    },
+    "backgroundIsolation": {
+      "candidatePid": 39436,
+      "candidateProcessAlive": true,
+      "candidateRunId": "candidate-production-20260812T141859Z-9b5b0a",
+      "candidateState": "running",
+      "candidateRestarted": false
+    },
+    "requirementsHashes": {
+      "c2_3": "82057a667611285c8486008145ac105fa7549f4e56eeb9dcfcf68b9333008746",
+      "c2_4": "411f084d726cfb599536169ec0dcd9fc2d10d6f15e92f0df821385d2d2dbddc0",
+      "bothVerified": true
+    }
+  },
+  "testGapCorrection": "C2.4后续独立终验必须先从正式桌面快捷方式执行冷启动和身份检查；隔离端口页面测试只能作为补充，不能替代正式8766与WPF桌面壳组合路径。",
+  "nextStage": "c2.4_independent_acceptance"
+}

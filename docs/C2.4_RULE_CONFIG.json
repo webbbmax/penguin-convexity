@@ -1,0 +1,357 @@
+{
+  "schemaVersion": "c2.4-rule-config-v1",
+  "release": "C2.4",
+  "status": "frozen",
+  "ruleVersion": "c2.4-rules-v1",
+  "timeDefinition": {
+    "t0": "earliest_verified_public_circulation_evidence_in_supported_scope",
+    "newCandidateWindowDaysInclusive": [0, 90],
+    "migrateAtAgeDay": 91,
+    "futureDaysCountAsZero": false,
+    "firstSeenAtCanDefineAge": false,
+    "ageWeight": 0,
+    "minimumWaitDays": 0
+  },
+  "firstGate": {
+    "name": "90_day_candidate_initial_screen",
+    "requiredChecks": [
+      "t0_verified_in_supported_scope_and_age_0_90",
+      "chain_contract_pool_direction_and_stable_asset_id_determined",
+      "observed_public_buys_gte_1_and_observed_public_sells_gte_1",
+      "no_confirmed_freeze_blacklist_or_sell_block"
+    ],
+    "relationshipClassControlsEntry": false,
+    "productEvidenceControlsEntry": false,
+    "fixedMarketAmountThresholdsAllowed": false,
+    "sellQuoteControlsEntry": false,
+    "riskSupplyOrHolderSourceSuccessControlsEntry": false,
+    "bayesOrStrongPathControlsEntry": false,
+    "unknownRisk": "pass_to_deep_tracking_as_pending_not_safe_or_failed",
+    "classD": "backend_deep_tracking_and_evidence_only_never_public"
+  },
+  "publicBaseline": {
+    "requiredChecks": [
+      "new_complete_recomputable_deep_tracking_result",
+      "risk_source_success_and_no_confirmed_hard_block_or_severe_anomaly",
+      "standard_sell_quote_100_usd_success_and_loss_pct_lte_15",
+      "at_least_one_program_verified_asset_attributable_project_evidence",
+      "t0_age_direction_and_stable_asset_id_still_valid"
+    ],
+    "qualifyingProjectEvidenceAnyOf": [
+      "qualifying_official_code_repository",
+      "deterministically_mapped_deployed_product",
+      "deterministically_mapped_business_or_onchain_usage",
+      "official_old_project_new_asset_relationship"
+    ],
+    "githubOnlyBoundary": "code_only_not_proof_of_deployment_adoption_or_investment_value",
+    "classDPublicAllowed": false,
+    "compositeScoreControlsEligibility": false
+  },
+  "sellQuote": {
+    "notionalUsd": 100,
+    "publicMaximumLossPct": 15,
+    "backendOnlyWhenLossPctGt15AndLt20": true,
+    "severeImmediateExitLossPctGte": 20,
+    "missingOrNonSuccess": "backend_with_true_data_state_not_zero"
+  },
+  "ageBands": {
+    "age_0_2": {
+      "minAgeDays": 0,
+      "maxAgeDays": 2,
+      "liquidityFloorUsd": 1000,
+      "fallbackP40": {
+        "liquidityUsd": 4014.206,
+        "volumeUsd": 6.482,
+        "transactions": 2.2,
+        "volumeLiquidityRatio": 0.0361480432
+      },
+      "fallbackP50": {
+        "liquidityUsd": 4858.82,
+        "volumeUsd": 21.205,
+        "transactions": 4.0,
+        "volumeLiquidityRatio": 0.0644908655,
+        "relativeExpansion": -0.6461131363
+      }
+    },
+    "age_3_6": {
+      "minAgeDays": 3,
+      "maxAgeDays": 6,
+      "liquidityFloorUsd": 1000,
+      "fallbackP40": {
+        "liquidityUsd": 4136.928,
+        "volumeUsd": 5.646,
+        "transactions": 2.0,
+        "volumeLiquidityRatio": 0.0105549813
+      },
+      "fallbackP50": {
+        "liquidityUsd": 4763.51,
+        "volumeUsd": 18.4,
+        "transactions": 3.0,
+        "volumeLiquidityRatio": 0.0239744457,
+        "relativeExpansion": 0.0424715517
+      }
+    },
+    "age_7_13": {
+      "minAgeDays": 7,
+      "maxAgeDays": 13,
+      "liquidityFloorUsd": 1500,
+      "fallbackP40": {
+        "liquidityUsd": 3353.976,
+        "volumeUsd": 16.08,
+        "transactions": 3.0,
+        "volumeLiquidityRatio": 0.0160190572
+      },
+      "fallbackP50": {
+        "liquidityUsd": 5423.025,
+        "volumeUsd": 86.94,
+        "transactions": 4.0,
+        "volumeLiquidityRatio": 0.0250349589,
+        "relativeExpansion": -0.4247600808
+      }
+    },
+    "age_14_30": {
+      "minAgeDays": 14,
+      "maxAgeDays": 30,
+      "liquidityFloorUsd": 1500,
+      "fallbackP40": {
+        "liquidityUsd": 4543.314,
+        "volumeUsd": 11.084,
+        "transactions": 1.0,
+        "volumeLiquidityRatio": 0.0150323387
+      },
+      "fallbackP50": {
+        "liquidityUsd": 9396.51,
+        "volumeUsd": 48.155,
+        "transactions": 2.0,
+        "volumeLiquidityRatio": 0.019137376,
+        "relativeExpansion": 0.0807860094
+      }
+    },
+    "age_31_90": {
+      "minAgeDays": 31,
+      "maxAgeDays": 90,
+      "liquidityFloorUsd": 2000,
+      "fallbackP40": {
+        "liquidityUsd": 4653.3,
+        "volumeUsd": 23.286,
+        "transactions": 1.0,
+        "volumeLiquidityRatio": 0.0077382785
+      },
+      "fallbackP50": {
+        "liquidityUsd": 5058.72,
+        "volumeUsd": 28.44,
+        "transactions": 1.0,
+        "volumeLiquidityRatio": 0.0089870582,
+        "relativeExpansion": 0.2586952578
+      }
+    }
+  },
+  "cohortPercentiles": {
+    "newPrimary": {
+      "scope": "same_chain_same_age_band_rolling_30_days",
+      "minimumValidObjects": 20
+    },
+    "newSecondary": {
+      "scope": "all_supported_chains_same_age_band_rolling_30_days",
+      "minimumValidObjects": 50
+    },
+    "continuedPrimary": {
+      "scope": "same_chain_continued_91_plus_rolling_30_days",
+      "minimumValidObjects": 20
+    },
+    "continuedSecondary": {
+      "scope": "all_supported_chains_continued_91_plus_rolling_30_days",
+      "minimumValidObjects": 50
+    },
+    "continuedTertiary": "same_chain_age_31_90_rolling_30_days_if_minimum_20",
+    "continuedQuaternary": "all_supported_chains_age_31_90_rolling_30_days_if_minimum_50",
+    "fallback": "frozen_age_band_values_in_this_file_continued_uses_age_31_90",
+    "fallbackEvidence": {
+      "marketObservations": "reports/c2.1-age-threshold-analysis/market-observations.jsonl",
+      "marketObservationsSha256": "f637e8bf48f6a3b038f347cc0bc8130ba0bc0d45b5dee2c7a74952f00d9f78e8",
+      "path4Inputs": "reports/c2.1-path4-full-pool-supply-probe/path4-inputs.jsonl",
+      "path4InputsSha256": "45f1850881f0892753faf247011dc6608c7922bc31b17bbbdee46faaf725068e"
+    },
+    "invalidOrMissingExcluded": true,
+    "missingBecomesZero": false,
+    "actualScopeAndSampleSizeMustBePublished": true
+  },
+  "comparisonWindows": {
+    "age_0_2": "two_equal_trailing_completed_windows_6_to_24_hours",
+    "age_3_6": "two_equal_trailing_completed_windows_6_to_24_hours",
+    "age_7_13": "previous_3_completed_days_vs_current_3_completed_days",
+    "age_14_30": "previous_3_completed_days_vs_current_3_completed_days",
+    "age_31_90": "previous_7_completed_days_vs_current_7_completed_days",
+    "continued_91_plus": "previous_7_completed_days_vs_current_7_completed_days"
+  },
+  "strongPaths": {
+    "trade_demand_formation": {
+      "formedWhenAll": [
+        "observed_public_buys_gte_1_and_observed_public_sells_gte_1",
+        "at_least_1_of_volume_transactions_volume_liquidity_ratio_gte_actual_cohort_p50",
+        "no_severe_anomaly_or_material_cross_source_conflict"
+      ],
+      "missingMetric": "excluded_from_its_metric_denominator_not_zero"
+    },
+    "liquidity_exit_quality": {
+      "formedWhenAll": [
+        "liquidity_usd_gte_max_actual_cohort_p50_and_age_floor",
+        "standard_sell_quote_100_usd_success_and_loss_pct_lte_10",
+        "liquidity_drop_pct_lt_80_between_comparable_windows",
+        "no_confirmed_freeze_blacklist_or_sell_failure"
+      ],
+      "requiredSourceTypes": [
+        "market_pool_data",
+        "sell_quote_or_verified_route"
+      ]
+    },
+    "supply_holder_improvement": {
+      "formedWhenAll": [
+        "historical_supply_or_holder_series_success_and_unit_scale_stable",
+        "current_volume_usd_gte_actual_cohort_p40",
+        "any_improvement_threshold_met"
+      ],
+      "improvementThresholdAnyOf": {
+        "top10HolderShareDecreasePercentagePointsGte": 2,
+        "holderHhiDecreasePctGte": 5,
+        "totalSupplyDecreasePctGte": 0.25
+      },
+      "currentSnapshotOnly": "path_unavailable_not_not_formed"
+    },
+    "indexed_pool_activity_vs_supply_adjusted_valuation": {
+      "activityLogChange": "ln((current_average_indexed_pool_volume_usd+1)/(previous_average_indexed_pool_volume_usd+1))",
+      "valuationLogChange": "ln((current_volume_weighted_median_price_usd*current_total_supply)/(previous_volume_weighted_median_price_usd*previous_total_supply))",
+      "relativeExpansion": "activityLogChange-valuationLogChange",
+      "riskAdjustedSurplus": "activityLogChange-abs(valuationLogChange)",
+      "formedWhenAll": [
+        "all_provider_indexed_pools_with_comparable_history_aggregated",
+        "relative_expansion_gte_actual_cohort_p50",
+        "risk_adjusted_surplus_gt_0",
+        "historical_supply_success_and_unit_scale_stable",
+        "no_severe_anomaly"
+      ],
+      "unindexedDiscoveredPools": "display_count_and_reduce_confidence_not_zero_or_reject",
+      "literalGlobalAllPoolsClaimAllowed": false
+    }
+  },
+  "convexityClue": {
+    "publicBaselineMustPass": true,
+    "minimumFormedStrongPaths": 2,
+    "atLeastOnePathAnyOf": [
+      "trade_demand_formation",
+      "liquidity_exit_quality"
+    ],
+    "minimumIndependentSourceTypes": 2,
+    "marketDataDoubleCountingGuard": "if_only_trade_and_liquidity_paths_then_sell_quote_or_route_must_be_independent_else_require_supply_or_indexed_pool_path",
+    "bayesPriceVolumeOrRepositoryAloneCanTrigger": false
+  },
+  "publicStates": {
+    "priority": [
+      "convexity_clue",
+      "active_project",
+      "observing"
+    ],
+    "activeProjectWhenAny": [
+      "at_least_one_strong_path_formed_but_not_convexity_clue",
+      "qualifying_official_repository_has_non_document_own_commit_within_30_days",
+      "verified_product_or_business_metric_has_new_real_usage"
+    ],
+    "observing": "public_baseline_passed_but_no_convexity_or_active_condition",
+    "waitingFirstTrackingPublicAllowed": false,
+    "dataLimitedPublicCategoryAllowed": false
+  },
+  "continuedTracking": {
+    "lifecyclePool": "continued_91_plus",
+    "requiredHistoricalFacts": [
+      "first_gate_passed_while_age_0_90",
+      "at_least_one_complete_deep_tracking_result_while_age_0_90",
+      "latest_complete_result_met_public_baseline_and_public_state_while_age_0_90",
+      "t0_chain_contract_direction_and_asset_id_still_valid",
+      "no_confirmed_hard_block_or_severe_anomaly"
+    ],
+    "migrationCreatesNewAssetId": false,
+    "ordinaryOldProjectDiscoveryAllowed": false,
+    "maximumAgeDays": null,
+    "ageAffectsScoreOrQuality": false
+  },
+  "bayes": {
+    "model": "deterministic_hierarchical_normal_empirical_bayes_evidence",
+    "factorWeights": {
+      "tradeDemand": 0.25,
+      "liquidityExit": 0.25,
+      "supplyStructure": 0.2,
+      "activityValuation": 0.15,
+      "stabilityAnomaly": 0.15
+    },
+    "controlsFirstGate": false,
+    "controlsPublicEligibility": false,
+    "controlsConvexityClue": false,
+    "autoTunesRules": false,
+    "timeOutcomesDays": [7, 14, 30]
+  },
+  "homeRanking": {
+    "scope": "within_same_chain_only",
+    "eligible": "public_eligible_and_complete_bayes_result",
+    "bothLifecyclePoolsCompeteTogether": true,
+    "maximumDisplayedPerChainTotal": 10,
+    "sortOrder": [
+      "bayes_posterior_desc",
+      "independent_confidence_desc",
+      "observed_metric_count_desc",
+      "latest_complete_tracking_at_desc",
+      "stable_asset_id_asc"
+    ],
+    "crossChainLeaderboardAllowed": false,
+    "writesBackOrTruncatesBusinessSnapshot": false,
+    "rank11PlusContinuesTrackingAndAllOpportunities": true,
+    "publicWithoutCompleteBayes": "all_opportunities_and_tracking_but_not_home_top10"
+  },
+  "hysteresis": {
+    "entry": "one_new_complete_evaluation_after_required_real_windows_exist",
+    "normalExit": "two_consecutive_distinct_new_complete_evaluation_window_ids_below_relevant_exit_rule",
+    "sourceFailureCountsAsMiss": false,
+    "repeatedRunWithoutNewWindowCounts": false,
+    "immediateExitAnyOf": [
+      "confirmed_freeze_blacklist_or_sell_failure",
+      "confirmed_severe_anomaly",
+      "standard_sell_quote_loss_pct_gte_20"
+    ],
+    "age91": "lifecycle_migration_only_for_qualified_assets"
+  },
+  "severeAnomalies": {
+    "liquidityDropPctGteBetweenComparableWindows": 80,
+    "sellQuoteLossPctGte": 20,
+    "supplyUnitScaleChanged": true,
+    "confirmedFreezeBlacklistOrSellFailure": true,
+    "crossSourcePriceDeviationPctGteBlocksAffectedPath": 25,
+    "poolConcentrationAloneIsSevere": false,
+    "perfectManipulationDetectionClaimAllowed": false
+  },
+  "dataStatePolicy": {
+    "states": [
+      "success",
+      "no_data",
+      "quota_limited",
+      "source_failure",
+      "unsupported",
+      "configuration_missing",
+      "program_failure"
+    ],
+    "missingBecomesZero": false,
+    "sourceFailureChangesFundamentalScore": false,
+    "lastCompleteSnapshotPreserved": true,
+    "neverCompletedPublicBaselineStaysBackend": true
+  },
+  "confidenceWeights": {
+    "fieldCoverage": 0.35,
+    "dataFreshness": 0.25,
+    "realHistoryCoverage": 0.2,
+    "crossSourceConsistency": 0.2
+  },
+  "desktopOnly": {
+    "supported": true,
+    "defaultAcceptanceSize": "1180x760",
+    "largeAcceptanceSize": "1440x900_or_maximized",
+    "mobileLayoutsInScope": false
+  }
+}

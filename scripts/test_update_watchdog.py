@@ -3,6 +3,7 @@ import json
 import sqlite3
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import run_update_task as update_runner
 from build_update_center_snapshot import build_update_center_snapshot
@@ -185,15 +186,21 @@ def test_timeout_before_normal_write_is_recorded():
         update_runner.refresh_candidates = raise_timeout
         update_runner.rebuild_update_snapshots = rebuild_temporary_snapshots
         try:
-            try:
-                update_runner.run_update_task(
-                    task_id="machine_conclusion_refresh",
-                    db_path=db_path,
-                )
-            except TimeoutError:
-                pass
-            else:
-                raise AssertionError("超时异常应继续返回给接口层")
+            with (
+                patch.object(update_runner, "begin_progress"),
+                patch.object(update_runner, "finish_progress"),
+                patch.object(update_runner, "update_progress"),
+                patch.object(update_runner, "heartbeat_progress"),
+            ):
+                try:
+                    update_runner.run_update_task(
+                        task_id="machine_conclusion_refresh",
+                        db_path=db_path,
+                    )
+                except TimeoutError:
+                    pass
+                else:
+                    raise AssertionError("超时异常应继续返回给接口层")
         finally:
             update_runner.refresh_candidates = original
             update_runner.rebuild_update_snapshots = original_rebuild

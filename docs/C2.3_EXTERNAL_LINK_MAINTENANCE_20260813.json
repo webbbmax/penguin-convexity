@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "c2.3-external-link-maintenance-v1",
+  "release": "C2.3",
+  "recordedAt": "2026-08-13T07:50:38+08:00",
+  "status": "passed_published",
+  "scope": "修复项目详情中的 GitHub 等外部链接在桌面宿主内层框架中打开后无法返回的问题。",
+  "authorization": "用户报告真实桌面缺陷并要求保留外部浏览器链接能力。",
+  "rootCause": "C2.3 只处理了顶层 NavigationStarting 和 NewWindowRequested，没有处理 desktop/index.html 内 appFrame 的 FrameNavigationStarting。",
+  "behaviorAfterRepair": {
+    "localNavigation": "继续在企鹅投研软件窗口内打开",
+    "userInitiatedExternalHttpNavigation": "取消框架内导航并交给 Windows 默认浏览器",
+    "nonUserInitiatedExternalNavigation": "阻止并记录",
+    "desktopPageAfterExternalOpen": "停留在原项目详情，返回原列表仍可用"
+  },
+  "boundaries": {
+    "businessPagesChanged": false,
+    "businessRulesChanged": false,
+    "thresholdsChanged": false,
+    "databaseWritten": false,
+    "schedulerChanged": false,
+    "candidateHistoryRestarted": false,
+    "ordinaryBrowserBulkControlled": false
+  },
+  "changedFiles": [
+    {"path": "desktop-host/PenguinConvexity.Desktop/MainWindow.xaml.cs", "bytes": 11932, "sha256": "cb46f27ce9fc9cbaf6add6a65aab4634d54d386cf5baaf6ce429f211894107c9"},
+    {"path": "desktop-host/PenguinConvexity.Desktop/NavigationPolicy.cs", "bytes": 2065, "sha256": "3410c023a67057308d8b54d426a8c53924796fa24a2b52c657b04a4c98f53028"},
+    {"path": "desktop-host/PenguinConvexity.Desktop.Tests/ContainerContractTests.cs", "bytes": 3383, "sha256": "2409cd8895c5cd988240227880edc687c407d4df3ac00805569470d302bd16f8"},
+    {"path": "scripts/test_c2_3_desktop_contract.py", "bytes": 4261, "sha256": "4571f5a30a44f1a49f2a7414dc63df4d37b10db3e176318061ef0792a7f07c77"}
+  ],
+  "verification": {
+    "c23RequirementDocuments": "8/8 hashes matched",
+    "inheritedFrozenDependencies": "3/3 hashes matched",
+    "dotnetTests": "12/12 passed",
+    "build": "0 warnings, 0 errors",
+    "desktopDllSha256": "cfc3b4b0703a18df0065cc0a0547da5f09cc2af4267da68ee334d4987ececd13",
+    "realDesktopProject": "World Of Claudecraft",
+    "realDesktopExternalTarget": "https://github.com/levy-street/world-of-claudecraft",
+    "defaultBrowserResult": "Chrome window opened with levy-street/world-of-claudecraft",
+    "desktopResult": "project detail remained open; opportunity home remained reachable",
+    "desktopLog": "external_link_opened https://github.com:443",
+    "broadInheritanceCheck": "pre-existing app/c2-2-admin.js hash drift remains outside this desktop-only repair"
+  },
+  "backgroundContinuity": {
+    "workerPidBefore": 39436,
+    "workerPidAfter": 39436,
+    "runIdBefore": "candidate-production-20260812T141859Z-9b5b0a",
+    "runIdAfter": "candidate-production-20260812T141859Z-9b5b0a",
+    "stateAfter": "running",
+    "updatedAtAfter": "2026-08-12T23:49:30.299603Z"
+  }
+}

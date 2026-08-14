@@ -586,10 +586,15 @@
 
   function scheduleStatusPoll() {
     window.clearTimeout(statusPollTimer);
+    if (window.PENGUIN_CONVEXITY_C24_ADMIN) return;
     statusPollTimer = window.setTimeout(() => syncUpdateStatus(true), 1200);
   }
 
   async function syncUpdateStatus(reloadWhenFinished = false) {
+    if (window.PENGUIN_CONVEXITY_C24_ADMIN) {
+      window.clearTimeout(statusPollTimer);
+      return;
+    }
     try {
       const response = await fetch(statusApiUrl, { cache: "no-store" });
       if (!response.ok) throw new Error(`状态读取失败：${response.status}`);

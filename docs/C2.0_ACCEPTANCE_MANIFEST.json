@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "c2.0-acceptance-manifest-v1",
+  "product": "企鹅投研-凸性",
+  "release": "C2.0",
+  "name": "机会信号质量与可解释决策",
+  "status": "accepted_released",
+  "acceptedAt": "2026-08-03T18:45:09+08:00",
+  "authority": "Sol",
+  "modelVerification": {
+    "turnContextModel": "gpt-5.6-sol",
+    "threadSettingsModel": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "consistent": true
+  },
+  "requirements": {
+    "lock": "docs/C2.0_REQUIREMENTS_LOCK.json",
+    "lockSha256": "d383dad81fb0278c1da866f9cb69798d56d423d324aa5950ad98fbb43296d755",
+    "requirementSetSha256": "f90bca4ff8764290fe5103e6191c6c1b0bd54126b94a03f708cb83cc20b3761b",
+    "frozenDocuments": 5,
+    "frozenDocumentsMatched": 5,
+    "immutableCoreFiles": 5,
+    "immutableCoreFilesMatched": 5
+  },
+  "acceptance": {
+    "checks": 61,
+    "passed": 61,
+    "failed": 0,
+    "untested": 0,
+    "sections": {
+      "A_reading_priority_and_home": "9/9",
+      "B_change_chain_and_numeric_semantics": "9/9",
+      "C_five_part_project_summary": "9/9",
+      "D_decision_quality_admin": "9/9",
+      "E_dual_snapshot_and_failure_protection": "6/6",
+      "F_ui_and_ux": "8/8",
+      "G_business_and_engineering_regression": "11/11"
+    }
+  },
+  "database": {
+    "path": "data/convexity.db",
+    "bytes": 359292928,
+    "sha256": "b17cd247f2941a2fefe4b24c5a9a231edf4a5a427e7bf9f9ea35537f7299c941",
+    "integrityCheck": "ok",
+    "foreignKeyErrors": 0,
+    "businessTables": 54,
+    "schemaMigration": false,
+    "businessAcceptanceReadOnly": true,
+    "counts": {
+      "projects": 600,
+      "candidateCases": 602,
+      "rawEvents": 26631,
+      "normalizedEventsV2": 26631,
+      "evidenceItems": 3244,
+      "evidenceLineage": 89034,
+      "opportunityStageHistory": 2183,
+      "trackingTaskRuns": 656
+    },
+    "preFixBackup": {
+      "path": "backups/c2.0-sol-pre-fix-20260803T100254191Z/convexity.db",
+      "bytes": 359292928,
+      "sha256": "20e14e4211efe905bd419717812f2a35bfac95ec8ed40378a2e4c252696a2287",
+      "integrityCheck": "ok",
+      "foreignKeyErrors": 0
+    }
+  },
+  "derivedSnapshots": {
+    "state": "success",
+    "buildId": "c2.0-b9ec727d9d1947f1",
+    "generatedAt": "2026-08-03T10:43:31.261Z",
+    "projects": 600,
+    "cases": 602,
+    "homeSignals": 0,
+    "changeChains": 1447,
+    "closureQueue": 2981,
+    "frontSha256": "4033c001c43ccb4767bdac8b29e5175ae2363e6dea1498c98c20d4d05d0fd3d4",
+    "qualitySha256": "ef3fd0aac9859e47c63aa6705c056062236ae3baaca4480412a3a6e21d2889b1",
+    "atomicFailureInjection": "passed",
+    "lastValidSnapshotRetained": true
+  },
+  "verification": {
+    "pythonTests": {"total": 59, "passed": 59, "failed": 0},
+    "roleRoutes": {"total": 29, "front": 2, "contextDetail": 1, "hostOnly": 1, "admin": 25, "passed": 29},
+    "localPagesAndResources": {"total": 31, "passed": 31, "failed": 0},
+    "realUi": {
+      "homeZeroState": "passed",
+      "allOpportunityFilterAndSortReason": "passed",
+      "wholeCardMouseAndKeyboardNavigation": "passed",
+      "detailFivePartLayout": "passed",
+      "detailReturnContext": "passed",
+      "importantChangesDefaultNoiseReduction": "passed",
+      "changeChainExpansion": "passed",
+      "decisionBoundaryPage": "passed",
+      "qualityFunnelAndQueue": "passed",
+      "qualityReturnContextAndScroll": "passed",
+      "frontVisibleVersionCount": 0,
+      "adminVisibleVersionCount": 1,
+      "adminVisibleVersion": "当前版本 C2.0"
+    },
+    "desktop": {
+      "launch": "passed",
+      "singleInstance": "passed",
+      "windowMemory": "passed",
+      "coldStartSeconds": 5.41,
+      "startupRebuild": "success",
+      "healthExperienceRelease": "C2.0",
+      "hiddenSchedulerIntegration": "passed",
+      "scheduledTaskState": "Ready",
+      "scheduledTaskLauncher": "wscript.exe",
+      "userSchedulerSettingPreserved": "paused"
+    },
+    "screenshots": {
+      "requiredScenarios": 17,
+      "inspectedBySol": 17,
+      "lunaFixtureManifest": "docs/C2.0_SCREENSHOT_MANIFEST.json",
+      "solLiveScreenshotDirectory": "docs/C2.0_SOL_SCREENSHOTS",
+      "solLiveScreenshots": 11,
+      "solManifest": "docs/C2.0_SOL_SCREENSHOT_MANIFEST.json"
+    },
+    "forbiddenRuntimeReferences": 0,
+    "rwaRuntimeReferences": 0
+  },
+  "fixedDuringSolAcceptance": [
+    "阅读优先级排序改为冻结口径并为每个项目保留一至三条排序理由",
+    "质量快照保留任务执行上下文、原始事件和溯源链，闭环队列提供具体处理入口",
+    "前台卡片、五段式详情、正常与失败状态、动态筛选后的整卡与键盘交互完成修复",
+    "变化页过滤内部模型与分数字段，单纯行情不升格，数值带单位、比较基准与时间",
+    "科学计数法检查不再把随机构建标识误判为数值，连续构建与失败注入通过",
+    "详情页底层英文枚举只在显示层翻译为前台固定用语"
+  ],
+  "remainingRisks": [
+    "当前 600 个项目中项目专属五段式摘要完整覆盖为 0，首页有效信号为 0/5；系统诚实显示零状态，未用模板填满名额。",
+    "用户当前主动暂停自动运行；Windows 任务保持 Ready，但首次自然整点运行需在用户恢复后观察。"
+  ]
+}

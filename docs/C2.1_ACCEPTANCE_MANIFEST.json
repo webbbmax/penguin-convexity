@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "c2.1-acceptance-manifest-v1",
+  "product": "企鹅投研-凸性",
+  "release": "C2.1",
+  "name": "90天新发项目自动筛选与可解释前台",
+  "status": "accepted_released",
+  "acceptedAt": "2026-08-10T21:22:25+08:00",
+  "lastCorrectedAt": "2026-08-11T10:18:28+08:00",
+  "authority": "independent_final_acceptance_user_selected_model",
+  "modelVerification": {
+    "required": false,
+    "policy": "user_selects_model_no_model_audit_or_forced_handoff"
+  },
+  "requirements": {
+    "lock": "docs/C2.1_REQUIREMENTS_LOCK.json",
+    "lockSha256": "eccbb1aa33665a87f8b40571765fc2a6d5726ea382801e313a4c7b755b640ee7",
+    "requirementSetSha256": "f8784fb3ee03df42d56171f97dfb37707107f50fcbceba4647764a98a16b6696",
+    "frozenDocuments": 8,
+    "frozenDocumentsMatched": 8
+  },
+  "acceptance": {
+    "checks": 58,
+    "passed": 58,
+    "failed": 0,
+    "untested": 0,
+    "sections": {
+      "A_scope_and_version_boundary": "3/3",
+      "B_t0_object_and_lifecycle": "5/5",
+      "C_wide_hard_gate_and_product_evidence": "7/7",
+      "D_real_history_and_short_window": "5/5",
+      "E_factors_paths_states_and_debounce": "11/11",
+      "F_front_visibility_and_pagination": "7/7",
+      "G_source_status_and_quota": "5/5",
+      "H_data_recovery_and_engineering": "5/5",
+      "I_ui_ux_and_accessibility": "5/5",
+      "J_metrics_and_guardrails": "5/5"
+    }
+  },
+  "productionDatabase": {
+    "path": "data/convexity.db",
+    "modeForC21": "read_only",
+    "bytes": 453660672,
+    "sha256": "8cb2bce2f934ed7697cf62c28171077793dd7148b138e5ec8e164f42727a0fa2",
+    "integrityCheck": "ok",
+    "foreignKeyErrors": 0,
+    "projects": 620,
+    "candidateCases": 622,
+    "c21SchemaMigration": false,
+    "finalRestartReadOnlyProof": {
+      "beforeSha256": "8cb2bce2f934ed7697cf62c28171077793dd7148b138e5ec8e164f42727a0fa2",
+      "afterSha256": "8cb2bce2f934ed7697cf62c28171077793dd7148b138e5ec8e164f42727a0fa2",
+      "startupSnapshotValidation": "success",
+      "projectsBeforeAfter": "620/620",
+      "candidateCasesBeforeAfter": "622/622",
+      "runsBeforeAfter": "47/47",
+      "runErrorsBeforeAfter": "10/10",
+      "watchdogRecoveryBeforeAfter": "5/5"
+    },
+    "preReleaseDefect": "2026-08-10的启动只读修复不完整：数据主干快照虽已只读，但桌面服务仍自动执行旧更新守护恢复和其他旧快照重建。2026-08-11真实快捷方式验收暴露该问题，三次失败冷启动增加了真实守护审计记录，主库物理哈希因此变为当前值。历史审计记录保留，未删除、未回滚。"
+  },
+  "c21Database": {
+    "path": "data/c2.1-pipeline.db",
+    "bytes": 3551768576,
+    "integrityCheck": "ok",
+    "foreignKeyErrors": 0,
+    "candidates": 4587762,
+    "currentEvaluations": 157,
+    "hardGatePassed": 12,
+    "frontVisible": 12,
+    "displayStates": {
+      "convexity_clue": 0,
+      "active_project": 6,
+      "early_observation": 0,
+      "continuous_observation": 6,
+      "data_limited": 0
+    },
+    "relationshipClasses": {
+      "A": 0,
+      "B": 0,
+      "C": 12,
+      "D_frontVisible": 0
+    },
+    "productEvidence": {
+      "githubOnly": 8,
+      "structuredBusiness": 4
+    },
+    "sourceHealth": {
+      "success": 122,
+      "no_data": 15,
+      "quota_limited": 0,
+      "source_failure": 0,
+      "unsupported": 90,
+      "configuration_missing": 2,
+      "program_failure": 0
+    }
+  },
+  "snapshot": {
+    "buildId": "c21-20260810T131245Z-2831d7",
+    "generatedAt": "2026-08-10T13:12:45.378450Z",
+    "frontVisible": 12,
+    "hardGatePassed": 12,
+    "t0Verified": 1913,
+    "frontSha256": "050691d4808da448da0d25de53736e3f88d3bf198bddf3bc5aaa60d9c38eceed",
+    "backendSha256": "a2a7aebaf6073bd3a9e5b41164c14b619f79fc6d5c43b1c05d373e283fc80bd6",
+    "atomicPublication": "passed"
+  },
+  "scheduler": {
+    "taskName": "PenguinConvexity-C1.8-Scheduler",
+    "sameTaskMigrated": true,
+    "secondLongTermTaskCreated": false,
+    "taskState": "Ready",
+    "lastTaskResult": 0,
+    "wakeIntervalMinutes": 15,
+    "multipleInstances": "IgnoreNew",
+    "startWhenAvailable": true,
+    "launcher": "wscript.exe",
+    "desktopConsoleWindows": 0,
+    "updateMode": "automatic",
+    "intervalHours": 24,
+    "paused": false,
+    "nextFullCycleAt": "2026-08-11T13:12:48.807008Z",
+    "staleFailureRetryRegression": "passed",
+    "naturalWakeAfterFix": "exited_zero_without_starting_runner"
+  },
+  "verification": {
+    "pythonTestFiles": {"total": 75, "passed": 75, "failed": 0},
+    "javascriptSyntax": "passed",
+    "pythonCompilation": "passed",
+    "roleRoutesAndResources": {"total": 31, "passed": 31, "failed": 0},
+    "liveC19Regression": "passed",
+    "realUi": {
+      "homeAndFiveStateCounts": "passed",
+      "allOpportunityFiltersAndSort": "passed",
+      "detailAndReturnContext": "passed",
+      "importantChangeGrouping": "passed",
+      "methodBoundaryCopy": "passed",
+      "updateCenterDailyMode": "passed",
+      "sameTaskMigrationCopy": "passed",
+      "frontVisibleVersionCount": 0,
+      "adminVisibleVersionCount": 1,
+      "adminVisibleVersion": "当前版本 C2.1"
+    },
+    "screenshots": {
+      "manifest": "docs/C2.1_SCREENSHOT_MANIFEST.json",
+      "count": 12,
+      "horizontalOverflowFailures": 0
+    },
+    "credentialPrefixMatches": 0,
+    "forbiddenRuntimeReferences": 0,
+    "mobileScopeImplemented": false
+  },
+  "fixedDuringIndependentAcceptance": [
+    "前台底层英文枚举全部改为冻结中文用语，每个项目都提供明确详情入口",
+    "全部机会的产品证据、数据状态和排序查询契约与需求锁对齐",
+    "重要变化按同项目同一时点分组，固定回答发生了什么、之前、现在、为什么和数据时间",
+    "更新中心改为动态显示正式任务迁移状态，手动与自动共用同一隐藏入口",
+    "VBS启动器等待子进程结束，使IgnoreNew真正覆盖整个更新周期",
+    "把旧配置中的每日全量更新准确映射为C2.1每24小时一次，15分钟只是到期和恢复检查",
+    "旧失败游标已被后续完成结果覆盖时不再每15分钟误触发，部分恢复时仍保留未恢复对象",
+    "软件启动时的C1.7数据主干快照改为只读构建；该修复后来被证明未覆盖全部启动链，已在2026-08-11发布后纠正中完整修复"
+  ],
+  "postReleaseCorrectiveMaintenance": {
+    "date": "2026-08-11",
+    "trigger": "用户从正式桌面快捷方式启动时遇到不能对Null值调用方法的弹窗",
+    "rootCauses": [
+      "启动器仍按C2.0版本和旧页面资源判定健康状态",
+      "空server.stderr.log在PowerShell中返回Null后直接调用Trim",
+      "桌面服务启动时仍自动调用会写主库的旧任务恢复和旧快照重建链"
+    ],
+    "corrections": [
+      "启动器改为识别C2.1与c2-1-front.js，并安全处理空错误日志",
+      "桌面服务启动只读打开主库，只校验C2.1前后台原子快照，不再执行旧更新恢复和旧快照重建",
+      "旧恢复函数保留供旧功能独立测试，但不再从C2.1桌面启动调用"
+    ],
+    "verification": {
+      "realDesktopShortcut": "passed",
+      "realHomeContent": "12个前台项目、6个活跃项目、6个持续观察、0个凸性线索",
+      "singleInstance": "passed_one_window",
+      "windowSaveRestore": "passed",
+      "coldStartHealth": "C2.1_success",
+      "mainDatabaseHashStable": "8cb2bce2f934ed7697cf62c28171077793dd7148b138e5ec8e164f42727a0fa2",
+      "pythonTestFiles": "75/75",
+      "liveRoutesAndResources": "31/31",
+      "c21AcceptanceTests": "7/7",
+      "c19LiveBoundaryRegression": "passed"
+    }
+  },
+  "remainingRisks": [
+    "当前12个前台项目全部为C类项目关系未确认，其中8个只有代码证据；前台已明示这一边界。",
+    "当前凸性线索0个，这是四路径与防抖规则的真实结果，不代表程序空页或失败。",
+    "4,587,762是冻结DEX范围的代币/池候选记录，不是已确认项目数，也不是全市场完整母池。",
+    "当前90个不支持状态和2个配置缺失范围仍保留在后台；本轮没有使关12个前台项目变成数据受限。"
+  ]
+}

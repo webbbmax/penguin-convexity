@@ -1,4 +1,5 @@
 (function c19ProgressWidget() {
+  if (window.PENGUIN_CONVEXITY_C24_TAKEOVER_PENDING) return;
   const panel = document.getElementById("c19ProgressPanel");
   if (!panel) return;
   const stages = ["市场与退出数据", "项目与证据发现", "合约与身份归属", "项目档案与研究材料", "监控与数据健康", "研究结论与催化", "跟踪与页面发布"];
@@ -102,6 +103,10 @@
   }
   let timer;
   async function sync() {
+    if (window.PENGUIN_CONVEXITY_C24_ADMIN) {
+      window.clearTimeout(timer);
+      return;
+    }
     try {
       const response = await fetch("/api/update-status", { cache: "no-store" });
       if (!response.ok) throw new Error("状态读取失败");

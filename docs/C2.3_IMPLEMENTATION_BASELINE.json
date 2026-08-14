@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "c2.3-implementation-baseline-v1",
+  "release": "C2.3",
+  "capturedAt": "2026-08-12T11:18:13+08:00",
+  "requirements": {
+    "lock": "docs/C2.3_REQUIREMENTS_LOCK.json",
+    "requirementSetSha256": "82057a667611285c8486008145ac105fa7549f4e56eeb9dcfcf68b9333008746",
+    "formalDocumentHashesVerified": true,
+    "inheritedDependencyHashesVerified": true
+  },
+  "git": {
+    "commit": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+    "branch": "main",
+    "dirtyBeforeC23": true,
+    "modifiedFileCount": 29,
+    "untrackedFileCount": 29,
+    "policy": "全部视为用户或既有C2.2工作成果；C2.3不得清理、回退或覆盖无关改动。"
+  },
+  "businessAssets": {
+    "appFileCount": 107,
+    "appTreeSha256": "0e768fea7291843d49d9aa050ba06d6a48a24f0630176d120a8c653de35f06ed",
+    "desktopFileCount": 5,
+    "desktopTreeSha256": "c9f45e60672ba4a54b3a13c377ad70e4a2756e1b9862395faa1f774c7da4ef3d",
+    "allowedChange": "desktop-host、C2.3构建安装测试脚本和C2.3文档；现有app业务页面不改。"
+  },
+  "mainDatabase": {
+    "path": "data/convexity.db",
+    "bytes": 541958144,
+    "schemaVersion": 122,
+    "pageCount": 132314,
+    "pageSize": 4096,
+    "journalMode": "wal",
+    "quickCheck": "ok",
+    "foreignKeyErrors": 0,
+    "writePolicy": "C2.3桌面容器只读且不直接连接数据库。"
+  },
+  "candidatePipeline": {
+    "path": "data/c2.1-pipeline.db",
+    "bytesAtCapture": 7823818752,
+    "schemaVersion": 35,
+    "pageCountAtCapture": 1910202,
+    "pageSize": 4096,
+    "journalMode": "wal",
+    "processId": 4160,
+    "runId": "candidate-production-20260812T015104Z-96c732",
+    "state": "running",
+    "localScannedCount": 2353897,
+    "statusUpdatedAt": "2026-08-12T03:13:48.923404Z",
+    "pauseRequested": false,
+    "formalHistoricalScanAuthorized": true,
+    "policy": "开发和桌面自测不得暂停、重启、重复启动或等待该任务结束。"
+  },
+  "localService": {
+    "url": "http://127.0.0.1:8766",
+    "healthPath": "/api/health",
+    "processId": 20844,
+    "product": "企鹅投研-凸性",
+    "status": "ready",
+    "experienceRelease": "C2.2",
+    "projects": 624,
+    "candidateCases": 626
+  },
+  "scheduler": {
+    "taskName": "PenguinConvexity-C1.8-Scheduler",
+    "enabled": true,
+    "lastTaskResult": 0,
+    "policy": "C2.3不新增第二调度器，不更改既有调度器或用户暂停设置。"
+  },
+  "desktopEntry": {
+    "path": "C:/Users/Donutfi/Desktop/企鹅投研-凸性.lnk",
+    "target": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe",
+    "arguments": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"F:\\codex项目\\企鹅投研\\凸性\\scripts\\launch-convexity.ps1\"",
+    "workingDirectory": "F:/codex项目/企鹅投研/凸性",
+    "icon": "desktop/assets/penguin-research-clean.ico,0",
+    "policy": "开发阶段保持正式入口不变，仅用隔离预览入口验证；独立终验通过后才允许发布切换。"
+  },
+  "ordinaryBrowsers": {
+    "edgeProcessCount": 8,
+    "chromeProcessCount": 21,
+    "policy": "仅记录数量用于隔离验收；C2.3不得结束、重启或复用普通浏览器用户配置。"
+  },
+  "installedRuntimeBaseline": {
+    "dotnetSdkPresent": false,
+    "dotnetHostVersion": "7.0.19",
+    "webView2EvergreenVersion": "151.0.4129.72"
+  }
+}
