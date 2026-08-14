@@ -27,7 +27,7 @@
   },
   "acceptance": {
     "requirements": "48/48 passed",
-    "gateTests": "9/9 passed",
+    "gateTests": "10/10 passed",
     "releasePreflight": "passed",
     "releaseGate": "passed",
     "secretBoundary": "files=607 text=570 binary=37 forbidden=0 findings=0",
@@ -39,11 +39,11 @@
     {"path":"docs/D0_FREEZE_DRAFT.md","bytes":9687,"sha256":"f83bd2452b7be5a61897068c4af8916c0a273ca851c8692e60a21d02f5a117b6"},
     {"path":"docs/D0_DEVELOPMENT_WORKFLOW.md","bytes":5170,"sha256":"2149177d648d5d79a89b59046a8fd360e139fd0e28e1bd7807697607c650698a"},
     {"path":"docs/D0_ACCEPTANCE_PLAN.md","bytes":5362,"sha256":"d46150bc65d71719fa36c4f9ed9d1506fb2aed9264ff64245880c4e741ac3816"},
-    {"path":"docs/D0_TIER0_INDEPENDENT.json","bytes":1818,"sha256":"4b9e35d5e3248f8b76d34ab388a49241c41a0f531957f322956639be02c0c5d1"},
-    {"path":"docs/D0_DESKTOP_ACCEPTANCE.json","bytes":3580,"sha256":"3c066655598addf8d6c66e21fd8a32789e70f802c405742b8b6ac25b54d981d2"},
-    {"path":"docs/D0_ROLLBACK_REHEARSAL.json","bytes":1553,"sha256":"c3b34a059ccc80e7e890e3b7e1706eb8f8daf3e4669a77905eee5dcee868913f"},
-    {"path":"scripts/d0_gate.py","bytes":13612,"sha256":"63f68d8768fe196a1c28c19dac0d24f09e0ec9a949c86aaae0fea9e05fb42e3e"},
-    {"path":"scripts/test_d0_gate.py","bytes":9373,"sha256":"f8af99de6003a439ce960d6feac2ec12e55000a05d2c685654a8ddacf559563d"},
+    {"path":"docs/D0_TIER0_INDEPENDENT.json","bytes":1783,"sha256":"3800d2cb9318d15999b9f95fe9df5ab31d09d98ff70b47950bc8590126fddc9c"},
+    {"path":"docs/D0_DESKTOP_ACCEPTANCE.json","bytes":3508,"sha256":"ac2c1dc713b702784ed1c1af48d83695b45975e371eb5dfd8fc852a4b4be3c6c"},
+    {"path":"docs/D0_ROLLBACK_REHEARSAL.json","bytes":1512,"sha256":"48ac911951d56d993ed9199e597ded371a45beb1249feac889989a5cdcf3cee8"},
+    {"path":"scripts/d0_gate.py","bytes":15497,"sha256":"8cc8993f33e55e25f7704ede4b9c82da66d7cb0e00138f215379b7632450a1b7"},
+    {"path":"scripts/test_d0_gate.py","bytes":10474,"sha256":"ac90e25ad7636a79b0049e553e8c93cfd1c7d1ce3de5b519967b14f258a483fa"},
     {"path":"desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe","bytes":433152,"sha256":"6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868"}
   ],
   "boundaries": {

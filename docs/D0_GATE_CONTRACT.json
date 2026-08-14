@@ -47,6 +47,7 @@
         "Tier0和真实桌面验收通过",
         "用户明确授权发布",
         "正式标签指向发布提交",
+        "发布清单标签与核心文件哈希匹配",
         "远端跟踪提交与发布提交一致",
         "回滚提交存在",
         "当前HEAD通过密钥与数据边界扫描"
@@ -71,6 +72,7 @@
     "desktopEvidence": "状态为passed的真实桌面JSON相对路径",
     "userReleaseAuthorized": "只有用户明确授权后才可为true",
     "releaseTag": "必须已经指向发布提交的正式标签",
+    "releaseManifest": "必须已提交且核心文件使用Git提交内容哈希的正式发布清单",
     "remoteName": "默认origin",
     "remoteBranch": "默认main；release阶段必须已经fetch并与发布提交一致"
   },

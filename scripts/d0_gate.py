@@ -185,6 +185,62 @@ def validate_evidence(
     add_check(checks, check_id, passed, f"{label}已通过" if passed else f"{label}未通过")
 
 
+def validate_release_manifest(
+    repo: Path,
+    relative: str | None,
+    release_tag: str,
+    checks: list[dict[str, object]],
+) -> None:
+    if not relative:
+        add_check(checks, "RELEASE_MANIFEST", False, "缺少发布清单路径")
+        return
+    manifest_blob = git_blob(repo, relative)
+    clean = git(repo, "diff", "--quiet", "HEAD", "--", relative, check=False).returncode == 0
+    if manifest_blob is None or not clean:
+        add_check(checks, "RELEASE_MANIFEST", False, "发布清单缺失或存在未提交变化")
+        return
+    try:
+        manifest = json.loads(manifest_blob.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        add_check(checks, "RELEASE_MANIFEST", False, "发布清单无法解析")
+        return
+
+    errors: list[str] = []
+    if manifest.get("status") != "released":
+        errors.append("status")
+    if manifest.get("releaseTag") != release_tag:
+        errors.append("releaseTag")
+    artifacts = manifest.get("coreArtifacts")
+    if not isinstance(artifacts, list) or not artifacts:
+        errors.append("coreArtifacts")
+        artifacts = []
+    seen: set[str] = set()
+    for row in artifacts:
+        artifact = str(row.get("path", ""))
+        artifact_path = repo / artifact
+        if not artifact or artifact in seen or not within(artifact_path, repo):
+            errors.append(artifact or "empty_path")
+            continue
+        seen.add(artifact)
+        data = git_blob(repo, artifact)
+        if data is None and artifact_path.is_file():
+            data = artifact_path.read_bytes()
+        expected_bytes = row.get("bytes")
+        expected_hash = str(row.get("sha256", "")).lower()
+        if (
+            data is None
+            or expected_bytes != len(data)
+            or expected_hash != hashlib.sha256(data).hexdigest()
+        ):
+            errors.append(artifact)
+    add_check(
+        checks,
+        "RELEASE_MANIFEST",
+        not errors,
+        "发布清单标签与核心文件哈希匹配" if not errors else "发布清单不匹配：" + ", ".join(errors),
+    )
+
+
 def run_secret_scan(repo: Path, checks: list[dict[str, object]]) -> None:
     scanner = Path(__file__).with_name("d0_secret_scan.py")
     result = subprocess.run(
@@ -259,6 +315,7 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
         tag_result = git(repo, "rev-list", "-n", "1", tag, check=False) if tag else None
         tag_commit = tag_result.stdout.strip() if tag_result and tag_result.returncode == 0 else ""
         add_check(checks, "RELEASE_TAG", bool(tag and tag_commit == head), "正式标签指向发布提交" if tag and tag_commit == head else "正式标签缺失或指向错误")
+        validate_release_manifest(repo, config.get("releaseManifest"), tag, checks)
         remote = str(config.get("remoteName", "origin"))
         remote_branch = str(config.get("remoteBranch", "main"))
         remote_result = git(repo, "rev-parse", f"refs/remotes/{remote}/{remote_branch}", check=False)

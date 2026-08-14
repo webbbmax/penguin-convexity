@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Negative and positive tests for the frozen D0 gate cases F01-F08."""
+"""Negative and positive tests for the frozen D0 gate and release closure."""
 
 from __future__ import annotations
 
@@ -111,6 +111,22 @@ class D0GateFixture:
         )
         self.write(self.worktree / "docs/tier0.json", '{"status":"passed"}\n')
         self.write(self.worktree / "docs/desktop.json", '{"status":"passed"}\n')
+        artifact = self.worktree / "docs/tier0.json"
+        release_manifest = {
+            "status": "released",
+            "releaseTag": "d0-test",
+            "coreArtifacts": [
+                {
+                    "path": "docs/tier0.json",
+                    "bytes": artifact.stat().st_size,
+                    "sha256": sha256(artifact),
+                }
+            ],
+        }
+        self.write(
+            self.worktree / "docs/release.json",
+            json.dumps(release_manifest, ensure_ascii=False, indent=2) + "\n",
+        )
 
     def config(self, stage: str, repo: Path | None = None) -> dict[str, object]:
         selected = repo or self.worktree
@@ -134,6 +150,7 @@ class D0GateFixture:
             "desktopEvidence": "docs/desktop.json",
             "userReleaseAuthorized": True,
             "releaseTag": "d0-test",
+            "releaseManifest": "docs/release.json",
             "remoteName": "origin",
             "remoteBranch": "main",
         }
@@ -212,6 +229,19 @@ class D0GateTests(unittest.TestCase):
     def test_release_preflight_complete_state_passes(self) -> None:
         result = evaluate(self.fixture.config("release_preflight"))
         self.assertTrue(result["passed"], result)
+
+    def test_release_manifest_hash_mismatch_blocks_release(self) -> None:
+        path = self.fixture.worktree / "docs/release.json"
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        manifest["coreArtifacts"][0]["sha256"] = "0" * 64
+        self.fixture.write(path, json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+        self.fixture.run(self.fixture.worktree, "add", "docs/release.json")
+        self.fixture.run(self.fixture.worktree, "commit", "-m", "bad release manifest")
+        self.fixture.candidate = self.fixture.rev(self.fixture.worktree)
+        self.assert_failed(
+            evaluate(self.fixture.prepare_release()),
+            "RELEASE_MANIFEST",
+        )
 
 
 if __name__ == "__main__":
