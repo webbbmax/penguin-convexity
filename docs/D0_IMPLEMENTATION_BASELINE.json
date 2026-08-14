@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "d0-implementation-baseline-v1",
+  "release": "D0",
+  "capturedAt": "2026-08-14T12:19:00.7531044+08:00",
+  "currentProductReleaseRemains": "C2.4",
+  "formalRoot": {
+    "path": "F:\\codex项目\\企鹅投研\\凸性",
+    "branch": "main",
+    "headAtImplementationStart": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+    "remote": "https://github.com/webbbmax/penguin-convexity.git",
+    "mergedByThisImplementationTask": false,
+    "pushedByThisImplementationTask": false
+  },
+  "reconstructedBaseline": {
+    "commit": "2aa3c200766382b031b4cb0f9de40efafe245533",
+    "parent": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+    "tree": "5b2f03180c8bb93f581e3189c339e51587d28ac0",
+    "subject": "chore: reconstructed-baseline C2.4 for D0",
+    "trackedFiles": 584,
+    "meaning": "去敏保存D0开始时实际C2.4源码与正式文档；不伪造原发布日期，也不证明业务正确。"
+  },
+  "frozenStatusInventory": {
+    "report": "docs/D0_WORKSPACE_CLASSIFICATION.json",
+    "statusEntries": 154,
+    "trackedChangedEntries": 45,
+    "untrackedEntries": 109,
+    "unknownEntries": 0,
+    "deletionStatuses": 0
+  },
+  "developmentWorktree": {
+    "path": "F:\\codex项目\\企鹅投研\\凸性-worktrees\\d0-development-reset",
+    "branch": "codex/d0-development-reset",
+    "containsProductionDatabase": false,
+    "containsRuntimeState": false
+  },
+  "schedulerSnapshot": {
+    "name": "PenguinConvexity-C1.8-Scheduler",
+    "stateAtCapture": "Running",
+    "enabled": true,
+    "action": "C:\\WINDOWS\\System32\\wscript.exe",
+    "arguments": "F:\\codex项目\\企鹅投研\\凸性\\scripts\\run-c2-1-update-hidden.vbs C:\\Python312\\python.exe",
+    "definitionSha256Utf16": "c2308aa9e73b03511d497341fb408e5e8d92a789897741e59478fbcc883c9f42",
+    "note": "运行状态可因正常作业自然变化；D0只要求定义与配置不被改写。"
+  },
+  "runtimeConfigHashes": {
+    "runtime/c1.8-scheduler.json": "674a1a69571742b6a7e46ed7128b54824474d69cd858b0a569968aa60695982d",
+    "runtime/c2.1/update-config.json": "7f6f8eb130279b0c8635e294fd6cdfed6f1e67a4368b7761c8c5c447ecdc64e0",
+    "runtime/c2.2/update-config.json": "d98d41441d7e429b3d2ffb9f905a1c5a0689cd9d9033f56866e1cc964519331c"
+  },
+  "databaseMetadataReadOnly": {
+    "data/convexity.db": {
+      "bytes": 568983552,
+      "lastWriteUtc": "2026-08-13T11:42:51.1017849Z"
+    },
+    "data/c2.1-pipeline.db": {
+      "bytes": 10322075648,
+      "lastWriteUtc": "2026-08-14T04:18:49.9806822Z"
+    },
+    "copiedToWorktree": false,
+    "openedForWriteByD0": false
+  },
+  "desktopShortcut": {
+    "path": "C:\\Users\\Donutfi\\Desktop\\企鹅投研-凸性.lnk",
+    "target": "F:\\codex项目\\企鹅投研\\凸性\\desktop-host\\publish\\win-x64\\PenguinConvexity.Desktop.exe",
+    "workingDirectory": "F:\\codex项目\\企鹅投研\\凸性",
+    "changedByD0": false
+  },
+  "temporaryBootstrapIndex": {
+    "path": "F:\\codex项目\\企鹅投研\\凸性\\runtime\\d0\\bootstrap.index",
+    "bytes": 58929,
+    "removedAfterBaselineCreation": true
+  },
+  "productCodeChangedByD0": false,
+  "businessRulesChangedByD0": false,
+  "databaseSchemaChangedByD0": false
+}

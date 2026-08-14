@@ -68,22 +68,25 @@ ENV_CREDENTIAL_NAME = re.compile(
 )
 
 
-def _git_bytes(*args: str) -> bytes:
-    return subprocess.check_output(("git", *args), stderr=subprocess.DEVNULL)
+def _git_bytes(repo_root: Path, *args: str) -> bytes:
+    return subprocess.check_output(
+        ("git", "-C", str(repo_root), *args),
+        stderr=subprocess.DEVNULL,
+    )
 
 
-def _candidate_paths(index: bool) -> list[str]:
+def _candidate_paths(repo_root: Path, index: bool) -> list[str]:
     args = ("ls-files", "-z") if index else ("ls-tree", "-r", "--name-only", "-z", "HEAD")
     return [
         item
-        for item in _git_bytes(*args).decode("utf-8", "surrogateescape").split("\0")
+        for item in _git_bytes(repo_root, *args).decode("utf-8", "surrogateescape").split("\0")
         if item
     ]
 
 
-def _candidate_bytes(path: str, index: bool) -> bytes:
+def _candidate_bytes(repo_root: Path, path: str, index: bool) -> bytes:
     revision = f":{path}" if index else f"HEAD:{path}"
-    return _git_bytes("show", revision)
+    return _git_bytes(repo_root, "show", revision)
 
 
 def _fingerprint(value: bytes) -> str:
@@ -99,8 +102,8 @@ def _environment_secrets() -> Iterable[tuple[str, bytes]]:
         yield name, value.encode("utf-8", "ignore")
 
 
-def scan(index: bool) -> dict[str, object]:
-    paths = _candidate_paths(index)
+def scan(repo_root: Path, index: bool) -> dict[str, object]:
+    paths = _candidate_paths(repo_root, index)
     environment_secrets = tuple(_environment_secrets())
     forbidden_paths: list[str] = []
     findings: list[dict[str, object]] = []
@@ -110,7 +113,7 @@ def scan(index: bool) -> dict[str, object]:
     for path in paths:
         if FORBIDDEN_PATH.search(path):
             forbidden_paths.append(path)
-        data = _candidate_bytes(path, index)
+        data = _candidate_bytes(repo_root, path, index)
         if b"\0" in data[:8192]:
             binary_skipped += 1
             continue
@@ -181,11 +184,12 @@ def scan(index: bool) -> dict[str, object]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--index", action="store_true", help="Scan the staged Git index instead of HEAD")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    report = scan(args.index)
+    report = scan(args.repo_root.resolve(), args.index)
     rendered = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

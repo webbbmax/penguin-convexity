@@ -1,0 +1,1423 @@
+{
+  "schemaVersion": "d0-workspace-classification-v1",
+  "release": "D0",
+  "freezeSnapshotAt": "2026-08-14T11:48:05+08:00",
+  "sourceRoot": "F:\\codex项目\\企鹅投研\\凸性",
+  "sourceBranch": "main",
+  "sourceHead": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+  "statusEntryDefinition": "git status --porcelain=v1 entries; an untracked directory is one entry and records its contained file count and tree hash",
+  "excludedPostFreezeD0Files": [
+    "docs/D0_ACCEPTANCE_PLAN.md",
+    "docs/D0_DEVELOPMENT_WORKFLOW.md",
+    "docs/D0_FREEZE_DRAFT.md",
+    "docs/D0_PHASE.json",
+    "docs/D0_REQUIREMENTS_LOCK.json",
+    "scripts/d0_secret_scan.py"
+  ],
+  "counts": {
+    "total": 154,
+    "trackedChanged": 45,
+    "untracked": 109,
+    "categories": {
+      "formal_source": 86,
+      "formal_product_document": 68
+    },
+    "unknown": 0,
+    "deletionStatuses": 0
+  },
+  "unknownDeletionCount": 0,
+  "classificationErrors": [],
+  "entries": [
+    {
+      "status": " M",
+      "path": ".gitignore",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1244,
+      "sha256": "4f45da3d691297ece3092663fc1579b1f386f436911b4ef04ba18cc2a3bac7bf"
+    },
+    {
+      "status": " M",
+      "path": "app/c1-9-progress.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 8269,
+      "sha256": "3691f233a081773d79f05b8aa6055710a0ef12dd8b938f6bd4f3f49b6a778723"
+    },
+    {
+      "status": " M",
+      "path": "app/c2-1-admin.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 12670,
+      "sha256": "42c856801870a1d458d5b1dcdb6014601f714202418421b798087475a5f1fef3"
+    },
+    {
+      "status": " M",
+      "path": "app/c2-2-admin.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 43263,
+      "sha256": "c7e4a0385f2cbb35b76fb320b16e5387f9deeee3bd7321b3567fd80036279c20"
+    },
+    {
+      "status": " M",
+      "path": "app/c2-2.css",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 8288,
+      "sha256": "68fb34bde541ee7d2b1ba707047e7ae8aafdff92a550a694df5f03d6e4465a56"
+    },
+    {
+      "status": " M",
+      "path": "app/candidate-pool.html",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5229,
+      "sha256": "232477196281d5d2cc495e53a7841be0bbb21e072e07b95567cb1af73badaef5"
+    },
+    {
+      "status": " M",
+      "path": "app/change-explanations.html",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3570,
+      "sha256": "ca6b17cda3ad9dd5dc0a5405930ee8e21007631a016eb625bf02f3bcd0fdf10f"
+    },
+    {
+      "status": " M",
+      "path": "app/new-token-update.html",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2017,
+      "sha256": "183d599387ef4b9016b5e1ffb002a5473d070e22325ca53d9c5420efed6ca504"
+    },
+    {
+      "status": " M",
+      "path": "app/project-detail.html",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3337,
+      "sha256": "4d97588564a1c598dafa396fa86f862eeae550a1f730628951e9afb0a5b00aec"
+    },
+    {
+      "status": " M",
+      "path": "app/update-center.html",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 13232,
+      "sha256": "5e3958aa9043ccd0efc9149e941ae89abd0859409bb2983135eed6476dcd9873"
+    },
+    {
+      "status": " M",
+      "path": "app/update-center.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 42612,
+      "sha256": "22a52f33dd9c9804a23de047006ecfb78dc42c52507a30f4115bbf2a6f50105b"
+    },
+    {
+      "status": " M",
+      "path": "app/workbench-nav.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 7959,
+      "sha256": "8137bbf4881e5032c8434cbb286aeb31e5b1d2e6c05836609269097d22a39a9e"
+    },
+    {
+      "status": " M",
+      "path": "docs/C2.2_FINAL_ACCEPTANCE.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 12623,
+      "sha256": "1c32d922025f25d556f9d48125cc9442a17a05f6c0c6262473270e1d5cf23382"
+    },
+    {
+      "status": " M",
+      "path": "docs/C2.2_PHASE.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 7333,
+      "sha256": "2f72918f880a87d4343ae2b82c2111d2be2ab5a3cba62f8f3698317f48d110be"
+    },
+    {
+      "status": " M",
+      "path": "docs/C2.2_RELEASE_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 16312,
+      "sha256": "01a4718b66d05c0c3b4e1bb5665824144ad9dc452355e03768f29fa3e9baeec6"
+    },
+    {
+      "status": " M",
+      "path": "docs/RUNBOOK.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 30400,
+      "sha256": "8579c4c0f54ade34bfeac022516ed06491b95b99629c4a850012616aa5230ab0"
+    },
+    {
+      "status": " M",
+      "path": "docs/STATUS.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 40272,
+      "sha256": "9bdbf0b681216dbe32f63523e3ec6a7b4cc9b8dddc410372f318c6839481c17c"
+    },
+    {
+      "status": " M",
+      "path": "scripts/build_c2_2_snapshots.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 44911,
+      "sha256": "64074c3f2f9b4a89197f42a09c06377549e60ea19df19767583311f41ca71634"
+    },
+    {
+      "status": " M",
+      "path": "scripts/c2_1_enrichment.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 70844,
+      "sha256": "5abc14dbc161de374e31892ded9e249890a82d63063617ae0725f0629fa0cb9a"
+    },
+    {
+      "status": " M",
+      "path": "scripts/c2_1_path4.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 19467,
+      "sha256": "ba3cd3040686ebc7aeee003ae5bb6f3ad508f7b2eb9702ce38676c248a114c33"
+    },
+    {
+      "status": " M",
+      "path": "scripts/c2_1_pipeline.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 96396,
+      "sha256": "e047791964673849dec6e60f94f3dab02c3a1d11d6864e113aed6654d1c9e073"
+    },
+    {
+      "status": " M",
+      "path": "scripts/c2_1_rules.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 30493,
+      "sha256": "19d91c5b0ed1d902b9820c899cb20cc16ae19010097aebbfb30e31fc3b87ac4b"
+    },
+    {
+      "status": " M",
+      "path": "scripts/c2_2_runtime.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 12227,
+      "sha256": "bd8e239facfc09b11ab26e6d8489756ca6adbf438681c51aae4e7c16fb61cac7"
+    },
+    {
+      "status": " M",
+      "path": "scripts/c2_2_tracking.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 35181,
+      "sha256": "841e858006d0090b956d02ff6ad01b4cbe169110fc798889e171ac00d56d0057"
+    },
+    {
+      "status": " M",
+      "path": "scripts/convexity-window-state.ps1",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 14169,
+      "sha256": "ca51a4c6512ad6948e10361ce7c52fd52450855a8adf20e4b155b620e8754149"
+    },
+    {
+      "status": " M",
+      "path": "scripts/launch-convexity.ps1",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6149,
+      "sha256": "9f1bb6de5fd2c85673f77f9a879bb841e0bb588aed99723a3fcef9d1fcf2dfb5"
+    },
+    {
+      "status": " M",
+      "path": "scripts/publish_machine_conclusions.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 24471,
+      "sha256": "bfcb1b5e5b1c3d2205c1c88e0af97cbc5c5f0afc1d1aece35846c985b1c94ac0"
+    },
+    {
+      "status": " M",
+      "path": "scripts/refresh_candidate_pool.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 124088,
+      "sha256": "0451b6543b4698c1b27deac7d1c20728a7c95a3b264795e5246d1efda0cdbe62"
+    },
+    {
+      "status": " M",
+      "path": "scripts/run-c2-1-update-hidden.vbs",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 941,
+      "sha256": "b2bac2962eae217d83d42ef25ed0bcb0175794e18c3140da503ecf984cd0c9fb"
+    },
+    {
+      "status": " M",
+      "path": "scripts/run_c2_2_update.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 29046,
+      "sha256": "07d90cd352ffff70570266337aa63c78d4f0c0383e9bb9c8cd98d018af367ca4"
+    },
+    {
+      "status": " M",
+      "path": "scripts/run_update_task.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9158,
+      "sha256": "69759937d6a17f7095faa2068645cc32c4c51b7f30a27c18c6348a817c79c1c8"
+    },
+    {
+      "status": " M",
+      "path": "scripts/serve_local.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 30607,
+      "sha256": "53b2cb8b0e45e093bd8ab9c9dacc88247dce4221372013017958edb160fc552d"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_1_enrichment.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2586,
+      "sha256": "21012188405569fc5c344c4fa2eac1bf44963c1a233165550c29a39feaf608e6"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_1_release.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6587,
+      "sha256": "68113651fd193556a2ae6574469c6bcd9805f242d8111a31c805c7e4a9248c6b"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_1_rules.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6975,
+      "sha256": "6fb11535ba844352697b1297e054945f3b0af5003c737df5b9043f9525376abb"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_1_update_center_maintenance.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6706,
+      "sha256": "446d8bd50214130ca87c1f0e472d6688397b94e642f81d43f1242791a8169f10"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_2_acceptance.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 10850,
+      "sha256": "570db15d4a408d71fc994b541d67f89247fd77ffd8d539ec64f2b76dc3144773"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_2_release.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9683,
+      "sha256": "5d2dc072c89155871abbe9b741f308c73e6bcec76ed7177633cfe205a3e43869"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_2_runtime.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 19048,
+      "sha256": "ce9d4e4b0bd4f8d50ceb3849d9d9970f87bb9afc1c3cc278f6480d25e2a924ff"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_2_snapshots.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 15898,
+      "sha256": "856e796b51a0994438d5c6e33548b8917dac765fa1aecbdede2e17833e27cd25"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_c2_2_tracking.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4966,
+      "sha256": "23569afd52345a63e00fb1e57b67e49d19281725490bae6d84418163e37b3a2d"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_machine_conclusion_publication.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 11823,
+      "sha256": "8b9a9a702e333b6242a19925874100e82d3831be23820d757e2b9db03f710151"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_update_center.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9165,
+      "sha256": "07310f7e0497c0fd82f01ab07d3030efb8089dbf11e9f3d812857d9a09cdebf4"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_update_watchdog.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 8608,
+      "sha256": "70382327e1453997464e529fe049751eb0a3efe3136bfc09370c922bec630c82"
+    },
+    {
+      "status": " M",
+      "path": "scripts/update_tasks.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 27118,
+      "sha256": "9e7af9fa603957ee614ba1dca98c7415884f62ef795087d37a6eaf318292f109"
+    },
+    {
+      "status": "??",
+      "path": "app/c2-4-admin.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 45330,
+      "sha256": "802ed4891cb844e4372a5108b45fe6d0dee74da3e0a6efc5c2e67b652a4bd0f1"
+    },
+    {
+      "status": "??",
+      "path": "app/c2-4-front.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 32796,
+      "sha256": "3fe949c828f756baf15ea6e70a9d0d70fe5ec7bd808a17a496fc13f815784b4f"
+    },
+    {
+      "status": "??",
+      "path": "app/c2-4.css",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 24791,
+      "sha256": "3645216c5dc66a3bb2e35d03e79fbdfd86b51b919fb4c45cffeac19f747934bd"
+    },
+    {
+      "status": "??",
+      "path": "desktop-host/",
+      "category": "formal_source",
+      "action": "include_formal_files_exclude_generated",
+      "kind": "directory_status_entry",
+      "bytes": 542722932,
+      "containedFiles": 1149,
+      "formalFilesHashed": 20,
+      "formalTreeSha256": "673fdafc1036a56e8cf92e19346567e5883ae2836d78fbc39189ef4b2b9123aa",
+      "excludedGeneratedFiles": 1129,
+      "excludedGeneratedBytes": 542672290,
+      "generatedBoundary": "Recorded but excluded from the reconstructed Git baseline."
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_ACCEPTANCE_PLAN.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4463,
+      "sha256": "fd0ff043d04e51f2f2a5a3702f278ba0263754e3c4b42eb00b8b2eb256e994eb"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_DATA_CONTRACT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3529,
+      "sha256": "4ea6fcb79434f1ee4fb712d279732dd4febb2fe6af2df601989fa8e3eb88438f"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_FREEZE_DRAFT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 14172,
+      "sha256": "c8b3e3960ebf9b7d601771fb23362a626c99ff3145f7796ab9333bc5e9109fa2"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_HANDOFF.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2371,
+      "sha256": "fd49baf98b147d52273710386a9a09b3e99d138398801da126683b20b6900820"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_IMPLEMENTATION_BASELINE.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2333,
+      "sha256": "ca389f773487f49a095f798095ee2e6b837b9d50abde0ce174fdacc7ff9420c6"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_IMPLEMENTATION_REPORT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6880,
+      "sha256": "32a7c4d883e3f9693cf50d068e4a77b6a8e9d07790a48a5555447ec93dd96b11"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_IMPLEMENTATION_STATUS.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3813,
+      "sha256": "d7b4d054026e362977ac316efc4054a5fc29591d60689f0ace594c4fb878d4a1"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_INDEPENDENT_ACCEPTANCE.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4528,
+      "sha256": "7da0a8cc954e1cf57b90125b57c42a273cc3f0a7982df82a76dcfe8f06f8de57"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_PHASE.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 602,
+      "sha256": "0b850642e868a697286f8c1089f08d7be042e9b884e9970361f533ddc1c07969"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_REQUIREMENTS.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5568,
+      "sha256": "97ddf7a8e5568ec0b3c6cb4efbaad89292f23b5c1882e445a45c952dcfc411b8"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CANDIDATE_PRODUCTION_REPAIR_REQUIREMENTS_LOCK.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3771,
+      "sha256": "02c792cc0bf38d347f55d81e7a9159fc190e7e2e6391bba0cee2ba69c49d5c31"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_CORE_PIPELINE_REPAIR_20260812.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4711,
+      "sha256": "85b7c1c9b2e5cffa5e89212c5169bdd212e2fcac17f270014eadf25c26d4279d"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_FIRST_GATE_CORRECTNESS_REPAIR_20260812.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2151,
+      "sha256": "681e5c81d785941c7ac9f273f6636fb2024a3caebb489a0b6ba9ea9c13feb593"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_FIRST_GATE_CORRECTNESS_REPAIR_20260812.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4675,
+      "sha256": "ad385d0813feb265f7d23f129c24f5f2cff6a22e30714c8a647833fecee16261"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_T0_FIRST_GATE_HANDOFF_REPAIR_20260812.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5168,
+      "sha256": "9a84199f40e379ea37bc894b2fd1d9dd08768bc2ea8f822de5f151775e486dcd"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_TRACKING_CORE_REPAIR_20260812.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6826,
+      "sha256": "547703d987bb14e310294a85ad08d673356f761e11aa5e24555c30f9a6bef330"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.2_TRACKING_HANDOFF_MAINTENANCE_20260812.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5098,
+      "sha256": "bea816369d1b832caa3018bf647c28c584762d87f5efe1800336daded589060d"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_ACCEPTANCE_PLAN.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4612,
+      "sha256": "5a922ffca71f9cedb58457a7bf9a889cc8281d33f53290244b2666aa045f5a27"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_COPY_DICTIONARY.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1318,
+      "sha256": "1ad8a5c9d90b856cf490f5c9fc5db5451c0e6aaa87919d885eeefc5e115f857a"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_DESIGN_SPEC.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1884,
+      "sha256": "a272a2179ff886d2117a1e08dc9deabbe5aa12e82f580062d3ef65a796e98501"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_DESKTOP_CONTAINER_CONTRACT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3959,
+      "sha256": "9ea2be9867ba9d55386004f3401fe631fda0a97cf0dc6788524ee83b2406607a"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_EXTERNAL_LINK_MAINTENANCE_20260813.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2954,
+      "sha256": "ad317e1cd4f30cc02dbbbb97c917bdb4303960b18b7243c7a333306ea7c5ca0d"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_FINAL_ACCEPTANCE.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4828,
+      "sha256": "424e3ad16f7933dbb0ac5dfe165f27b12117a9d2cc8857e61f1588f160a6034d"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_FREEZE_DRAFT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 15544,
+      "sha256": "e15b2f20da6376dda0c3792186213990cfd5a7e133eb067268ac2b735adbcf2e"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_FREEZE_DRAFT_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 576,
+      "sha256": "a025ce3b92bfde88b766f1e7f68aa8b401f2c32795f0a6061247f259d4366c71"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_HANDOFF.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3158,
+      "sha256": "f2230dc1bb7c56cf2cd68eada16da0af75e54b045a104c59c81b3cf1871d3690"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_IMPLEMENTATION_BASELINE.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3335,
+      "sha256": "fd0c2f3d699fabbb2896beefeedd8c7f6afc6bd6d588cfd48e5ba31c1fd3a13c"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_IMPLEMENTATION_REPORT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5293,
+      "sha256": "7974b18a6165dac58b2fca28403e5abdd8e7ce042be0df3a1abc5623464b3353"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_IMPLEMENTATION_STATUS.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3068,
+      "sha256": "b0ff4d2358e15f8a61f3b88b39f6544cd7256803ddb1409e0c7e508da0a7d7be"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_INHERITANCE_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4192,
+      "sha256": "3e1d3aba2f2980067aef6f381e47b3199110fe7771de476d2a04b6a08705216e"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_PHASE.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2214,
+      "sha256": "f8123d05147398679259c9b77e7ee814867cb145f3cbb81d2293d24c1111c8ef"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_POST_RELEASE_MAINTENANCE_20260812.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4543,
+      "sha256": "6876d90132c5bd97153476513e73dd4e0254c21d08972f0d37542e99243e9a18"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_PRD.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5870,
+      "sha256": "adbcca3762def5221a935cddfd2541fff8952987eadf81b7d4d5c322ee44153c"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_RELEASE_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2651,
+      "sha256": "4ac0a035bc62132ba194b9e740e6b787f553a30482b38eaad3d5b0a821a880ce"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_REQUIREMENTS_LOCK.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5465,
+      "sha256": "4992b5d393f1566dd731de0af8ab73e7c7f8e3006829db26820e06797453ce36"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.3_TEST_STRATEGY.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3200,
+      "sha256": "2e19dd9a49685bf0d297184341607f10ba7aa05dc55a0dae329959478c3cc879"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_ACCEPTANCE_PLAN.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 7784,
+      "sha256": "e7909f883922bb00c1247e99f84160aed830a504f8742aba2494661af85e3bc1"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_CHAIN_PIPELINE_REPAIR_20260813.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9518,
+      "sha256": "d6f250461adee89bac6499cab10eef11b7cdd90db34b262c6c15640cf9ab85fc"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_COPY_DICTIONARY.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5445,
+      "sha256": "adbd9d6f9b5372f07eb50066f84d21a51a8506396c98548b9fae6d105cb68fb0"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_DESIGN_SPEC.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5613,
+      "sha256": "d4d5368ad5144a2c362240003dc922e51a2a207be2a0d0a9ba441948830c6bb5"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_DEVELOPMENT_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 7199,
+      "sha256": "64ac6a125524f3aa495dc52b72826a47043e46d72f469795985c8f987c5ab22b"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_DEVELOPMENT_SELF_TEST.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 7026,
+      "sha256": "722feed4deb08b5a85f0607f9a33529bfdc31e163a70531e77ec049d447cc14e"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_FEATURE_INHERITANCE_DRAFT.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 10243,
+      "sha256": "c24c4f721998cb1a53c6acc55414bbb2221aad79f574e4409060d4c86b668853"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_FINAL_ACCEPTANCE.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5498,
+      "sha256": "fa56acb2cb77c4e1dd8d4c80a54a0ea5dd9ab823abc003766c41c15744604e92"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_FREEZE_DRAFT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 33945,
+      "sha256": "c0b0b856b5168a5d5ff9c5cd88d7449839030bc8fe1c55fdfbb37e3403c497f1"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_FREEZE_DRAFT_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2881,
+      "sha256": "99ea91c2d977e70d368409320234445eb888308b8a7aa78488d1139a880d1e5d"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_HANDOFF.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4872,
+      "sha256": "ff3443edfd210142452405c36b45be3134862d9fdc296e3a427209ab32c14662"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_IMPLEMENTATION_BASELINE.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2753,
+      "sha256": "56c09a37da2cf443f31c62a975a9bda0cce46e4db42b7123adf13845405e97d2"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_INHERITANCE_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 13690,
+      "sha256": "aa11bca2088253d40f657bdaa74adcb8d7127196afd731fd8b4b481032649453"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_PAGE_DATA_CONTRACT.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9329,
+      "sha256": "fcba30c7675a1efb97d07d1e471f15603df36dc5f8b44f07e20208b5daadca50"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_PHASE.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2441,
+      "sha256": "d1dc2f3e56a7ae9cdb583cbf036cd1939a59fe0b411d0f593b86e70c6e14442e"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_PRD.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 11869,
+      "sha256": "28b4369bc580f1c76b53857bd5e0f300d211f5eaaeb2b7b8d24ca68b6275728e"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_PRE_ACCEPTANCE_DESKTOP_REPAIR_20260813.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3097,
+      "sha256": "997fcf3279a17ff5d950cf7055c4a9a5e359b9255ad1f1f2e34495fec3356591"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_RELEASE_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9320,
+      "sha256": "c60fb206218db4d22cbdb40b1a36619f7f6a194721fba301b4b0662965e9d290"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_REQUIREMENTS_LOCK.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 8310,
+      "sha256": "9c41e39b4311bef4cfcc3111cabda16c0f43e87129ac5fe4089688d58546d447"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_RULE_CONFIG.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 12947,
+      "sha256": "775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_RULE_REGRESSION_MANIFEST.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 8527,
+      "sha256": "9157f41607f040149e6686b01f30563258ce00c0d41cc4cbfebd9f08d89d25db"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2086,
+      "sha256": "7f6ccc9e35ab6ba7b5212911116facd9698489c0f7d0f27b9dbcf16dc0c7e202"
+    },
+    {
+      "status": "??",
+      "path": "docs/C2.4_TEST_STRATEGY.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6479,
+      "sha256": "5362b77e3b3a304352dff633a94003bbbe7b4afd8a1d74dbf3a1e9e1c6f36634"
+    },
+    {
+      "status": "??",
+      "path": "docs/TEMP_ARTIFACT_RETENTION_POLICY.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1627,
+      "sha256": "ef141ba04314bfd186082045deb2d6c31fc2cec39270ffe58bbe2edd259037c1"
+    },
+    {
+      "status": "??",
+      "path": "docs/TEMP_STORAGE_CLEANUP_PLAN_20260813.md",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 7168,
+      "sha256": "2a4cb62743b31d3be4d25b5224eb250569f2851a37e234f50cb567c138d46656"
+    },
+    {
+      "status": "??",
+      "path": "docs/TEMP_STORAGE_CLEANUP_RESULT_20260813.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 2271,
+      "sha256": "00d8310c49c772a9a9edcadcd03dbf5a469e238c6852dd2c5f2099dda0195e22"
+    },
+    {
+      "status": "??",
+      "path": "docs/TEST_PRIORITY_POLICY.json",
+      "category": "formal_product_document",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1571,
+      "sha256": "d4f155782cbb09a224fe7498501c37a0b6dc9ecbd9536a238d2ab4964ab25148"
+    },
+    {
+      "status": "??",
+      "path": "global.json",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 109,
+      "sha256": "b54f95ccc7a0a2199f7f2ce71cef88c853e633b5f6d0c492095cd16bbf4d8506"
+    },
+    {
+      "status": "??",
+      "path": "scripts/audit_c2_4_independent.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 34149,
+      "sha256": "14ba36e9c9d1cbe09d7dc8c4322f6bc6b25779dea71e083d8e1344d52b63065b"
+    },
+    {
+      "status": "??",
+      "path": "scripts/build-c2.3-desktop.ps1",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1851,
+      "sha256": "22aad86f75e2c07b2b827ba52806020dc65380c9e235149fb58b83845394ab2d"
+    },
+    {
+      "status": "??",
+      "path": "scripts/build_c2_4_snapshots.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 74934,
+      "sha256": "776cb926ac98ef9e0ee19b1b2a8f7b6b8837f6cf5902780c8b831e4e659ed38e"
+    },
+    {
+      "status": "??",
+      "path": "scripts/c2_1_observation_state.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5062,
+      "sha256": "d4d702c12568b1c38fc3df5225697462c5a8e8ef849d3647915b4987985fa5c6"
+    },
+    {
+      "status": "??",
+      "path": "scripts/c2_2_candidate_tracking.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 30611,
+      "sha256": "9a49f5bc2160123790302a44af189127710981121fe78daf0618fec220363518"
+    },
+    {
+      "status": "??",
+      "path": "scripts/c2_3_fault_fixture_server.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1697,
+      "sha256": "21d8bff417f5186a36b1f4d725aba71c919eaeb469e9216693aa1e34702dad80"
+    },
+    {
+      "status": "??",
+      "path": "scripts/c2_4_rules.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 16935,
+      "sha256": "7f047a0c49f48f68e2a5d006ac90294e8d2636973a030513432125b195b75d35"
+    },
+    {
+      "status": "??",
+      "path": "scripts/c2_4_tracking.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 17305,
+      "sha256": "3c6beeef04c500dd4c72a3898ae0c5fa255373b5768c68e65d9d30a5d115db13"
+    },
+    {
+      "status": "??",
+      "path": "scripts/candidate_production.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 99359,
+      "sha256": "b243b2fcc8156f38058056f86a6caf16798731945d9843089952adae76a4a77d"
+    },
+    {
+      "status": "??",
+      "path": "scripts/candidate_production_runtime.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 11035,
+      "sha256": "d1627c282d0d5e964b66c788e730492cc95a458a9be241d17dca27cc9685b93c"
+    },
+    {
+      "status": "??",
+      "path": "scripts/capture_c2_2_update_center_acceptance.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 7548,
+      "sha256": "49a6062677cc00ce468ba81a29f05e6b82c978aeaa96191c7a833604e24f78e0"
+    },
+    {
+      "status": "??",
+      "path": "scripts/install-c2.3-desktop.ps1",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1832,
+      "sha256": "369866f3489572414919e8eb8caa6efd2483fcb77ebe3a2ae8f801c5dba09164"
+    },
+    {
+      "status": "??",
+      "path": "scripts/repair_c2_2_first_gate_correctness.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 13131,
+      "sha256": "1a86eab7d607c67a302a7767d4ded57f07f264a1f708d7004aad6570871764c0"
+    },
+    {
+      "status": "??",
+      "path": "scripts/repair_c2_4_github_attribution.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6466,
+      "sha256": "166f6619a08926502ecabbd9289847c1dda170df61ae7619fd2c00eb64f3a4b2"
+    },
+    {
+      "status": "??",
+      "path": "scripts/repair_c2_4_website_source_states.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4908,
+      "sha256": "bcc4d9d94563f1a64f62b945b6c764ff6ed995be794642602e124452b502b3b7"
+    },
+    {
+      "status": "??",
+      "path": "scripts/robinhood_readonly_quote.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9351,
+      "sha256": "196dcc816d14ca4cda40701c348dc7e3380a9ff9924957c209d9e2c42b395cfc"
+    },
+    {
+      "status": "??",
+      "path": "scripts/rollback-c2.3-desktop.ps1",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1215,
+      "sha256": "c60a1be5f4f9cbe9b428bc48402ee4f8d9f3d16f90f9374cc4e065f76968f6a1"
+    },
+    {
+      "status": "??",
+      "path": "scripts/run_priority_acceptance.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1949,
+      "sha256": "c7a8ac63d65927738e8b5871018c5c987f7b2da497375e697665e33c0d5681c4"
+    },
+    {
+      "status": "??",
+      "path": "scripts/temp_artifact_retention.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 21549,
+      "sha256": "7db36464c02bb03769d2d70be8a20c7811fa7c716f474a37f3395e5c396ae04c"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test-c2.3-desktop-smoke.ps1",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 11321,
+      "sha256": "ea58ee690f350c567834b79750814ac74e556d5d68c94a42a1912973dc2e1b1e"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test-c2.3-independent-lifecycle.ps1",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 10886,
+      "sha256": "a942deb826e313f9b9d13edea835c4306ab6bc194b8dda446729aef1fd29f9fe"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_1_observation_state.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3824,
+      "sha256": "894e6b624485cba226dc3b46114bcf1af17e56af82f02bfe766fb61b6b0be02a"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_1_robinhood_official_assets.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3588,
+      "sha256": "71fcd3ec6914218e8e1cb48f6ae6a1f07b28b61d7a943b8c3fd05b7f4add8f17"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_2_core_pipeline.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6857,
+      "sha256": "235f7c68e24d67a854fbcf2b2b0b64dd2230210232724d7cd754e3ed55822843"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_2_tracking_repair.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9969,
+      "sha256": "d598d15aa241ad5f177e470371601dee78ee9c08f890cb0b86f0ff155b125528"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_3_desktop_contract.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 4261,
+      "sha256": "4571f5a30a44f1a49f2a7414dc63df4d37b10db3e176318061ef0792a7f07c77"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_3_source_retry_ui.js",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3398,
+      "sha256": "f8d6da0f9355054c564ab2b9544ce26203b10df8dec54afeed907d790dd4079a"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_4_acceptance.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 9772,
+      "sha256": "3d8195f427d7292e059e0de0224bbb26e97dab9398f98f8301d6c9e9dd522ad3"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_4_real_samples.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6906,
+      "sha256": "e20e382acd3399cec847c28c0c535ce719d7247410ccee1fbe2aa197c0720637"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_4_rules.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 12891,
+      "sha256": "6f71f7ef5ca96d66d43d1b9dcfb30391cd983b9961f95c8717af40e6937e24f8"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_4_runtime.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3411,
+      "sha256": "0a0017702926d68f1705f67bcbb452c6fc9ce46ed8d4797b1c71f6bdc4f27b8a"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_4_snapshots.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 12669,
+      "sha256": "a651f57e371bf7e806b759fe269d2e0e600a9c02888c5707bd172b33658cfb8f"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_c2_4_tracking.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 25090,
+      "sha256": "be9af17705e2bb7c7be9a06c34d082c4c58ed1f4f122b50ea4e1c18be464618d"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_candidate_production.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 53649,
+      "sha256": "90d374e71befe89b8a37542b7a35fdba521dfe744cf1c3d76c08b34a83b7f3d7"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_candidate_production_independent_acceptance.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 16245,
+      "sha256": "1ba5b96a4d44b0c8be81dc0cd1ece1b5485966818c492d932d4f6cd0090d0f09"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_robinhood_readonly_quote.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 3499,
+      "sha256": "547cf06fabcb9abfdb584926826f2f8b3b0f8fc651918bc970bc18c4f0c2d5a5"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_temp_artifact_retention.py",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 6106,
+      "sha256": "4a6d5d012cb00b6f929ae7a19e289262776edc1e751a65394e3031fc8caad6c9"
+    },
+    {
+      "status": "??",
+      "path": "storage/c2.2-candidate-production-migration.sql",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 5696,
+      "sha256": "07b4a355a34a8a88df10a30f38d3069c9aa0c62c3d18178912f9e872bbb05e41"
+    },
+    {
+      "status": "??",
+      "path": "storage/c2.2-first-gate-handoff-migration.sql",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1314,
+      "sha256": "1d85d7f4ddec597f7f08ad1037c311404a483a3972a97295b05ec16549e37041"
+    },
+    {
+      "status": "??",
+      "path": "storage/c2.2-tracking-repair.sql",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 917,
+      "sha256": "530c27257606c4853dcb3a54ce3bc0e4fa3b9860a9d992dbf268d531ee387125"
+    },
+    {
+      "status": "??",
+      "path": "storage/c2.4-tracking.sql",
+      "category": "formal_source",
+      "action": "include_in_reconstructed_baseline",
+      "kind": "file",
+      "bytes": 1677,
+      "sha256": "641f0403e7698750f1857ef6c966ce32ed474d193a6b9bedcff9007a0d36347c"
+    }
+  ]
+}

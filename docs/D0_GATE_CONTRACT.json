@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "d0-gate-contract-v1",
+  "release": "D0",
+  "purpose": "用机器检查阻断错误工作区、漂移候选、低优先级掩盖核心失败、无授权发布和公开仓库泄漏。",
+  "entrypoint": "scripts/d0_gate.py",
+  "inputLocation": "runtime/d0/<stage>-gate-input.json",
+  "inputIsRuntimeEvidenceNotCommitted": true,
+  "stages": {
+    "development": {
+      "meaning": "开始开发前",
+      "required": [
+        "正式目录处于干净main",
+        "当前目录位于授权worktree根目录",
+        "当前分支使用codex/前缀",
+        "需求锁及继承依赖哈希匹配",
+        "回滚提交存在",
+        "当前HEAD不含密钥数据库或运行数据"
+      ]
+    },
+    "acceptance": {
+      "meaning": "独立终验开始前",
+      "required": [
+        "候选提交等于当前HEAD且工作区干净",
+        "D0实现阶段需求追踪全部通过",
+        "Tier0证据通过",
+        "需求锁和回滚提交有效",
+        "当前HEAD通过密钥与数据边界扫描"
+      ]
+    },
+    "release": {
+      "meaning": "正式发布开始前",
+      "required": [
+        "正式根目录main干净",
+        "候选提交终验提交发布提交完全一致",
+        "A01至H06全部存在证据并通过",
+        "Tier0和真实桌面验收通过",
+        "用户明确授权发布",
+        "正式标签指向发布提交",
+        "回滚提交存在",
+        "当前HEAD通过密钥与数据边界扫描"
+      ]
+    }
+  },
+  "inputFields": {
+    "stage": "development | acceptance | release",
+    "repoRoot": "本阶段正在检查的Git工作区绝对路径",
+    "formalRoot": "F:\\codex项目\\企鹅投研\\凸性",
+    "authorizedWorktreeRoot": "F:\\codex项目\\企鹅投研\\凸性-worktrees",
+    "requirementsLock": {
+      "path": "docs/D0_REQUIREMENTS_LOCK.json",
+      "sha256": "冻结时的需求锁SHA-256"
+    },
+    "rollbackRef": "发布前已存在的可解析提交",
+    "candidateCommit": "独立终验开始时固定的完整提交哈希",
+    "acceptedCommit": "独立终验实际通过的完整提交哈希",
+    "releaseCommit": "准备发布的完整提交哈希",
+    "tier0Evidence": "状态为passed的JSON相对路径",
+    "traceability": "默认docs/D0_REQUIREMENT_TRACEABILITY.json",
+    "desktopEvidence": "状态为passed的真实桌面JSON相对路径",
+    "userReleaseAuthorized": "只有用户明确授权后才可为true",
+    "releaseTag": "必须已经指向发布提交的正式标签"
+  },
+  "negativeTests": {
+    "F01": "脏main阻断开发",
+    "F02": "缺文件或锁哈希错误阻断",
+    "F03": "错误worktree或分支阻断",
+    "F04": "Tier0失败阻断终验和发布",
+    "F05": "候选终验发布提交不一致阻断",
+    "F06": "缺桌面验收回滚点或用户授权阻断",
+    "F07": "密钥数据库或运行数据进入提交阻断",
+    "F08": "全部条件正确才通过"
+  },
+  "bootstrapException": "D0自身开始时正式main按冻结事实为脏；本次用户授权只允许通过去敏重建提交恢复基线。该例外不写入通用门禁，D0独立终验与发布仍必须消除脏main。",
+  "forbiddenBypass": [
+    "把失败证据改成passed",
+    "用当前HEAD自动替代事先固定的候选提交",
+    "跳过Tier0后先跑低优先级测试",
+    "在密钥扫描失败时继续推送",
+    "把D0启动例外沿用到未来版本"
+  ]
+}

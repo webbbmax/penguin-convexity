@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "d0-requirement-traceability-v1",
+  "release": "D0",
+  "statusMeaning": {
+    "passed": "本阶段已经有可复核证据",
+    "pending": "必须由后续独立终验或发布阶段完成"
+  },
+  "requirements": [
+    {"id":"A01","requiredByStage":"implementation","status":"passed","summary":"三份D0正式文件与需求锁哈希一致","evidence":["docs/D0_REQUIREMENTS_LOCK.json","开发自测重新计算哈希"]},
+    {"id":"A02","requiredByStage":"implementation","status":"passed","summary":"冻结阶段曾等待另行执行授权","evidence":["docs/D0_REQUIREMENTS_LOCK.json:userAuthorization","用户随后明确回复开始开发体系重置0"]},
+    {"id":"A03","requiredByStage":"implementation","status":"passed","summary":"用户可见产品仍为C2.4","evidence":["docs/CURRENT_STATE.md","docs/D0_IMPLEMENTATION_BASELINE.json"]},
+    {"id":"A04","requiredByStage":"implementation","status":"passed","summary":"D0未改产品数据库调度快捷方式和用户设置","evidence":["docs/D0_IMPLEMENTATION_BASELINE.json","候选相对重建基线的路径边界检查"]},
+    {"id":"A05","requiredByStage":"implementation","status":"passed","summary":"C2.5六链规则和UI未进入D0","evidence":["docs/D0_KNOWN_ISSUES.md","候选相对重建基线无app storage desktop-host业务修改"]},
+
+    {"id":"B01","requiredByStage":"implementation","status":"passed","summary":"冻结时154个状态项都有原始路径","evidence":["docs/D0_WORKSPACE_CLASSIFICATION.json"]},
+    {"id":"B02","requiredByStage":"implementation","status":"passed","summary":"每个状态项均已分类","evidence":["docs/D0_WORKSPACE_CLASSIFICATION.json:counts.categories"]},
+    {"id":"B03","requiredByStage":"implementation","status":"passed","summary":"未知文件删除数为0","evidence":["docs/D0_WORKSPACE_CLASSIFICATION.json:unknownDeletionCount"]},
+    {"id":"B04","requiredByStage":"implementation","status":"passed","summary":"未使用破坏性重置整目录覆盖或未登记批删","evidence":["去敏基线使用独立Git索引构造","正式目录原状态保留"]},
+    {"id":"B05","requiredByStage":"implementation","status":"passed","summary":"正式数据和运行资产未进入清理目标","evidence":["docs/D0_IMPLEMENTATION_BASELINE.json","docs/D0_WORKSPACE_CLASSIFICATION.json"]},
+
+    {"id":"C01","requiredByStage":"implementation","status":"passed","summary":"正式源码候选完成受控密钥扫描","evidence":["scripts/d0_secret_scan.py","docs/D0_PUBLIC_BOUNDARY_SCAN_DEVELOPMENT.json"]},
+    {"id":"C02","requiredByStage":"implementation","status":"passed","summary":"密钥数据库和日志不在候选","evidence":["docs/D0_PUBLIC_BOUNDARY_SCAN_DEVELOPMENT.json"]},
+    {"id":"C03","requiredByStage":"implementation","status":"passed","summary":"公开边界覆盖本地数据与生成产物","evidence":[".gitignore","scripts/d0_secret_scan.py","scripts/test_d0_gate.py:F07"]},
+    {"id":"C04","requiredByStage":"implementation","status":"passed","summary":"高置信密钥命中为0","evidence":["docs/D0_PUBLIC_BOUNDARY_SCAN_DEVELOPMENT.json:highConfidenceFindings"]},
+    {"id":"C05","requiredByStage":"implementation","status":"passed","summary":"边界失败会阻断发布","evidence":["scripts/test_d0_gate.py:F07","docs/D0_GATE_SELF_TEST.json"]},
+
+    {"id":"D01","requiredByStage":"implementation","status":"passed","summary":"重建提交明确标注reconstructed-baseline","evidence":["2aa3c200766382b031b4cb0f9de40efafe245533"]},
+    {"id":"D02","requiredByStage":"implementation","status":"passed","summary":"正式源码与文档可由提交恢复","evidence":["docs/D0_IMPLEMENTATION_BASELINE.json:reconstructedBaseline","Git树5b2f03180c8bb93f581e3189c339e51587d28ac0"]},
+    {"id":"D03","requiredByStage":"implementation","status":"passed","summary":"运行数据库和大体积产物未提交","evidence":["docs/D0_PUBLIC_BOUNDARY_SCAN_DEVELOPMENT.json","docs/D0_WORKSPACE_CLASSIFICATION.json:desktop-host generatedBoundary"]},
+    {"id":"D04","requiredByStage":"release","status":"pending","summary":"main合并后工作区干净","evidence":["等待独立终验与发布"]},
+    {"id":"D05","requiredByStage":"release","status":"pending","summary":"正式标签指向唯一发布提交并记录哈希","evidence":["等待用户发布授权"]},
+    {"id":"D06","requiredByStage":"release","status":"pending","summary":"远端提交与本地发布提交一致","evidence":["等待用户发布授权后推送核验"]},
+    {"id":"D07","requiredByStage":"implementation","status":"passed","summary":"已知业务问题单独列出且未宣称全正确","evidence":["docs/D0_KNOWN_ISSUES.md","docs/CURRENT_STATE.md"]},
+
+    {"id":"E01","requiredByStage":"implementation","status":"passed","summary":"当前真相约100行内回答关键状态","evidence":["docs/CURRENT_STATE.md"]},
+    {"id":"E02","requiredByStage":"implementation","status":"passed","summary":"产品基线登记继承能力和零删除边界","evidence":["docs/PRODUCT_BASELINE.md"]},
+    {"id":"E03","requiredByStage":"implementation","status":"passed","summary":"日常流程覆盖规划开发终验发布和热修复","evidence":["docs/DEVELOPMENT_WORKFLOW.md"]},
+    {"id":"E04","requiredByStage":"implementation","status":"passed","summary":"原AGENTS规则完整保全","evidence":["AGENTS.md","重建基线提交中的原文件哈希"]},
+    {"id":"E05","requiredByStage":"implementation","status":"passed","summary":"历史文档未删除且可以索引","evidence":["docs/HISTORY_INDEX.md","docs/D0_WORKSPACE_CLASSIFICATION.json:deletionStatuses=0"]},
+    {"id":"E06","requiredByStage":"implementation","status":"passed","summary":"当前真相与历史冲突优先级明确","evidence":["docs/CURRENT_STATE.md:真相优先级","docs/DEVELOPMENT_WORKFLOW.md:真相与冲突处理"]},
+
+    {"id":"F01","requiredByStage":"implementation","status":"passed","summary":"脏main时开发门禁失败","evidence":["scripts/test_d0_gate.py:test_f01_dirty_main_blocks_development","docs/D0_GATE_SELF_TEST.json"]},
+    {"id":"F02","requiredByStage":"implementation","status":"passed","summary":"冻结文件缺失或锁错误时失败","evidence":["scripts/test_d0_gate.py:test_f02_bad_lock_blocks_development","docs/D0_GATE_SELF_TEST.json"]},
+    {"id":"F03","requiredByStage":"implementation","status":"passed","summary":"错误工作区或分支时失败","evidence":["scripts/test_d0_gate.py:test_f03_wrong_workspace_and_branch_block_development","docs/D0_GATE_SELF_TEST.json"]},
+    {"id":"F04","requiredByStage":"implementation","status":"passed","summary":"Tier0失败时终验和发布失败","evidence":["scripts/test_d0_gate.py:test_f04_failed_tier0_blocks_acceptance","docs/D0_GATE_SELF_TEST.json"]},
+    {"id":"F05","requiredByStage":"implementation","status":"passed","summary":"候选终验发布提交不同时失败","evidence":["scripts/test_d0_gate.py:test_f05_candidate_mismatch_blocks_acceptance","docs/D0_GATE_SELF_TEST.json"]},
+    {"id":"F06","requiredByStage":"implementation","status":"passed","summary":"缺桌面验收回滚点或发布授权时失败","evidence":["scripts/test_d0_gate.py:test_f06_missing_desktop_rollback_and_authorization_block_release","docs/D0_GATE_SELF_TEST.json"]},
+    {"id":"F07","requiredByStage":"implementation","status":"passed","summary":"密钥数据库或运行数据进入候选时失败","evidence":["scripts/test_d0_gate.py:test_f07_secret_or_data_blocks_acceptance","docs/D0_GATE_SELF_TEST.json"]},
+    {"id":"F08","requiredByStage":"implementation","status":"passed","summary":"全部正确时门禁成功","evidence":["scripts/test_d0_gate.py:test_f08_complete_release_state_passes","docs/D0_GATE_SELF_TEST.json"]},
+
+    {"id":"G01","requiredByStage":"implementation","status":"passed","summary":"worktree位于冻结路径且没有复制正式数据库","evidence":["docs/D0_IMPLEMENTATION_BASELINE.json:developmentWorktree"]},
+    {"id":"G02","requiredByStage":"implementation","status":"passed","summary":"开发工作区不能改写正式运行状态","evidence":["工作区不含data runtime凭据","D0脚本仅检查Git和文档"]},
+    {"id":"G03","requiredByStage":"implementation","status":"passed","summary":"写任务使用独立worktree","evidence":["git worktree list","codex/d0-development-reset"]},
+    {"id":"G04","requiredByStage":"acceptance","status":"pending","summary":"合并前后提交关系可追溯","evidence":["等待独立终验"]},
+    {"id":"G05","requiredByStage":"acceptance","status":"pending","summary":"完成不写业务数据的代码级回滚演练","evidence":["等待独立终验"]},
+    {"id":"G06","requiredByStage":"acceptance","status":"pending","summary":"回滚后恢复候选并保持Git干净","evidence":["等待独立终验"]},
+
+    {"id":"H01","requiredByStage":"acceptance","status":"pending","summary":"桌面快捷方式真实冷启动成功","evidence":["等待独立终验只读桌面验收"]},
+    {"id":"H02","requiredByStage":"acceptance","status":"pending","summary":"健康接口返回C2.4且重复启动单实例","evidence":["等待独立终验只读桌面验收"]},
+    {"id":"H03","requiredByStage":"acceptance","status":"pending","summary":"四个前台页面和工作台只读可达","evidence":["等待独立终验只读桌面验收"]},
+    {"id":"H04","requiredByStage":"acceptance","status":"pending","summary":"D0前后未因D0脚本写入业务数据库","evidence":["等待独立终验边界复核"]},
+    {"id":"H05","requiredByStage":"acceptance","status":"pending","summary":"调度器后台任务和用户设置未被改写","evidence":["等待独立终验对比D0_IMPLEMENTATION_BASELINE"]},
+    {"id":"H06","requiredByStage":"acceptance","status":"pending","summary":"没有重跑三类历史全量任务","evidence":["等待独立终验进程与日志复核"]}
+  ],
+  "implementationSummary": {
+    "passed": 36,
+    "pendingIndependentAcceptance": 9,
+    "pendingRelease": 3,
+    "failed": 0,
+    "total": 48
+  }
+}

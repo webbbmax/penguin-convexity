@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "d0-secret-scan-v1",
+  "scope": "git_index",
+  "passed": true,
+  "candidateFiles": 600,
+  "textFilesScanned": 563,
+  "binaryFilesSkipped": 37,
+  "forbiddenPaths": [],
+  "highConfidenceFindings": [],
+  "valueDisclosure": "Credential values are never written to this report."
+}

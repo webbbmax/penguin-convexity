@@ -47,18 +47,18 @@ app/*-snapshot.html
 **/secrets/
 **/*credentials*.json
 **/*secret*.json
+*.pem
+*.pfx
+*.p12
+*.key
 
 # API resource catalogs may contain provider-specific operational details.
 config/shared-api-catalog.json
 config/strong-signal-resource-catalog.json
 
-# Internal-only working memory and migration notes
-AGENTS.md
-docs/PROJECT_MEMORY.md
-docs/SOURCE_THREAD_INDEX.md
-docs/DECISIONS.md
-docs/MIGRATION_MANIFEST.json
-docs/*_ACCEPTANCE_MANIFEST.json
+# Formal project memory, decisions, migration records, and acceptance
+# manifests are source-controlled after D0 secret scanning. Runtime evidence
+# remains excluded by the rules above.
 
 # Archives and packaged binaries
 *.zip

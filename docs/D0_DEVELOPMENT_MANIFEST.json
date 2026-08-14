@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "d0-development-manifest-v1",
+  "release": "D0",
+  "status": "implementation_self_test_complete_waiting_independent_acceptance",
+  "currentProductReleaseRemains": "C2.4",
+  "requirementsLockSha256": "5dc989bbbfb4ec6ad03cb75f0996d56214381ff8bc57f13c4e3b0bf9a5c22dcb",
+  "requirementSetSha256": "48316081f5851afad07674a54dbc733b261bf64d3bb28d1a8ea60fde9f87fc3b",
+  "reconstructedBaselineCommit": "2aa3c200766382b031b4cb0f9de40efafe245533",
+  "candidateBranch": "codex/d0-development-reset",
+  "candidateCommitPolicy": "独立终验开始时从该分支HEAD固定完整哈希；开发报告不得用自引用文件伪造提交哈希。",
+  "formalMainMerged": false,
+  "formalTagCreated": false,
+  "githubPushed": false,
+  "implementationArtifacts": [
+    "docs/CURRENT_STATE.md",
+    "docs/PRODUCT_BASELINE.md",
+    "docs/DEVELOPMENT_WORKFLOW.md",
+    "docs/HISTORY_INDEX.md",
+    "docs/D0_WORKSPACE_CLASSIFICATION.json",
+    "docs/D0_IMPLEMENTATION_BASELINE.json",
+    "docs/D0_KNOWN_ISSUES.md",
+    "docs/D0_GATE_CONTRACT.json",
+    "docs/D0_REQUIREMENT_TRACEABILITY.json",
+    "docs/D0_GATE_SELF_TEST.json",
+    "docs/D0_PUBLIC_BOUNDARY_SCAN_DEVELOPMENT.json",
+    "docs/STATUS.md",
+    "scripts/d0_workspace_inventory.py",
+    "scripts/d0_secret_scan.py",
+    "scripts/d0_gate.py",
+    "scripts/test_d0_gate.py"
+  ],
+  "productCodeChanges": [],
+  "businessRuleChanges": [],
+  "databaseChanges": [],
+  "schedulerChanges": [],
+  "desktopEntryChanges": [],
+  "selfTest": {
+    "status": "passed",
+    "inventory": "154/154 classified, unknown 0, deletion 0",
+    "gateTests": "8/8 passed",
+    "secretBoundary": "passed",
+    "fullHistoricalRegression": "not_run_not_required"
+  },
+  "pendingIndependentAcceptance": [
+    "固定候选提交并运行acceptance门禁",
+    "真实桌面冷启动健康单实例和页面只读验收",
+    "调度器配置快捷方式和正式数据库边界复核",
+    "不写业务数据的代码级回滚演练",
+    "修复后受影响范围重验"
+  ],
+  "pendingReleaseAuthorization": [
+    "合并正式main并确认干净",
+    "创建reconstructed-baseline正式标签",
+    "运行release门禁",
+    "推送GitHub并核对远端提交"
+  ]
+}

@@ -107,6 +107,7 @@
 ## 项目记忆读取顺序
 
 1. `AGENTS.md`
+   - D0 完成后，继续优先读取 `docs/CURRENT_STATE.md`、`docs/PRODUCT_BASELINE.md`、`docs/DEVELOPMENT_WORKFLOW.md` 和 `docs/HISTORY_INDEX.md`，再按下列原有顺序追溯历史；当前真相文件不删除或改写历史记录。
 2. `docs/C1.8_PHASE.json`（执行 C1.8 时）
 3. `docs/C1.8_REQUIREMENTS_LOCK.json`（执行 C1.8 时）
 4. `docs/STATUS.md`
