@@ -29,12 +29,19 @@ $serviceBefore = Get-NetTCPConnection -LocalPort 8766 -State Listen -ErrorAction
 $desktopLog = Join-Path $projectRoot "runtime\logs\c2.3-desktop.log"
 $existingHosts = @(Get-Process PenguinConvexity.Desktop -ErrorAction SilentlyContinue)
 if ($existingHosts.Count -gt 1) { throw "Expected at most one C2.3 desktop host before launch, found $($existingHosts.Count)." }
+. (Join-Path $PSScriptRoot "desktop-acceptance-guard.ps1")
+$cleanupGuard = New-DesktopAcceptanceGuard -Name "c2.3-desktop-smoke" -ProjectRoot $projectRoot
+$testResult = $null
+$cleanupResult = $null
+
+try {
 if ($existingHosts.Count -eq 1) {
   $existing = $existingHosts[0]
   if ($existing.MainWindowHandle -eq 0) { throw "Existing C2.3 desktop host has no native window." }
   if ($null -eq $serviceBefore) { throw "Existing C2.3 desktop host has no usable local service." }
   $activationStartedAt = Get-Date
   $activation = Start-Process -FilePath $Executable -WorkingDirectory $projectRoot -PassThru
+  Register-DesktopAcceptanceProcess -Guard $cleanupGuard -Process $activation -Role "duplicate_activation"
   if (-not $activation.WaitForExit(2000)) { throw "Second launch did not exit after activating the existing window." }
   $activationMs = [int]((Get-Date) - $activationStartedAt).TotalMilliseconds
   if ($activation.ExitCode -ne 0) { throw "Existing-window activation failed with code $($activation.ExitCode)." }
@@ -51,7 +58,7 @@ if ($existingHosts.Count -eq 1) {
   if ($null -ne $candidatePid -and -not (Get-Process -Id $candidatePid -ErrorAction SilentlyContinue)) { throw "Candidate production process stopped during desktop activation smoke test." }
   $serviceAfter = Get-NetTCPConnection -LocalPort 8766 -State Listen -ErrorAction Stop | Select-Object -First 1
   if ($serviceAfter.OwningProcess -ne $serviceBefore.OwningProcess) { throw "External local service ownership changed during desktop activation smoke test." }
-  [PSCustomObject]@{
+  $testResult = [PSCustomObject]@{
     status = "passed"
     mode = "existing_instance_activation"
     existingHostPid = $existing.Id
@@ -61,12 +68,12 @@ if ($existingHosts.Count -eq 1) {
     candidateRunIdUnchanged = $candidateAfter.currentRun.run_id
     productPageStatus = $page.StatusCode
     opportunityPageStatus = $productPage.StatusCode
-  } | ConvertTo-Json
-  exit 0
-}
+  }
+} else {
 
 $startedAt = Get-Date
 $primary = Start-Process -FilePath $Executable -WorkingDirectory $projectRoot -PassThru
+Register-DesktopAcceptanceProcess -Guard $cleanupGuard -Process $primary -Role "desktop_host"
 $deadline = (Get-Date).AddSeconds(30)
 do {
   Start-Sleep -Milliseconds 200
@@ -117,6 +124,7 @@ if ($page.StatusCode -ne 200 -or $productPage.StatusCode -ne 200 -or $page.Conte
 
 $secondaryStartedAt = Get-Date
 $secondary = Start-Process -FilePath $Executable -WorkingDirectory $projectRoot -PassThru
+Register-DesktopAcceptanceProcess -Guard $cleanupGuard -Process $secondary -Role "duplicate_activation"
 if (-not $secondary.WaitForExit(2000)) {
   throw "Second launch did not exit after activating the existing window."
 }
@@ -164,7 +172,7 @@ if ($null -ne $serviceBefore) {
 }
 if (-not (Test-Path (Join-Path $projectRoot "runtime\window-state-c2.3.json"))) { throw "C2.3 window state was not saved." }
 
-[PSCustomObject]@{
+$testResult = [PSCustomObject]@{
   status = "passed"
   windowShownMs = $windowShownMs
   pageReadyMs = $pageReadyMs
@@ -182,4 +190,10 @@ if (-not (Test-Path (Join-Path $projectRoot "runtime\window-state-c2.3.json"))) 
   ordinaryEdgeProcessCountAfter = $edgeAfter.Count
   ordinaryChromeProcessCountBefore = $chromeBefore.Count
   ordinaryChromeProcessCountAfter = $chromeAfter.Count
-} | ConvertTo-Json
+}
+}
+} finally {
+  $cleanupResult = Complete-DesktopAcceptanceGuard -Guard $cleanupGuard
+}
+$testResult | Add-Member -NotePropertyName cleanup -NotePropertyValue $cleanupResult
+$testResult | ConvertTo-Json -Depth 4

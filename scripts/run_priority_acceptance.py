@@ -29,6 +29,14 @@ TIERS = {
             "-ExecutionPolicy",
             "Bypass",
             "-File",
+            "scripts/test-desktop-acceptance-cleanup.ps1",
+        ],
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
             "scripts/test-c2.3-desktop-smoke.ps1",
         ]
     ],

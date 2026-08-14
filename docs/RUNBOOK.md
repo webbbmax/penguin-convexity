@@ -88,6 +88,14 @@ python "F:\codex项目\企鹅投研\凸性\scripts\test_c2_3_desktop_contract.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅投研\凸性\scripts\test-c2.3-desktop-smoke.ps1"
 ```
 
+桌面验收清场是 Tier 2 硬门槛：不论测试通过、断言失败或中途异常，脚本都必须在 `finally` 中恢复测试前的桌面宿主、企鹅专用 WebView2、8766 监听者和显式登记的测试进程。任一项前后不一致，本轮验收必须失败。先可单独验证清场器：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "F:\codex项目\企鹅投研\凸性\scripts\test-desktop-acceptance-cleanup.ps1"
+```
+
+清场器只结束本轮新增或显式登记的精确 PID，不得按名称批量结束 Edge、Chrome、WebView2 或 Python，也不得替换测试前已存在的 8766 服务。
+
 C2.3 未修改 Python 业务和网页资产时，先用实现基线树哈希、32 条真实页面/资源、C1.9 受影响体验回归和两库只读完整性证明继承；只有出现意外哈希或契约差异才扩大到全量历史测试。
 
 ```powershell

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "penguin-convexity-desktop-acceptance-cleanup-v1",
+  "status": "active_after_hotfix_release",
+  "effectiveAt": "2026-08-14T00:00:00+08:00",
+  "tier": 2,
+  "mandatory": true,
+  "appliesTo": [
+    "current_desktop_smoke",
+    "independent_lifecycle",
+    "legacy_desktop_acceptance"
+  ],
+  "baseline": [
+    "PenguinConvexity.Desktop",
+    "Penguin-owned WebView2",
+    "port 8766 listener",
+    "explicitly tracked test processes"
+  ],
+  "success": "无论测试成功或失败，四类状态都与测试前基线一致。",
+  "failurePolicy": "清场或前后对账失败时，本轮桌面验收必须失败，不得发布。",
+  "ownershipBoundary": "只结束本轮新增或显式登记的精确PID和创建时间身份；不按进程名批量杀死，不关闭测试前已存在的桌面、普通浏览器或未知8766占用者。",
+  "implementation": "scripts/desktop-acceptance-guard.ps1",
+  "selfTest": "scripts/test-desktop-acceptance-cleanup.ps1"
+}

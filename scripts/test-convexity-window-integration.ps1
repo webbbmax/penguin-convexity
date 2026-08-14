@@ -6,6 +6,7 @@ $backupPath = "$windowStatePath.integration-backup"
 $shortcutName = "$([char]0x4F01)$([char]0x9E45)$([char]0x6295)$([char]0x7814)-$([char]0x51F8)$([char]0x6027).lnk"
 $shortcutPath = Join-Path ([Environment]::GetFolderPath("Desktop")) $shortcutName
 . (Join-Path $PSScriptRoot "convexity-window-state.ps1")
+. (Join-Path $PSScriptRoot "desktop-acceptance-guard.ps1")
 
 if (-not (Test-Path -LiteralPath $shortcutPath)) {
   throw "The convexity desktop shortcut is missing."
@@ -31,6 +32,7 @@ function Assert-Near {
 
 function Start-TestApp {
   $process = Start-Process -FilePath $shortcutPath -PassThru
+  Register-DesktopAcceptanceProcess -Guard $cleanupGuard -Process $process -Role "legacy_window_launcher"
   $window = Wait-PenguinAppWindow -TimeoutSeconds 25
   if ($null -eq $window) {
     if (-not $process.HasExited) {
@@ -73,6 +75,11 @@ $firstApp = $null
 $secondApp = $null
 $hadExistingState = Test-Path -LiteralPath $windowStatePath
 $hadExistingApp = (Get-PenguinAppWindows).Count -gt 0
+if ($hadExistingApp) {
+  throw "Window integration test requires no pre-existing Penguin window and will not close a user-owned desktop."
+}
+$cleanupGuard = New-DesktopAcceptanceGuard -Name "legacy-window-integration" -ProjectRoot $projectRoot
+$cleanupResult = $null
 try {
   Close-AllConvexityWindows
   Start-Sleep -Milliseconds 800
@@ -100,6 +107,7 @@ try {
   Assert-Near -Actual $initialPlacement.Height -Expected $initialState.Height -Label "Initial height"
 
   $duplicateLauncher = Start-Process -FilePath $shortcutPath -PassThru
+  Register-DesktopAcceptanceProcess -Guard $cleanupGuard -Process $duplicateLauncher -Role "legacy_duplicate_launcher"
   if (-not $duplicateLauncher.WaitForExit(10000)) {
     $duplicateLauncher.Kill()
     throw "A repeated convexity desktop launch did not return control to the existing window."
@@ -159,21 +167,22 @@ try {
 
   Write-Output "Penguin Research Convexity desktop integration test passed: launch, singleton, save, restore."
 } finally {
-  if ($null -ne $firstApp) {
-    Close-TestApp -App $firstApp
-  }
-  if ($null -ne $secondApp) {
-    Close-TestApp -App $secondApp
-  }
+  try {
+    if ($null -ne $firstApp) {
+      Close-TestApp -App $firstApp
+    }
+    if ($null -ne $secondApp) {
+      Close-TestApp -App $secondApp
+    }
+    Close-AllConvexityWindows
 
-  if ($hadExistingState -and (Test-Path -LiteralPath $backupPath)) {
-    Move-Item -LiteralPath $backupPath -Destination $windowStatePath -Force
-  } else {
-    Remove-Item -LiteralPath $windowStatePath -Force -ErrorAction SilentlyContinue
-    Remove-Item -LiteralPath $backupPath -Force -ErrorAction SilentlyContinue
-  }
-
-  if ($hadExistingApp) {
-    Start-Process -FilePath $shortcutPath | Out-Null
+    if ($hadExistingState -and (Test-Path -LiteralPath $backupPath)) {
+      Move-Item -LiteralPath $backupPath -Destination $windowStatePath -Force
+    } else {
+      Remove-Item -LiteralPath $windowStatePath -Force -ErrorAction SilentlyContinue
+      Remove-Item -LiteralPath $backupPath -Force -ErrorAction SilentlyContinue
+    }
+  } finally {
+    $cleanupResult = Complete-DesktopAcceptanceGuard -Guard $cleanupGuard
   }
 }

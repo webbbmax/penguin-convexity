@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "c2.4-desktop-acceptance-cleanup-hotfix-v1",
+  "recordedAt": "2026-08-14T00:00:00+08:00",
+  "status": "implementation_self_test_passed_waiting_independent_acceptance",
+  "authorization": "用户明确要求修复桌面验收清场，并要求以后测试结束必须验证桌面、WebView2、8766服务和测试进程恢复到测试前状态。",
+  "baseCommit": "0a6c7b5a54b4e69c9b817413cccb5b9f5796b8d5",
+  "branch": "codex/c24-desktop-acceptance-cleanup",
+  "scope": {
+    "problem": "现役桌面烟测只在全部断言通过时关闭宿主；中途异常会跳过关闭，遗留桌面宿主、WebView2和宿主启动的8766服务。",
+    "fix": "在桌面验收前记录状态，显式登记本轮测试进程，并在finally中精确清场和对账；任一状态不一致时验收失败。",
+    "ownership": "只结束测试新增或显式登记的精确PID与创建时间身份；测试前已存在的企鹅桌面、WebView2、8766服务和普通浏览器必须保留。"
+  },
+  "boundaries": {
+    "c24BusinessRulesChanged": false,
+    "databaseChanged": false,
+    "runtimeStateChanged": false,
+    "schedulerChanged": false,
+    "desktopContainerBinaryChanged": false,
+    "formalShortcutChanged": false,
+    "userPauseSettingChanged": false
+  },
+  "changedFiles": [
+    {"path": "docs/DESKTOP_ACCEPTANCE_CLEANUP_POLICY.json", "bytes": 979, "sha256": "6a2fd959666fb7c4d71a20179eae2c2731e31a12645b163398087be577f69475"},
+    {"path": "docs/RUNBOOK.md", "bytes": 31050, "sha256": "20d464be08b15ac9b787cea1341e7b2dfa714e30aa39dbc1714b829acd2c8fd3"},
+    {"path": "scripts/desktop-acceptance-guard.ps1", "bytes": 8035, "sha256": "06270e88fb5fbe57e0795fc85b0c84bb34ef1f81e68de8629455b36f5b279de2"},
+    {"path": "scripts/run_priority_acceptance.py", "bytes": 2160, "sha256": "8585a5faacc23a2116c06305c7c52c201098deb0bc4480854b0c6a2ee9d03549"},
+    {"path": "scripts/test-desktop-acceptance-cleanup.ps1", "bytes": 3119, "sha256": "bd5d9b14b8c80e8d1477c764704b2798bd2a310c3e8b0e3cbabac17d04200cfb"},
+    {"path": "scripts/test_desktop_acceptance_cleanup.py", "bytes": 2470, "sha256": "c88874a72ad59d4f97f70544e0c783988445eb52ff184da887ccbca8bae478ad"},
+    {"path": "scripts/test-c2.3-desktop-smoke.ps1", "bytes": 12034, "sha256": "871a69a0ec313b67c1a1f9fff2af8478458626a5f59e35738f01364b976342ef"},
+    {"path": "scripts/test-c2.3-independent-lifecycle.ps1", "bytes": 11466, "sha256": "525feb9ec8d2e3f1da5483499e5097f08b2699d822eaf3b5f79ee6791b2fdc3b"},
+    {"path": "scripts/test-convexity-cold-start.ps1", "bytes": 4018, "sha256": "6f17817bb1adaceb9b889316b8f97da78dbb25ed2d97a513d57174cc0375b73f"},
+    {"path": "scripts/test-convexity-window-integration.ps1", "bytes": 7109, "sha256": "e1d360a927d96f3225dd987a29ae3a4778b2382c7247be304a07253b3923c511"}
+  ],
+  "developmentVerification": {
+    "intentionalFailureCleanup": "passed",
+    "trackedProcessCleanup": "passed",
+    "port8766AbsentBeforeAndAfter": "passed",
+    "desktopWebViewAndPortDifferenceDetection": "passed",
+    "powershellSyntax": "passed",
+    "pythonTests": {"passed": 3, "failed": 0},
+    "frozenRequirementHashes": "passed_before_implementation_and_unchanged_after_implementation"
+  },
+  "developmentGate": {
+    "status": "blocked_by_pre_existing_formal_main_changes",
+    "failedChecks": ["FORMAL_MAIN"],
+    "allOtherChecks": "passed",
+    "reason": "正式main已有本任务之前存在的C2.5/C2.6规划修改；本热修没有触碰、覆盖或带入这些文件。"
+  },
+  "knownInheritedTest": "scripts/test_c2_3_desktop_contract.py在未修改的基线提交同样因C2.4合法继承资产与旧C2.3维护记录不同而失败；该既存失败不用本热修扩大范围处理。",
+  "releaseBoundary": "本记录是独立工作区的开发自测候选，尚未合并、未替换正式脚本、未发布；发布前必须使用发布候选执行独立真实桌面验收。"
+}
