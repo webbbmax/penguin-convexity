@@ -691,6 +691,20 @@
     "gate0Rerun": false,
     "historical459mRescanStarted": false
   },
+  "c2_4DesktopAcceptanceCleanupHotfix": {
+    "name": "C2.4 桌面验收清场热修复",
+    "status": "released",
+    "releasedAt": "2026-08-14T20:19:54+08:00",
+    "releaseTag": "c2.4-desktop-acceptance-cleanup-20260814",
+    "scope": "桌面验收失败或成功后的桌面宿主、企鹅专用WebView2、8766服务和测试进程清场与前后状态对账",
+    "acceptance": "docs/C2.4_DESKTOP_ACCEPTANCE_CLEANUP_FINAL_ACCEPTANCE_20260814.json",
+    "releaseManifest": "docs/C2.4_DESKTOP_ACCEPTANCE_CLEANUP_RELEASE_MANIFEST_20260814.json",
+    "businessRulesChanged": false,
+    "databaseChanged": false,
+    "schedulerChanged": false,
+    "desktopContainerBinaryChanged": false,
+    "knownSeparateIssue": "C2.3既有5秒页面就绪性能门槛在本机连续测得5.393至5.568秒；本热修不改变该冻结门槛。"
+  },
   "gate0DataPreflight": {
     "name": "C2.1 Gate 0 可恢复90天数据预检",
     "status": "passed_released_with_documented_preexisting_database_baseline_exception",
