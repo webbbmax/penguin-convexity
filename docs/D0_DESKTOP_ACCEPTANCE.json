@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "d0-desktop-acceptance-v1",
+  "release": "D0",
+  "status": "passed",
+  "executedAt": "2026-08-14T12:56:09+08:00",
+  "mode": "real Windows desktop read-only acceptance",
+  "launch": {
+    "entry": "C:\\Users\\Donutfi\\Desktop\\企鹅投研-凸性.lnk",
+    "method": "在 Windows 文件资源管理器中真实双击正式桌面快捷方式",
+    "target": "F:\\codex项目\\企鹅投研\\凸性\\desktop-host\\publish\\win-x64\\PenguinConvexity.Desktop.exe",
+    "workingDirectory": "F:\\codex项目\\企鹅投研\\凸性",
+    "shortcutSha256": "034e47abf6aa4935a376e2f03016812b35895c6491ad4103e035027bf76f1e23",
+    "executableSha256": "6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868",
+    "executableBytes": 433152,
+    "desktopProcessId": 40032,
+    "pageServiceProcessId": 11716,
+    "healthReadyWithinSeconds": 5.177
+  },
+  "health": {
+    "product": "企鹅投研-凸性",
+    "status": "ready",
+    "experienceRelease": "C2.4",
+    "port": 8766,
+    "projects": 624,
+    "candidateCases": 626,
+    "desktopShell": true
+  },
+  "readOnlyPages": [
+    {"page":"机会首页","status":"passed","evidence":"按链看重点、公开结果构成、生命周期和六链分布可见"},
+    {"page":"全部机会","status":"passed","evidence":"完整公开集合 68 个、六链筛选和分页可见"},
+    {"page":"重要变化","status":"passed","evidence":"116 条会改变公开判断的事件及六链分布可见"},
+    {"page":"我们如何判断","status":"passed","evidence":"程序三步判断、生命周期、公开状态、排序和程序上限可见"},
+    {"page":"管理工作台","status":"passed","evidence":"三段现役主链和同一完整快照可见；18,832 跟踪对象、68 个公开项目"}
+  ],
+  "singleInstance": {
+    "beforeSecondLaunchProcessCount": 1,
+    "afterSecondLaunchProcessCount": 1,
+    "processIdBefore": 40032,
+    "processIdAfter": 40032,
+    "windowCountAfter": 1,
+    "pageServiceProcessIdUnchanged": true,
+    "status": "passed"
+  },
+  "shutdown": {
+    "method": "Alt+F4 正常关闭正式桌面窗口",
+    "desktopProcessRemaining": 0,
+    "port8766ListenerRemaining": 0,
+    "reason": "验收前没有既有页面服务，因此由桌面容器创建的服务随窗口正常退出。",
+    "status": "passed"
+  },
+  "dataAndTaskBoundary": {
+    "updateButtonsClicked": false,
+    "writeRequestsInitiated": false,
+    "data/convexity.db": {
+      "beforeBytes": 568983552,
+      "afterBytes": 568983552,
+      "beforeLastWriteUtc": "2026-08-13T11:42:51.1017849Z",
+      "afterLastWriteUtc": "2026-08-13T11:42:51.1017849Z",
+      "beforeSha256": "c050fb047e75088f320d8e02fb032435b6c19c83e6b3174528ab44027262be71",
+      "afterSha256": "c050fb047e75088f320d8e02fb032435b6c19c83e6b3174528ab44027262be71"
+    },
+    "pipelineDatabaseNote": "既有调度作业 PID 15380 在验收前已于 12:45 启动并可能正常推进流水线；D0 未停止、重启或替代该进程，D0 代码 worktree 不含数据库。",
+    "schedulerDefinitionSha256Before": "c2308aa9e73b03511d497341fb408e5e8d92a789897741e59478fbcc883c9f42",
+    "schedulerDefinitionSha256After": "c2308aa9e73b03511d497341fb408e5e8d92a789897741e59478fbcc883c9f42",
+    "schedulerLastRunBefore": "2026-08-14T12:45:01+08:00",
+    "schedulerLastRunAfter": "2026-08-14T12:45:01+08:00",
+    "schedulerWorkerProcessIdBefore": 15380,
+    "schedulerWorkerProcessIdAfter": 15380,
+    "runtimeConfigHashesMatchedBaseline": 3,
+    "historicalFullScanProcesses": 0
+  }
+}

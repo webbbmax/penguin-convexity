@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "d0-tier0-independent-v1",
+  "release": "D0",
+  "status": "passed",
+  "executedAt": "2026-08-14T12:59:07+08:00",
+  "candidateCodeCommit": "f061bbf717a57849e2fb9b65079fa63264784e2c",
+  "reconstructedBaselineCommit": "2aa3c200766382b031b4cb0f9de40efafe245533",
+  "requirementsLockSha256": "5dc989bbbfb4ec6ad03cb75f0996d56214381ff8bc57f13c4e3b0bf9a5c22dcb",
+  "requirementSetSha256": "48316081f5851afad07674a54dbc733b261bf64d3bb28d1a8ea60fde9f87fc3b",
+  "independentChecks": {
+    "lockDocumentsAndInheritedDependencies": "all matched",
+    "frozenStatusInventory": "154/154, tracked 45, untracked 109, unknown 0, deletion 0",
+    "reconstructedBaseline": "584/584 files present, normalized Git blob mismatches 0",
+    "candidateBoundary": "21 changed paths, governance documents and D0 scripts only",
+    "productCodeChanges": 0,
+    "businessRuleChanges": 0,
+    "databaseFilesInAcceptanceWorktree": 0,
+    "pythonCompile": "passed",
+    "jsonParse": "passed",
+    "gateSelfTests": "9/9 passed",
+    "secretScan": "600 files, 563 text, 37 binary, forbidden paths 0, high-confidence findings 0"
+  },
+  "acceptanceDefectFoundAndFixed": {
+    "summary": "原发布门禁只能在合并、标签和推送完成后验证，不能在发布动作前阻断缺少授权的操作。",
+    "fix": "新增 release_preflight 阶段，在任何正式合并、标签或推送前检查固定候选、独立终验、真实桌面、回滚点、公开边界和用户发布授权；release 阶段继续验证发布完成状态。",
+    "affectedFiles": [
+      "scripts/d0_gate.py",
+      "scripts/test_d0_gate.py",
+      "docs/D0_GATE_CONTRACT.json",
+      "docs/DEVELOPMENT_WORKFLOW.md"
+    ],
+    "retest": "9/9 passed"
+  },
+  "fullHistoricalRegression": "not_run_not_required"
+}

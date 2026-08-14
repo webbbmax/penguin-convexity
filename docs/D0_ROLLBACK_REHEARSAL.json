@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "d0-rollback-rehearsal-v1",
+  "release": "D0",
+  "status": "passed",
+  "executedAt": "2026-08-14T12:49:00+08:00",
+  "worktree": "F:\\codex项目\\企鹅投研\\凸性-worktrees\\d0-independent-acceptance",
+  "candidateBefore": {
+    "commit": "f061bbf717a57849e2fb9b65079fa63264784e2c",
+    "tree": "47554f72a37d94321a53ef1ff949c1d6f663f837",
+    "clean": true
+  },
+  "rollbackTarget": {
+    "commit": "2aa3c200766382b031b4cb0f9de40efafe245533",
+    "tree": "5b2f03180c8bb93f581e3189c339e51587d28ac0",
+    "clean": true
+  },
+  "restoredCandidate": {
+    "branch": "codex/d0-independent-acceptance",
+    "commit": "f061bbf717a57849e2fb9b65079fa63264784e2c",
+    "tree": "47554f72a37d94321a53ef1ff949c1d6f663f837",
+    "clean": true
+  },
+  "formalDataBoundary": {
+    "data/convexity.db": {
+      "beforeBytes": 568983552,
+      "afterBytes": 568983552,
+      "beforeLastWriteUtc": "2026-08-13T11:42:51.1017849Z",
+      "afterLastWriteUtc": "2026-08-13T11:42:51.1017849Z"
+    },
+    "data/c2.1-pipeline.db": {
+      "beforeBytes": 10338525184,
+      "afterBytes": 10338525184,
+      "beforeLastWriteUtc": "2026-08-14T04:48:24.2303761Z",
+      "afterLastWriteUtc": "2026-08-14T04:48:24.2303761Z"
+    },
+    "databaseFilesInWorktree": 0,
+    "runtimeConfigHashChanges": 0,
+    "openedForWriteByD0": false
+  },
+  "method": "仅在隔离代码 worktree 中切换候选提交与重建基线，再恢复候选分支；未触碰正式 main、数据库、调度器、快捷方式或用户设置。"
+}

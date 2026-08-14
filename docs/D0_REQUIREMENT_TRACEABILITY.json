@@ -51,20 +51,20 @@
     {"id":"G01","requiredByStage":"implementation","status":"passed","summary":"worktree位于冻结路径且没有复制正式数据库","evidence":["docs/D0_IMPLEMENTATION_BASELINE.json:developmentWorktree"]},
     {"id":"G02","requiredByStage":"implementation","status":"passed","summary":"开发工作区不能改写正式运行状态","evidence":["工作区不含data runtime凭据","D0脚本仅检查Git和文档"]},
     {"id":"G03","requiredByStage":"implementation","status":"passed","summary":"写任务使用独立worktree","evidence":["git worktree list","codex/d0-development-reset"]},
-    {"id":"G04","requiredByStage":"acceptance","status":"pending","summary":"合并前后提交关系可追溯","evidence":["等待独立终验"]},
-    {"id":"G05","requiredByStage":"acceptance","status":"pending","summary":"完成不写业务数据的代码级回滚演练","evidence":["等待独立终验"]},
-    {"id":"G06","requiredByStage":"acceptance","status":"pending","summary":"回滚后恢复候选并保持Git干净","evidence":["等待独立终验"]},
+    {"id":"G04","requiredByStage":"acceptance","status":"passed","summary":"正式main、重建基线、开发候选和终验修复提交的祖先关系可追溯","evidence":["docs/D0_INDEPENDENT_ACCEPTANCE_MANIFEST.json","git merge-base --is-ancestor；正式main尚未获授权合并"]},
+    {"id":"G05","requiredByStage":"acceptance","status":"passed","summary":"完成不写业务数据的代码级回滚演练","evidence":["docs/D0_ROLLBACK_REHEARSAL.json"]},
+    {"id":"G06","requiredByStage":"acceptance","status":"passed","summary":"回滚到重建基线后恢复候选并保持Git干净","evidence":["docs/D0_ROLLBACK_REHEARSAL.json"]},
 
-    {"id":"H01","requiredByStage":"acceptance","status":"pending","summary":"桌面快捷方式真实冷启动成功","evidence":["等待独立终验只读桌面验收"]},
-    {"id":"H02","requiredByStage":"acceptance","status":"pending","summary":"健康接口返回C2.4且重复启动单实例","evidence":["等待独立终验只读桌面验收"]},
-    {"id":"H03","requiredByStage":"acceptance","status":"pending","summary":"四个前台页面和工作台只读可达","evidence":["等待独立终验只读桌面验收"]},
-    {"id":"H04","requiredByStage":"acceptance","status":"pending","summary":"D0前后未因D0脚本写入业务数据库","evidence":["等待独立终验边界复核"]},
-    {"id":"H05","requiredByStage":"acceptance","status":"pending","summary":"调度器后台任务和用户设置未被改写","evidence":["等待独立终验对比D0_IMPLEMENTATION_BASELINE"]},
-    {"id":"H06","requiredByStage":"acceptance","status":"pending","summary":"没有重跑三类历史全量任务","evidence":["等待独立终验进程与日志复核"]}
+    {"id":"H01","requiredByStage":"acceptance","status":"passed","summary":"桌面快捷方式真实冷启动成功","evidence":["docs/D0_DESKTOP_ACCEPTANCE.json:launch"]},
+    {"id":"H02","requiredByStage":"acceptance","status":"passed","summary":"健康接口返回C2.4且重复启动保持单实例","evidence":["docs/D0_DESKTOP_ACCEPTANCE.json:health","docs/D0_DESKTOP_ACCEPTANCE.json:singleInstance"]},
+    {"id":"H03","requiredByStage":"acceptance","status":"passed","summary":"四个前台页面和工作台只读可达","evidence":["docs/D0_DESKTOP_ACCEPTANCE.json:readOnlyPages"]},
+    {"id":"H04","requiredByStage":"acceptance","status":"passed","summary":"D0脚本没有写入两个正式业务数据库","evidence":["docs/D0_ROLLBACK_REHEARSAL.json:formalDataBoundary","docs/D0_DESKTOP_ACCEPTANCE.json:dataAndTaskBoundary"]},
+    {"id":"H05","requiredByStage":"acceptance","status":"passed","summary":"调度器后台任务和用户暂停频率设置未被停止重启或改写","evidence":["docs/D0_DESKTOP_ACCEPTANCE.json:dataAndTaskBoundary","docs/D0_IMPLEMENTATION_BASELINE.json:runtimeConfigHashes"]},
+    {"id":"H06","requiredByStage":"acceptance","status":"passed","summary":"没有重跑Gate0、459万或90天历史扫描","evidence":["docs/D0_DESKTOP_ACCEPTANCE.json:dataAndTaskBoundary"]}
   ],
-  "implementationSummary": {
-    "passed": 36,
-    "pendingIndependentAcceptance": 9,
+  "acceptanceSummary": {
+    "passed": 45,
+    "pendingIndependentAcceptance": 0,
     "pendingRelease": 3,
     "failed": 0,
     "total": 48

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "d0-independent-acceptance-manifest-v1",
+  "release": "D0",
+  "name": "开发体系重置0",
+  "status": "independent_acceptance_passed_waiting_release_authorization",
+  "currentProductReleaseRemains": "C2.4",
+  "acceptedCandidateCodeCommit": "f061bbf717a57849e2fb9b65079fa63264784e2c",
+  "acceptedCandidateBranch": "codex/d0-independent-acceptance",
+  "reconstructedBaselineCommit": "2aa3c200766382b031b4cb0f9de40efafe245533",
+  "formalMainAtAcceptance": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+  "originMainAtAcceptance": "a302c6b98e4086dbe3af88a8d5ffdf8f47a1775c",
+  "requirements": {
+    "passed": 45,
+    "pendingRelease": 3,
+    "failed": 0,
+    "total": 48
+  },
+  "evidence": [
+    "docs/D0_TIER0_INDEPENDENT.json",
+    "docs/D0_GATE_SELF_TEST.json",
+    "docs/D0_ROLLBACK_REHEARSAL.json",
+    "docs/D0_DESKTOP_ACCEPTANCE.json",
+    "docs/D0_REQUIREMENT_TRACEABILITY.json",
+    "docs/D0_INDEPENDENT_ACCEPTANCE.md"
+  ],
+  "scopeResult": {
+    "productCodeChanged": false,
+    "businessRulesChanged": false,
+    "databasesChangedByD0": false,
+    "schedulerOrUserSettingsChanged": false,
+    "desktopEntryChanged": false,
+    "historicalFullTasksRerun": false
+  },
+  "publication": {
+    "userAuthorized": false,
+    "formalMainMerged": false,
+    "formalTagCreated": false,
+    "githubPushed": false,
+    "nextGate": "release_preflight"
+  }
+}
