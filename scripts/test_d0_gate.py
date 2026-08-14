@@ -162,6 +162,69 @@ class D0GateFixture:
         self.run(self.formal, "fetch", "origin", "main")
         return self.config("release", self.formal)
 
+    def install_gate_contract(
+        self,
+        extra_requirements: dict[str, str],
+        *,
+        add_trace_rows: bool,
+        inherited_hash_compatibility: list[dict[str, str]] | None = None,
+    ) -> dict[str, str]:
+        stages = {**REQUIREMENT_STAGE, **extra_requirements}
+        contract_path = self.worktree / "docs/custom-gate-contract.json"
+        self.write(
+            contract_path,
+            json.dumps(
+                {
+                    "schemaVersion": "test-gate-contract-v1",
+                    "requirementStages": stages,
+                    "readinessArtifacts": [],
+                    "inheritedDependencyHashCompatibility": inherited_hash_compatibility or [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+        )
+        if add_trace_rows:
+            trace_path = self.worktree / "docs/D0_REQUIREMENT_TRACEABILITY.json"
+            trace = json.loads(trace_path.read_text(encoding="utf-8"))
+            trace["requirements"].extend(
+                {
+                    "id": requirement_id,
+                    "requiredByStage": stage,
+                    "status": "passed",
+                    "evidence": ["custom gate fixture"],
+                }
+                for requirement_id, stage in extra_requirements.items()
+            )
+            self.write(trace_path, json.dumps(trace, ensure_ascii=False, indent=2) + "\n")
+        self.run(
+            self.worktree,
+            "add",
+            "docs/custom-gate-contract.json",
+            "docs/D0_REQUIREMENT_TRACEABILITY.json",
+            "docs/D0_REQUIREMENTS_LOCK.json",
+        )
+        self.run(self.worktree, "commit", "-m", "custom gate contract")
+        self.candidate = self.rev(self.worktree)
+        return {
+            "path": "docs/custom-gate-contract.json",
+            "sha256": sha256(contract_path),
+        }
+
+    def replace_inherited_hash(self, relative: str, frozen_hash: str) -> str:
+        lock_path = self.worktree / "docs/D0_REQUIREMENTS_LOCK.json"
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        for row in lock["inheritedFrozenDependencies"]:
+            if row["path"] == relative:
+                row["sha256"] = frozen_hash
+                break
+        else:
+            raise AssertionError(f"missing inherited dependency: {relative}")
+        self.write(lock_path, json.dumps(lock, ensure_ascii=False, indent=2) + "\n")
+        self.lock_hash = sha256(lock_path)
+        return sha256(self.worktree / relative)
+
 
 class D0GateTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -242,6 +305,58 @@ class D0GateTests(unittest.TestCase):
             evaluate(self.fixture.prepare_release()),
             "RELEASE_MANIFEST",
         )
+
+    def test_custom_gate_contract_requires_every_declared_requirement(self) -> None:
+        contract = self.fixture.install_gate_contract(
+            {"I01": "acceptance", "J07": "release"},
+            add_trace_rows=False,
+        )
+        config = self.fixture.config("acceptance")
+        config["gateContract"] = contract
+        result = evaluate(config)
+        self.assert_failed(result, "TRACEABILITY")
+        self.assertNotIn("GATE_CONTRACT", result["failedChecks"])
+
+    def test_custom_gate_contract_hash_mismatch_blocks(self) -> None:
+        contract = self.fixture.install_gate_contract(
+            {"I01": "acceptance"},
+            add_trace_rows=True,
+        )
+        contract["sha256"] = "0" * 64
+        config = self.fixture.config("acceptance")
+        config["gateContract"] = contract
+        self.assert_failed(evaluate(config), "GATE_CONTRACT")
+
+    def test_complete_custom_gate_contract_passes(self) -> None:
+        contract = self.fixture.install_gate_contract(
+            {"I01": "acceptance", "J07": "release"},
+            add_trace_rows=True,
+        )
+        config = self.fixture.config("acceptance")
+        config["gateContract"] = contract
+        result = evaluate(config)
+        self.assertTrue(result["passed"], result)
+
+    def test_declared_crlf_to_lf_hash_compatibility_passes(self) -> None:
+        relative = "docs/C2.4_RELEASE_MANIFEST.json"
+        frozen_hash = "1" * 64
+        canonical_hash = self.fixture.replace_inherited_hash(relative, frozen_hash)
+        contract = self.fixture.install_gate_contract(
+            {},
+            add_trace_rows=False,
+            inherited_hash_compatibility=[
+                {
+                    "path": relative,
+                    "frozenWorkingTreeSha256": frozen_hash,
+                    "canonicalGitBlobSha256": canonical_hash,
+                    "transformation": "CRLF_to_LF_only",
+                }
+            ],
+        )
+        config = self.fixture.config("acceptance")
+        config["gateContract"] = contract
+        result = evaluate(config)
+        self.assertTrue(result["passed"], result)
 
 
 if __name__ == "__main__":

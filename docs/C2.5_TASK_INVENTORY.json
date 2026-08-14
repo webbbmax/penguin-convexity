@@ -1,0 +1,305 @@
+{
+  "schemaVersion": "c2.5-task-inventory-v1",
+  "release": "C2.5",
+  "status": "frozen",
+  "capturedAt": "2026-08-14T14:52:49+08:00",
+  "dynamicStateIsFrozen": false,
+  "purpose": "登记所有由正式桌面、正式服务、Windows任务、生产API或现役恢复路径可达的产品任务；测试、构建和独立验收脚本不作为产品任务，除非被正式入口调用。",
+  "reconciliationRule": "现场枚举到的可执行产品入口必须与本清单稳定taskId一一对应；遗漏或重复均阻断C2.5验收。",
+  "authoritativeFiles": [
+    "scripts/serve_local.py",
+    "scripts/c2_2_runtime.py",
+    "scripts/run_c2_2_update.py",
+    "scripts/candidate_production_runtime.py",
+    "scripts/run-c2-1-update-hidden.vbs",
+    "scripts/c2_1_runtime.py",
+    "scripts/c1_8_runtime.py",
+    "scripts/run_c1_8_scheduler.py",
+    "scripts/update_tasks.py",
+    "scripts/run_update_task.py",
+    "scripts/temp_artifact_retention.py"
+  ],
+  "frozenFacts": {
+    "singleActiveWindowsSchedulerMachineName": "PenguinConvexity-C1.8-Scheduler",
+    "singleActiveWindowsSchedulerDisplayName": "当前统一自动更新调度器",
+    "singleActiveWindowsSchedulerAction": "wscript.exe scripts\\run-c2-1-update-hidden.vbs <python>",
+    "hiddenRunnerCurrentAction": "temp_artifact_retention.py sweep --min-interval-hours 24; run_c2_2_update.py --job due --trigger automatic",
+    "activePrimaryJobIds": [
+      "c22.screening",
+      "c22.convexity_tracking"
+    ],
+    "updateTaskCatalogCount": 21,
+    "gate0WindowsTaskInstalledButDisabled": true,
+    "approvedSecondSchedulerCount": 0
+  },
+  "entries": [
+    {
+      "taskId": "windows.scheduler.primary",
+      "displayName": "当前统一自动更新调度器",
+      "machineNames": ["PenguinConvexity-C1.8-Scheduler"],
+      "entryKind": "windows_scheduled_task",
+      "lifecycleClass": "scheduled_active",
+      "entryPoints": ["Windows Task Scheduler"],
+      "purpose": "每15分钟检查一次到期作业，先执行轻量临时产物保留检查，再调用C2.2/C2.4统一编排器。",
+      "inputs": ["Windows计划任务定义", "runtime/c2.2/update-config.json"],
+      "outputs": ["子任务启动结果", "Windows任务结果"],
+      "downstreamTaskIds": ["maintenance.temp_artifact_retention", "c22.orchestrator.due"],
+      "controlPolicy": "details_only; C2.5不改Windows触发定义，作业频率在各现役作业配置中控制",
+      "mustExpose": ["enabled", "state", "lastRunTime", "lastTaskResult", "nextRunTime", "action", "trigger"]
+    },
+    {
+      "taskId": "windows.hidden_runner",
+      "displayName": "统一隐藏运行入口",
+      "machineNames": ["scripts/run-c2-1-update-hidden.vbs"],
+      "entryKind": "hidden_runner",
+      "lifecycleClass": "active_component",
+      "entryPoints": ["PenguinConvexity-C1.8-Scheduler action"],
+      "purpose": "按固定顺序执行维护检查和到期业务作业，运行时不弹控制台。",
+      "inputs": ["Python路径", "项目根目录"],
+      "outputs": ["maintenance日志", "C2.2运行日志"],
+      "controlPolicy": "no_direct_button; 通过下游作业控制"
+    },
+    {
+      "taskId": "maintenance.temp_artifact_retention",
+      "displayName": "临时产物保留检查",
+      "machineNames": ["temp_artifact_retention.py sweep"],
+      "entryKind": "maintenance",
+      "lifecycleClass": "scheduled_active",
+      "entryPoints": ["windows.hidden_runner", "manual controlled check"],
+      "purpose": "每天最多一次检查runtime/temp-artifacts中已登记直属子目录的到期状态。",
+      "inputs": ["docs/TEMP_ARTIFACT_RETENTION_POLICY.json", "runtime/temp-artifacts登记"],
+      "outputs": ["维护记录"],
+      "controlPolicy": "允许预览后手动运行既有检查；禁止越界删除",
+      "forbidden": ["data", "backups", "Gate0", "正式程序", "运行状态", "未登记路径"]
+    },
+    {
+      "taskId": "c22.orchestrator.due",
+      "displayName": "现役到期作业编排器",
+      "machineNames": ["scripts/run_c2_2_update.py --job due --trigger automatic"],
+      "entryKind": "orchestrator",
+      "lifecycleClass": "active_component",
+      "entryPoints": ["windows.hidden_runner", "direct CLI for recovery/development"],
+      "purpose": "在唯一运行锁下选择到期的新币筛选和凸性跟踪，并恢复已授权候选历史队列。",
+      "inputs": ["runtime/c2.2/update-config.json", "runtime/c2.2/jobs/*.json", "runtime/c2.2/pipeline.lock"],
+      "outputs": ["runtime/c2.2/scheduler-state.json", "现役作业状态", "原子快照"],
+      "downstreamTaskIds": ["c22.screening", "c22.convexity_tracking", "candidate.history_backlog"],
+      "controlPolicy": "no_generic_start_all_without_enumerated_preview"
+    },
+    {
+      "taskId": "c22.screening",
+      "displayName": "90天新币筛选",
+      "machineNames": ["screening"],
+      "entryKind": "business_job",
+      "lifecycleClass": "scheduled_active",
+      "entryPoints": ["/api/c2.2/run", "/api/c2.4/run", "run_c2_2_update.py"],
+      "configPath": "runtime/c2.2/update-config.json#jobs.screening",
+      "statusPath": "runtime/c2.2/jobs/screening.json",
+      "purpose": "运行现役90天筛选、候选生产交接和C2.4组合快照。",
+      "inputs": ["data/c2.1-pipeline.db", "筛选来源", "C2.4规则"],
+      "outputs": ["data/c2.1-pipeline.db", "C2.1/C2.2/C2.4快照"],
+      "controlPolicy": "full_current_job_controls",
+      "allowedControls": ["run_now", "resume_checkpoint", "safe_pause", "pause_future_cycles", "resume_future_cycles", "set_interval_1_3_6_12_24", "retry_registered_source"]
+    },
+    {
+      "taskId": "c22.convexity_tracking",
+      "displayName": "凸性跟踪",
+      "machineNames": ["convexity_tracking"],
+      "entryKind": "business_job",
+      "lifecycleClass": "scheduled_active",
+      "entryPoints": ["/api/c2.2/run", "/api/c2.4/run", "run_c2_2_update.py"],
+      "configPath": "runtime/c2.2/update-config.json#jobs.convexity_tracking",
+      "statusPath": "runtime/c2.2/jobs/convexity_tracking.json",
+      "purpose": "完成现役凸性跟踪、旧主干受控组件、深层结构增强和原子快照发布。",
+      "inputs": ["data/c2.1-pipeline.db", "data/convexity.db", "c22第一关交接", "跟踪来源"],
+      "outputs": ["两库现役结果", "C2.2/C2.4跟踪与公开快照"],
+      "controlPolicy": "full_current_job_controls",
+      "allowedControls": ["run_now", "resume_checkpoint", "safe_pause", "pause_future_cycles", "resume_future_cycles", "set_interval_1_3_6_12_24", "retry_registered_source"]
+    },
+    {
+      "taskId": "candidate.daily_incremental",
+      "displayName": "日常候选生产",
+      "machineNames": ["candidate_production:daily_incremental"],
+      "entryKind": "resumable_queue",
+      "lifecycleClass": "active_component",
+      "entryPoints": ["c22.screening", "/api/c2.2/candidate-production/run", "candidate_production.py run"],
+      "statusAuthority": ["data/c2.1-pipeline.db candidate_scan_partitions", "runtime/c2.2/candidate-production/lock", "runtime/c2.2/candidate-production/status.json"],
+      "purpose": "处理日常增量候选和第一关积压，保存分片断点。",
+      "controlPolicy": "resume_pause_retry_existing_partition_only",
+      "allowedControls": ["resume_checkpoint", "safe_pause", "cancel_pause_request", "retry_existing_failed_partition"]
+    },
+    {
+      "taskId": "candidate.history_backlog",
+      "displayName": "已授权历史候选续跑",
+      "machineNames": ["candidate_production:historical_backlog"],
+      "entryKind": "resumable_queue",
+      "lifecycleClass": "completed_one_off",
+      "entryPoints": ["c22.orchestrator.due resume_authorized_history", "/api/c2.2/candidate-production/run", "candidate_production.py run --history-authorized"],
+      "statusAuthority": ["data/c2.1-pipeline.db candidate_scan_partitions", "runtime/c2.2/candidate-production/config.json"],
+      "purpose": "只从已授权459万历史候选的既有分片断点恢复；完成后保留历史。",
+      "controlPolicy": "no_restart; resume_or_retry_only_when_incomplete_partition_exists_and_original_authorization_is_valid",
+      "forbidden": ["run_from_start", "rerun_gate0", "expand_historical_scope"]
+    },
+    {
+      "taskId": "c21.pipeline.legacy",
+      "displayName": "C2.1旧版更新流水线",
+      "machineNames": ["/api/c2.1/run", "/api/c2.1/scheduler", "/api/c2.1/pause-current", "scripts/run_c2_1_update.py"],
+      "entryKind": "legacy_api_and_runner",
+      "lifecycleClass": "legacy_callable",
+      "purpose": "历史C2.1同步、补证、评估、快照和来源重试；不属于当前Windows自动主干。",
+      "inputs": ["data/c2.1-pipeline.db", "runtime/c2.1/*"],
+      "outputs": ["C2.1数据库状态与快照"],
+      "controlPolicy": "details_only_until_separate_disposition; no_new_C2.5_run_button",
+      "risk": "配置可显示automatic但当前唯一Windows任务不调用该旧编排器，不能冒充现役自动状态。"
+    },
+    {
+      "taskId": "c18.scheduler.legacy",
+      "displayName": "C1.8旧版调度配置与运行",
+      "machineNames": ["/api/c1-8/scheduler", "/api/c1-8/run", "scripts/run_c1_8_scheduler.py"],
+      "entryKind": "legacy_api_and_runner",
+      "lifecycleClass": "legacy_callable",
+      "purpose": "历史C1.8到期任务和配置入口；机器名与当前Windows任务重名但不是当前自动编排器。",
+      "inputs": ["旧C1.8配置/状态", "data/convexity.db"],
+      "outputs": ["旧主干任务结果与快照"],
+      "controlPolicy": "details_only_until_separate_disposition; no_new_C2.5_run_button",
+      "risk": "可能写入旧主干状态，必须与当前Windows任务实际角色分开展示。"
+    },
+    {
+      "taskId": "gate0.backfill.disabled",
+      "displayName": "Gate 0历史回填任务",
+      "machineNames": ["PenguinConvexity-Gate0-Backfill", "gate0_backfill_background.py --resume"],
+      "entryKind": "windows_scheduled_task",
+      "lifecycleClass": "disabled",
+      "purpose": "已完成的一次性Gate 0历史工具。",
+      "controlPolicy": "read_only_no_enable_no_run",
+      "forbidden": ["enable", "run", "resume", "rerun"]
+    },
+    {
+      "taskId": "legacy.update_task_catalog",
+      "displayName": "旧主干按需任务目录",
+      "machineNames": ["/api/update-task", "scripts/run_update_task.py", "scripts/update_tasks.py"],
+      "entryKind": "task_catalog_api",
+      "lifecycleClass": "legacy_callable",
+      "purpose": "通过taskId执行21个旧主干/内部任务；其中一个由现役凸性跟踪包装器使用。",
+      "controlPolicy": "show_all_children; direct_control_disabled_except_through_approved_current_wrapper"
+    },
+    {
+      "taskId": "legacy.refresh_candidates_api",
+      "displayName": "旧候选池刷新接口",
+      "machineNames": ["POST /api/refresh-candidates"],
+      "entryKind": "manual_write_api",
+      "lifecycleClass": "legacy_callable",
+      "controlPolicy": "details_only_until_safety_contract"
+    },
+    {
+      "taskId": "legacy.gate_screening_api",
+      "displayName": "旧硬门槛保存与重算接口",
+      "machineNames": ["POST /api/gate-screening"],
+      "entryKind": "manual_write_api",
+      "lifecycleClass": "legacy_callable",
+      "controlPolicy": "details_only; C2.5不得借此修改冻结规则"
+    },
+    {
+      "taskId": "legacy.manual_scan_api",
+      "displayName": "旧手动链与来源扫描接口",
+      "machineNames": ["POST /api/manual-scan"],
+      "entryKind": "manual_write_api",
+      "lifecycleClass": "legacy_callable",
+      "controlPolicy": "details_only_until_chain_source_safety_contract"
+    },
+    {
+      "taskId": "legacy.manual_review_api",
+      "displayName": "旧人工复核接口",
+      "machineNames": ["POST /api/manual-review"],
+      "entryKind": "manual_write_api",
+      "lifecycleClass": "dormant_compatibility",
+      "controlPolicy": "no_control; zero_manual_product_boundary"
+    },
+    {
+      "taskId": "legacy.tracking_decision_review_api",
+      "displayName": "旧跟踪决定复核接口",
+      "machineNames": ["POST /api/tracking-decision-review"],
+      "entryKind": "manual_write_api",
+      "lifecycleClass": "dormant_compatibility",
+      "controlPolicy": "details_only_until_separate_disposition"
+    },
+    {
+      "taskId": "service.startup_snapshot_validation",
+      "displayName": "服务启动快照校验",
+      "machineNames": ["rebuild_startup_snapshots"],
+      "entryKind": "startup_task",
+      "lifecycleClass": "startup_automatic",
+      "purpose": "服务启动时校验C2.1/C2.2/C2.4发布快照格式，不启动业务更新。",
+      "controlPolicy": "view_status_only"
+    },
+    {
+      "taskId": "service.local_http",
+      "displayName": "本地业务服务",
+      "machineNames": ["scripts/serve_local.py", "127.0.0.1:8766"],
+      "entryKind": "service",
+      "lifecycleClass": "service_component",
+      "purpose": "为正式桌面提供唯一HTTP页面与业务接口。",
+      "controlPolicy": "desktop_lifecycle_only; no_second_service"
+    },
+    {
+      "taskId": "desktop.wpf_host",
+      "displayName": "企鹅投研桌面容器",
+      "machineNames": [".NET 10 LTS WPF WebView2 Evergreen"],
+      "entryKind": "desktop_service_owner",
+      "lifecycleClass": "service_component",
+      "purpose": "负责单实例、服务生命周期、窗口恢复、故障页和外链隔离。",
+      "controlPolicy": "Windows window behavior; not a business task"
+    }
+  ],
+  "updateTaskCatalog": [
+    {"taskId":"c2_2_convexity_tracking_refresh","displayName":"C2.2凸性跟踪更新","classification":"active_component","controlPolicy":"only_through_c22.convexity_tracking"},
+    {"taskId":"full_refresh","displayName":"凸性全量更新","classification":"legacy_callable","controlPolicy":"details_only_high_risk"},
+    {"taskId":"market_refresh","displayName":"行情与流动性","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"high_value_evidence_refresh","displayName":"正式项目持续证据","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"evidence_refresh","displayName":"证据链接健康","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"tracking_task_refresh","displayName":"项目跟踪任务","classification":"legacy_callable","controlPolicy":"details_only_old_mainline"},
+    {"taskId":"contract_refresh","displayName":"合约与卖出路径","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"source_discovery_refresh","displayName":"机器发现与自动建档","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"cactus_discovery_continue","displayName":"继续扫描Cactus","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"discovery_refresh","displayName":"常用链项目发现","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"identity_refresh","displayName":"发现队列身份复核","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"machine_asset_identity_refresh","displayName":"机器项目资产与基础档案","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"profile_enrichment_refresh","displayName":"正式项目身份与官方入口","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"formal_market_exit_refresh","displayName":"正式项目市场与退出资料","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"formal_research_materials_refresh","displayName":"正式项目研究资料","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"machine_research_scoring_refresh","displayName":"机器证据与凸性评分","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"machine_conclusion_refresh","displayName":"机器状态与结论发布","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"catalyst_trade_path_refresh","displayName":"催化交易路径","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"monitoring_infrastructure_refresh","displayName":"项目监控基础设施","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"weak_signal_refresh","displayName":"弱线索统一归类","classification":"manual_on_demand","controlPolicy":"details_only_until_safety_contract"},
+    {"taskId":"data_backbone_refresh","displayName":"最大漏斗数据主干","classification":"legacy_callable","controlPolicy":"details_only_old_mainline"}
+  ],
+  "observedRuntimeBaseline": {
+    "capturedAt": "2026-08-14T14:52:49+08:00",
+    "interpretation": "仅证明冻结时现场状态，产品必须实时重读，不能长期缓存为当前事实。",
+    "primaryWindowsTask": {
+      "installed": true,
+      "enabled": true,
+      "actionMatchesFrozenFact": true
+    },
+    "gate0WindowsTask": {
+      "installed": true,
+      "enabled": false
+    },
+    "currentJobConfiguration": {
+      "screening": {"mode":"automatic","intervalHours":12,"paused":false},
+      "convexity_tracking": {"mode":"automatic","intervalHours":12,"paused":false}
+    },
+    "legacyC21ConfigurationWarning": "旧C2.1配置仍写automatic，但当前唯一Windows任务不调用C2.1编排器。",
+    "knownControlPlaneRequirement": "现场曾出现作业状态running/failed与Windows任务仍运行并存；C2.5必须以进程、锁、心跳和状态时间判断，不得只读字符串。"
+  },
+  "acceptance": [
+    "windows_task_enumeration_matches_registry",
+    "production_post_api_allowlist_matches_registry",
+    "update_task_catalog_exactly_21_and_all_registered",
+    "hidden_runner_actions_match_registry",
+    "current_jobs_and_candidate_queues_have_authority_sources",
+    "legacy_callable_entries_are_visible_not_misrepresented_as_current",
+    "no_unregistered_executable_product_entry",
+    "no_duplicate_task_id_for_one_entry_without_explicit_alias"
+  ]
+}

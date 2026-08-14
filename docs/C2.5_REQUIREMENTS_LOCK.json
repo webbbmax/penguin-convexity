@@ -1,0 +1,198 @@
+{
+  "schemaVersion": "c2.5-requirements-lock-v1",
+  "release": "C2.5",
+  "name": "管理者控制面",
+  "status": "frozen",
+  "frozenAt": "2026-08-14T15:06:14+08:00",
+  "userAuthorization": "按冻结稿冻结 C2.5",
+  "currentPublishedProductRemains": "C2.4",
+  "productCodeStarted": false,
+  "hashAlgorithm": "SHA-256",
+  "requirementSetCanonicalization": "按documents顺序，以path:lowercase_sha256逐行连接，行间使用LF，末尾无换行",
+  "requirementSetSha256": "6cea572837fe9a9e0c77f1d3ec7604081cb6f366d3c3ad72e92f037cbd58ed60",
+  "draftConfirmation": {
+    "plainLanguageDraft": "docs/C2.5_FREEZE_DRAFT.md",
+    "draftBytes": 45611,
+    "draftSha256": "c37d57b47c4a4f5367dfda48b0fd8f1b6b02b2e58074de16d58c95a4e4d55753",
+    "userAuthorization": "按冻结稿冻结 C2.5",
+    "formalizationPolicy": "把管理者完整知情权、安全控制权、规则透明权、审计权、Apple桌面视觉、Windows实际操作和C2.4零删除继承拆为可实现可验收合同；不授权开发。"
+  },
+  "documents": [
+    {
+      "path": "docs/C2.5_PRD.md",
+      "role": "管理者权利、产品范围、八类信息域、任务控制、规则治理、设计和非范围",
+      "bytes": 11326,
+      "sha256": "75804641d9e8b6600be5782f4cf690887e8f565282ba4c0e07312e7de4f84423"
+    },
+    {
+      "path": "docs/C2.5_PAGE_DATA_CONTRACT.md",
+      "role": "权威状态、时间、任务对象、页面字段、组合API、陈旧与读写边界",
+      "bytes": 10022,
+      "sha256": "bd6573fd73afad4e6441691901e224a5c7ed46fe8939fd85c60363bbd8f5a092"
+    },
+    {
+      "path": "docs/C2.5_PRODUCT_DESIGN_SYSTEM.md",
+      "role": "企鹅与南极蓝、Apple桌面视觉、Windows操作、设计令牌、控件、加载、进度和无障碍",
+      "bytes": 10416,
+      "sha256": "30b5f369a4e830f04f90222392cae104807ada7c6dd8a7801a2659e738922f06"
+    },
+    {
+      "path": "docs/C2.5_DESIGN_SPEC.md",
+      "role": "八类页面布局、控制确认、进度、图表、状态、双视口和真实视觉交付",
+      "bytes": 7511,
+      "sha256": "ddb77650748adc03ec00445cb867b0ebf6fc1bbe53c5714c7dee57a2e5753195"
+    },
+    {
+      "path": "docs/C2.5_COPY_DICTIONARY.md",
+      "role": "任务、状态、按钮、规则、时间、空值和投资责任固定用语",
+      "bytes": 4900,
+      "sha256": "8aca40841380ae8910164fa3bb8236ee02719bf21b498d4f59e9bedb340e8775"
+    },
+    {
+      "path": "docs/C2.5_TASK_INVENTORY.json",
+      "role": "Windows任务、隐藏入口、现役作业、候选队列、旧API、20类入口和21个按需子任务登记",
+      "bytes": 18517,
+      "sha256": "b72349781ab2fb376ab4cee7e4fe0bd4cd94eda4e896009f241fa6011d180a4e"
+    },
+    {
+      "path": "docs/C2.5_CONTROL_CONTRACT.md",
+      "role": "预览确认、幂等、运行锁、安全暂停、频率、重试、审计和回滚",
+      "bytes": 5840,
+      "sha256": "84b62d5d05d3657e708e4b8dcb4570924a162f07e85cee64ff1bf709fefb22f1"
+    },
+    {
+      "path": "docs/C2.5_RULE_TRANSPARENCY_CONTRACT.md",
+      "role": "冻结基线、有效规则、活动覆盖、项目解释、重放、变更和回滚",
+      "bytes": 5369,
+      "sha256": "5041ae4308954dd8ccde9e481f486f70398a86ba85769cea65563a8c9e1c44c7"
+    },
+    {
+      "path": "docs/C2.5_INHERITANCE_MANIFEST.json",
+      "role": "C2.4的29个既有路由逐项承载、11个新管理路由和零批准删除",
+      "bytes": 8397,
+      "sha256": "5e913bdf1ea6ea69abfcd338f3e464d49331dba6efbe1e99c49e2a327856521e"
+    },
+    {
+      "path": "docs/C2.5_TEST_STRATEGY.md",
+      "role": "任务登记优先、控制反向测试、规则对账、真实视觉和风险分层",
+      "bytes": 5562,
+      "sha256": "e6b69b56d928526adcd090095d4769b5590ae42a6863e209232aa79f837d9e69"
+    },
+    {
+      "path": "docs/C2.5_ACCEPTANCE_PLAN.md",
+      "role": "冻结、任务、状态、控制、规则、继承、设计、Windows桌面、审计和发布阻断验收",
+      "bytes": 6982,
+      "sha256": "d1da7f13a3d331068a0e5f07a819529a4b8bc7c6cfac259cc559a0d59173a4af"
+    },
+    {
+      "path": "docs/C2.5_HANDOFF.md",
+      "role": "D0工作区门禁、实现顺序、允许与禁止修改、数据测试和独立终验交接",
+      "bytes": 4414,
+      "sha256": "de1a593df6ff7dbf4a38dacc0336d42398ad1020cc0cb1b683a0fe69056e6965"
+    }
+  ],
+  "inheritedFrozenDependencies": [
+    {
+      "path": "docs/C2.4_REQUIREMENTS_LOCK.json",
+      "sha256": "9c41e39b4311bef4cfcc3111cabda16c0f43e87129ac5fe4089688d58546d447",
+      "purpose": "C2.4业务、前台、两关、四路径、贝叶斯和29路由继续冻结"
+    },
+    {
+      "path": "docs/C2.4_RELEASE_MANIFEST.json",
+      "sha256": "c60fb206218db4d22cbdb40b1a36619f7f6a194721fba301b4b0662965e9d290",
+      "purpose": "当前单机单目录发布、正式入口、候选和回滚事实"
+    },
+    {
+      "path": "docs/C2.3_REQUIREMENTS_LOCK.json",
+      "sha256": "4992b5d393f1566dd731de0af8ab73e7c7f8e3006829db26820e06797453ce36",
+      "purpose": ".NET 10 WPF WebView2容器、Windows生命周期和单一HTTP业务通道"
+    },
+    {
+      "path": "docs/C2.2_REQUIREMENTS_LOCK.json",
+      "sha256": "f9a7b132d1d3b680364dd06648cd2118c2ad9443313060ed2efe4b6b1737a86c",
+      "purpose": "两个独立可恢复作业、稳定assetId、原子快照和唯一调度器"
+    },
+    {
+      "path": "docs/D0_REQUIREMENTS_LOCK.json",
+      "sha256": "5dc989bbbfb4ec6ad03cb75f0996d56214381ff8bc57f13c4e3b0bf9a5c22dcb",
+      "purpose": "可信Git基线、独立worktree、固定候选和发布门禁"
+    },
+    {
+      "path": "docs/D0_RELEASE_MANIFEST.json",
+      "sha256": "e58e8b6988ce2c28fc766e26acb9e08644e29dc428ecb3eb22eb20b0bca71213",
+      "purpose": "D0已发布和当前正式main治理基线"
+    },
+    {
+      "path": "docs/C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+      "sha256": "7f6ccc9e35ab6ba7b5212911116facd9698489c0f7d0f27b9dbcf16dc0c7e202",
+      "purpose": "当前经用户批准的活动试行覆盖，必须与冻结基线分开展示"
+    },
+    {
+      "path": "docs/MODEL_HANDOFF_PROTOCOL.md",
+      "sha256": "6e9bc11c80b83add05e705ec2885f7396cf3278643e55fa93ffc2fb74a310515",
+      "purpose": "模型由用户决定，规划、开发、终验和发布阶段分离"
+    },
+    {
+      "path": "docs/TEST_PRIORITY_POLICY.json",
+      "sha256": "d4f155782cbb09a224fe7498501c37a0b6dc9ecbd9536a238d2ab4964ab25148",
+      "purpose": "Tier0核心失败不能被低优先级通过数抵消"
+    },
+    {
+      "path": "docs/TEMP_ARTIFACT_RETENTION_POLICY.json",
+      "sha256": "ef141ba04314bfd186082045deb2d6c31fc2cec39270ffe58bbe2edd259037c1",
+      "purpose": "隔离测试产物登记、封存和安全清理边界"
+    }
+  ],
+  "frozenProductChoices": {
+    "managerKnowledgeRightFirstPriority": true,
+    "allExecutableProductEntriesRegistered": true,
+    "unregisteredEntryBlocksAcceptance": true,
+    "registeredTopLevelEntryCountAtFreeze": 20,
+    "registeredUpdateTaskCatalogCount": 21,
+    "currentPrimaryJobs": ["c22.screening", "c22.convexity_tracking"],
+    "legacyEntriesVisible": true,
+    "legacyEntriesAutomaticallyControllable": false,
+    "singleWindowsSchedulerRetained": true,
+    "secondSchedulerApproved": false,
+    "secondTaskStateApproved": false,
+    "safePauseNotProcessKill": true,
+    "highImpactRequiresPreviewConfirmationAuthoritativeReadbackAudit": true,
+    "ruleLayers": ["frozen_baseline", "effective", "active_override", "history"],
+    "ruleChangeCanBypassVersionFreeze": false,
+    "newBusinessDatabase": false,
+    "auditIsTaskStateAuthority": false,
+    "approvedDeletionCount": 0,
+    "inheritedRouteCount": 29,
+    "newManagerRouteCount": 11,
+    "brandAndAntarcticPaletteRetained": true,
+    "visualReference": "Apple desktop HIG principles",
+    "interactionReference": "Windows mouse keyboard window and DPI conventions",
+    "macOSWindowSimulation": false,
+    "singleDesignTokenSystem": true,
+    "realVisualAcceptanceRequired": true,
+    "desktopOnly": true,
+    "mobileOrWebInScope": false,
+    "investmentRulesChanged": false,
+    "sixChainBusinessRepairInScope": false,
+    "gate0Or459mRerun": false,
+    "automaticTrading": false
+  },
+  "implementationAuthority": "等待用户另行明确回复‘开始 C2.5 整版开发’；本次冻结不授权创建C2.5 worktree、修改产品代码、数据库、运行状态、现役任务、调度器、快捷方式或用户设置。",
+  "finalAuthority": "任务登记和单一通道Tier0、控制与规则Tier1必须先通过，再执行数据继承、真实桌面和边缘验收；独立终验通过后仍需用户明确发布授权。",
+  "immutableBoundaries": [
+    "工作台是产品管理者权限表达，界面优化不能隐藏任务规则信息或控制",
+    "所有由正式产品可达的自动手动隐藏恢复旧版入口必须登记",
+    "现役控制复用唯一调度器业务编排器运行锁检查点和状态来源",
+    "Gate0不启用不恢复不重跑，459万历史不从头运行",
+    "旧C1.8和C2.1先透明登记，不在C2.5擅自删除或接成现役控制",
+    "冻结基线当前有效规则活动覆盖和历史版本必须分开",
+    "C2.5不改变第一关第二关四路径贝叶斯L0至L5风险动作或行动语言",
+    "C2.4的29个既有路由批准删除数为0",
+    "企鹅Logo口号和南极蓝不变，Apple视觉不能破坏Windows操作习惯",
+    "进度不得伪造，未知总量必须明确显示未知",
+    "前后台共享基础设计系统但导航页面壳权限和责任语言继续分离",
+    "不建立第二调度器第二任务状态第二业务数据库或第二CSharp业务通道",
+    "不读取RWA运行资产，不开发移动端网页版钱包或自动交易",
+    "冻结不等于开发授权，开发不等于独立终验或发布"
+  ]
+}

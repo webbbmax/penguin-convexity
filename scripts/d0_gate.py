@@ -78,6 +78,7 @@ def validate_requirements_lock(
     repo: Path,
     lock_config: dict[str, Any],
     checks: list[dict[str, object]],
+    inherited_hash_compatibility: list[dict[str, Any]] | None = None,
 ) -> None:
     relative = lock_config.get("path", "docs/D0_REQUIREMENTS_LOCK.json")
     expected_lock_hash = str(lock_config.get("sha256", "")).lower()
@@ -101,6 +102,11 @@ def validate_requirements_lock(
         return
 
     errors: list[str] = []
+    compatibility_by_path = {
+        str(row.get("path") or ""): row
+        for row in (inherited_hash_compatibility or [])
+        if isinstance(row, dict) and row.get("path")
+    }
     canonical_rows: list[str] = []
     for row in lock.get("documents", []):
         path = repo / row["path"]
@@ -117,7 +123,15 @@ def validate_requirements_lock(
         path = repo / row["path"]
         blob = git_blob(repo, row["path"])
         clean = git(repo, "diff", "--quiet", "HEAD", "--", row["path"], check=False).returncode == 0
-        if not path.is_file() or blob is None or hashlib.sha256(blob).hexdigest() != str(row["sha256"]).lower() or not clean:
+        expected = str(row["sha256"]).lower()
+        actual = hashlib.sha256(blob).hexdigest() if blob is not None else ""
+        compatibility = compatibility_by_path.get(row["path"], {})
+        compatible = bool(
+            compatibility.get("frozenWorkingTreeSha256") == expected
+            and compatibility.get("canonicalGitBlobSha256") == actual
+            and compatibility.get("transformation") == "CRLF_to_LF_only"
+        )
+        if not path.is_file() or blob is None or (actual != expected and not compatible) or not clean:
             errors.append(row["path"])
     add_check(
         checks,
@@ -131,6 +145,7 @@ def validate_traceability(
     repo: Path,
     relative: str,
     required_through: str,
+    requirement_stages: dict[str, str],
     checks: list[dict[str, object]],
 ) -> None:
     path = repo / relative
@@ -143,25 +158,104 @@ def validate_traceability(
         add_check(checks, "TRACEABILITY", False, f"需求追踪无法解析：{type(exc).__name__}")
         return
     by_id = {row.get("id"): row for row in rows}
-    missing = sorted(set(REQUIREMENT_STAGE) - set(by_id))
+    expected_ids = set(requirement_stages)
+    missing = sorted(expected_ids - set(by_id))
+    unexpected = sorted(str(value) for value in set(by_id) - expected_ids)
     duplicate = len(rows) != len(by_id)
     stage_rank = {"implementation": 1, "acceptance": 2, "release": 3}
     required_rank = stage_rank[required_through]
     failed = []
-    for requirement_id, requirement_stage in REQUIREMENT_STAGE.items():
+    stage_mismatch = []
+    for requirement_id, requirement_stage in requirement_stages.items():
+        row = by_id.get(requirement_id, {})
+        if row and row.get("requiredByStage") != requirement_stage:
+            stage_mismatch.append(requirement_id)
         if stage_rank[requirement_stage] <= required_rank:
-            row = by_id.get(requirement_id, {})
             if row.get("status") != "passed" or not row.get("evidence"):
                 failed.append(requirement_id)
-    passed = not missing and not duplicate and not failed
+    passed = not missing and not unexpected and not duplicate and not stage_mismatch and not failed
     detail_parts = []
     if missing:
         detail_parts.append("缺少 " + ",".join(missing))
+    if unexpected:
+        detail_parts.append("多出 " + ",".join(unexpected))
     if duplicate:
         detail_parts.append("存在重复编号")
+    if stage_mismatch:
+        detail_parts.append("阶段不一致 " + ",".join(stage_mismatch))
     if failed:
         detail_parts.append("未通过 " + ",".join(failed))
     add_check(checks, "TRACEABILITY", passed, "需求追踪完整" if passed else "；".join(detail_parts))
+
+
+def load_gate_contract(
+    repo: Path,
+    contract_config: dict[str, Any] | None,
+    checks: list[dict[str, object]],
+) -> dict[str, Any] | None:
+    if not contract_config:
+        return None
+    relative = str(contract_config.get("path") or "")
+    expected_hash = str(contract_config.get("sha256") or "").lower()
+    blob = git_blob(repo, relative) if relative else None
+    clean = bool(
+        relative
+        and blob is not None
+        and git(repo, "diff", "--quiet", "HEAD", "--", relative, check=False).returncode == 0
+    )
+    actual_hash = hashlib.sha256(blob).hexdigest() if blob is not None else ""
+    if not relative or blob is None or not expected_hash or actual_hash != expected_hash or not clean:
+        add_check(checks, "GATE_CONTRACT", False, "版本门禁合同缺失、哈希不匹配或工作区已改写")
+        return None
+    try:
+        contract = json.loads(blob.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        add_check(checks, "GATE_CONTRACT", False, f"版本门禁合同无法解析：{type(exc).__name__}")
+        return None
+
+    stages = contract.get("requirementStages")
+    valid_stages = {"implementation", "acceptance", "release"}
+    stage_errors = []
+    if not isinstance(stages, dict) or not stages:
+        stage_errors.append("requirementStages")
+    else:
+        for requirement_id, stage in stages.items():
+            if not isinstance(requirement_id, str) or not requirement_id or stage not in valid_stages:
+                stage_errors.append(str(requirement_id))
+    add_check(
+        checks,
+        "GATE_CONTRACT",
+        not stage_errors,
+        "版本门禁合同哈希和需求阶段有效" if not stage_errors else "版本门禁合同字段无效：" + ",".join(stage_errors),
+    )
+    if stage_errors:
+        return None
+
+    artifact_errors = []
+    for row in contract.get("readinessArtifacts", []):
+        artifact = str(row.get("path") or "")
+        expected = str(row.get("sha256") or "").lower()
+        artifact_blob = git_blob(repo, artifact) if artifact else None
+        artifact_clean = bool(
+            artifact
+            and artifact_blob is not None
+            and git(repo, "diff", "--quiet", "HEAD", "--", artifact, check=False).returncode == 0
+        )
+        if (
+            not artifact
+            or artifact_blob is None
+            or not expected
+            or hashlib.sha256(artifact_blob).hexdigest() != expected
+            or not artifact_clean
+        ):
+            artifact_errors.append(artifact or "empty_path")
+    add_check(
+        checks,
+        "READINESS_ARTIFACTS",
+        not artifact_errors,
+        "开发前就绪产物哈希匹配" if not artifact_errors else "开发前就绪产物不匹配：" + ",".join(artifact_errors),
+    )
+    return contract
 
 
 def validate_evidence(
@@ -263,7 +357,18 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
     authorized_root = Path(config["authorizedWorktreeRoot"]).resolve()
     checks: list[dict[str, object]] = []
 
-    validate_requirements_lock(repo, config.get("requirementsLock", {}), checks)
+    gate_contract = load_gate_contract(repo, config.get("gateContract"), checks)
+    validate_requirements_lock(
+        repo,
+        config.get("requirementsLock", {}),
+        checks,
+        gate_contract.get("inheritedDependencyHashCompatibility", []) if gate_contract else None,
+    )
+    requirement_stages = (
+        dict(gate_contract["requirementStages"])
+        if gate_contract is not None
+        else REQUIREMENT_STAGE
+    )
     rollback_ref = str(config.get("rollbackRef", ""))
     rollback = git(repo, "cat-file", "-e", f"{rollback_ref}^{{commit}}", check=False) if rollback_ref else None
     add_check(checks, "ROLLBACK_REF", bool(rollback_ref and rollback and rollback.returncode == 0), "回滚提交存在" if rollback_ref and rollback and rollback.returncode == 0 else "回滚提交缺失")
@@ -283,6 +388,14 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
         formal_clean = not git(formal, "status", "--porcelain=v1").stdout.strip()
         main_branch = str(config.get("mainBranch", "main"))
         add_check(checks, "FORMAL_MAIN", formal_branch == main_branch and formal_clean, "正式 main 干净" if formal_branch == main_branch and formal_clean else "正式 main 不干净或分支错误")
+        if gate_contract is not None and gate_contract.get("requiresReadinessEvidenceAtDevelopment") is True:
+            validate_evidence(
+                repo,
+                config.get("readinessEvidence"),
+                "READINESS",
+                "开发前就绪审计证据",
+                checks,
+            )
 
     head = git(repo, "rev-parse", "HEAD").stdout.strip()
     if stage in {"acceptance", "release_preflight", "release"}:
@@ -300,6 +413,7 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
             repo,
             str(config.get("traceability", "docs/D0_REQUIREMENT_TRACEABILITY.json")),
             "implementation" if stage == "acceptance" else "acceptance" if stage == "release_preflight" else "release",
+            requirement_stages,
             checks,
         )
 

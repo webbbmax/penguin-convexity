@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "c2.5-gate-contract-v1",
+  "release": "C2.5",
+  "status": "development_readiness_only",
+  "gateEntrypoint": "scripts/d0_gate.py",
+  "requiresReadinessEvidenceAtDevelopment": true,
+  "purpose": "在不改变D0默认门禁的前提下，把C2.5的92项精确需求集合、开发前就绪证据和不可漂移技术产物接入同一阶段门禁。",
+  "compatibility": "未传gateContract时scripts/d0_gate.py继续使用D0原有48项REQUIREMENT_STAGE；C2.5必须显式传入本文件路径及其Git blob SHA-256。",
+  "readinessArtifacts": [
+    {"path":"docs/C2.5_DEVELOPMENT_READINESS_BASELINE.json","sha256":"9cbd857e3aec2f6ce191933116fe986a112255bf70a357181d486c155d71671e"},
+    {"path":"docs/C2.5_TASK_INVENTORY_SUPPLEMENT.json","sha256":"3de78f827dc832e04ad4dcfb2006f383694e1424b4ff6dda845bfcb05c93ccc3"},
+    {"path":"docs/C2.5_FIXTURE_DESIGN.json","sha256":"9ab57b55a9ab28b88daaf837ff3e3fe90563638f0aef4653bb6fb03cdaacb8db"},
+    {"path":"scripts/d0_gate.py","sha256":"fa426cde4567f82225b9efadcfa24a1efd6983a2b59f912f9b47ffde2a29f4ae"},
+    {"path":"scripts/test_d0_gate.py","sha256":"79cd3eccfcac1017a836d91e0691328ba27abbb6de0c5b402ff2bd0747af4402"},
+    {"path":"scripts/test_c2_5_readiness.py","sha256":"7f5a68bcad1ff1cdebf6ee871d21e3d9651ff18804e71dfb84ca997721f30544"}
+  ],
+  "inheritedDependencyHashCompatibility": [
+    {
+      "path": "docs/D0_RELEASE_MANIFEST.json",
+      "frozenWorkingTreeSha256": "e58e8b6988ce2c28fc766e26acb9e08644e29dc428ecb3eb22eb20b0bca71213",
+      "canonicalGitBlobSha256": "dcddcd0b6a17db4174068066e9bfa441a9272400c662d814c615cde86a5fa04e",
+      "transformation": "CRLF_to_LF_only",
+      "semanticDiff": false
+    }
+  ],
+  "requirementStages": {
+    "A01":"implementation", "A02":"implementation", "A03":"acceptance", "A04":"implementation", "A05":"implementation",
+    "B01":"implementation", "B02":"implementation", "B03":"implementation", "B04":"implementation", "B05":"implementation", "B06":"implementation", "B07":"implementation", "B08":"implementation", "B09":"implementation", "B10":"implementation",
+    "C01":"implementation", "C02":"implementation", "C03":"implementation", "C04":"implementation", "C05":"implementation", "C06":"implementation", "C07":"implementation", "C08":"implementation",
+    "D01":"implementation", "D02":"implementation", "D03":"implementation", "D04":"implementation", "D05":"implementation", "D06":"implementation", "D07":"implementation", "D08":"implementation", "D09":"implementation", "D10":"implementation", "D11":"implementation", "D12":"implementation", "D13":"implementation", "D14":"implementation",
+    "E01":"implementation", "E02":"implementation", "E03":"implementation", "E04":"implementation", "E05":"implementation", "E06":"implementation", "E07":"implementation", "E08":"implementation", "E09":"implementation", "E10":"implementation", "E11":"implementation", "E12":"implementation",
+    "F01":"implementation", "F02":"implementation", "F03":"implementation", "F04":"implementation", "F05":"implementation", "F06":"implementation", "F07":"implementation", "F08":"implementation", "F09":"implementation", "F10":"implementation", "F11":"implementation", "F12":"implementation",
+    "G01":"implementation", "G02":"implementation", "G03":"implementation", "G04":"implementation", "G05":"implementation", "G06":"implementation", "G07":"implementation", "G08":"implementation",
+    "H01":"implementation", "H02":"implementation", "H03":"implementation", "H04":"implementation", "H05":"implementation", "H06":"implementation", "H07":"implementation", "H08":"implementation",
+    "I01":"acceptance", "I02":"acceptance", "I03":"acceptance", "I04":"acceptance", "I05":"acceptance", "I06":"acceptance", "I07":"acceptance", "I08":"acceptance",
+    "J01":"implementation", "J02":"implementation", "J03":"implementation", "J04":"acceptance", "J05":"acceptance", "J06":"acceptance", "J07":"acceptance"
+  },
+  "stageRequirements": {
+    "development": [
+      "正式main干净且从C2.5就绪提交建立独立codex/ worktree",
+      "C2.5需求锁与继承依赖哈希匹配",
+      "本门禁合同及六项就绪产物Git blob哈希匹配",
+      "只读就绪校验器输出status=passed",
+      "回滚提交存在且密钥、数据库、运行状态未进入提交"
+    ],
+    "acceptance": [
+      "固定候选提交且工作区干净",
+      "79项implementation需求均有实现、测试和证据并为passed",
+      "Tier0任务登记、单一通道和真实状态对账通过",
+      "低优先级通过数不能抵消核心失败"
+    ],
+    "release_preflight": [
+      "固定候选与独立终验通过提交一致",
+      "全部92项需求均有证据并为passed",
+      "真实Windows桌面、回滚和恢复证据通过",
+      "用户另行明确授权发布"
+    ],
+    "release": [
+      "正式main、候选、终验、发布提交和标签一致",
+      "发布清单、远端提交、回滚点和密钥边界全部通过"
+    ]
+  },
+  "resolvedImplementationSequence": [
+    "0. 开发授权后先运行development门禁并固定独立worktree",
+    "1. 先落地共享设计令牌、控件状态和六组隔离夹具骨架",
+    "2. 再实现任务登记、入口对账、状态组合和独立任务详情",
+    "3. 再实现预览确认、幂等、锁、安全暂停、频率和重试",
+    "4. 再实现规则透明、同输入重放和assetId判定追踪",
+    "5. 再完成29路由继承、快照交接、审计与恢复",
+    "6. 最后执行真实Windows桌面、DPI、键鼠、窗口和减少动画验收"
+  ],
+  "sequenceRationale": "冻结交接稿的页面顺序与设计令牌前置原则存在表面冲突；本技术顺序明确令牌和状态夹具先于页面实现，不改变任何冻结产品范围。",
+  "requiredRuntimeInputFields": {
+    "gateContract": {"path":"docs/C2.5_GATE_CONTRACT.json","sha256":"必须取自固定就绪提交的Git blob"},
+    "requirementsLock": {"path":"docs/C2.5_REQUIREMENTS_LOCK.json","sha256":"5b92ebb9107b240de73417957e79d22405bbdb2817356c252f9a14c9e5eea8ae"},
+    "readinessEvidence": "由scripts/test_c2_5_readiness.py对干净正式main生成的status=passed JSON",
+    "traceability": "docs/C2.5_REQUIREMENT_TRACEABILITY.json"
+  },
+  "forbiddenBypass": [
+    "把pending或缺证据需求改写为passed",
+    "只检查92项数量而不检查精确ID和requiredByStage",
+    "绕过6个补充POST别名或把兼容别名登记为第二任务",
+    "用C2.6分支、0a6c7b5规划提交或远端旧main代替正式就绪基线",
+    "为通过就绪门禁提前实现C2.5产品页面、接口或运行状态"
+  ]
+}

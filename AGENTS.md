@@ -45,6 +45,7 @@
 - C2.4 已由用户于 2026-08-13 明确冻结、授权整版开发、独立终验并发布。正式范围只以 `docs/C2.4_REQUIREMENTS_LOCK.json` 所列十份文件为准：第一关宽筛选、第二关完整公开快照、四条动态比较路径、三个公开状态、两个生命周期池、同链首页最多 10 个、全部机会完整保留、29 个既有路由零删除继承，以及普通用户图表化 UI/UX。独立终验发现并修复动态比较组未生效和 GitHub 归因污染，最终 79/79 通过。发布证据为 `docs/C2.4_ACCEPTANCE_MANIFEST.json`、`docs/C2.4_FINAL_ACCEPTANCE.md` 和 `docs/C2.4_RELEASE_MANIFEST.json`。当前是单机单目录发布，没有隔离的测试环境与正式环境；发布后维护不得借机改写冻结范围。
 - C2.4 已由用户于 2026-08-13 明确回复“可以按冻结稿冻结C2.4”正式冻结，当前等待另行开发授权。正式范围只以 `docs/C2.4_REQUIREMENTS_LOCK.json` 所列十份文件为准：第一关“90 天候选初筛”只用 T0/身份方向/真实买卖/硬交易阻断四项宽进，第二关完成公开底线、四路径与贝叶斯跟踪，机会中心只读第二关完整公开快照；首页每链合计最多 10 个只是展示切片，全部公开项目仍持续跟踪并进入“全部机会”；第 91 天只迁移曾在 0—90 天完成两关并达到公开条件的同一 `assetId`；29 个既有路由零批准删除并逐项登记；测试必须先按 `assetId` 独立重算核心集合，低优先级通过数不能抵消核心失败。冻结动作不授权修改产品代码、数据库、作业或正式入口。
 - 开发体系重置0（D0）已于 2026-08-14 完成冻结、实现、独立终验和正式发布；正式标签为 `c2.4-reconstructed-baseline-d0`，发布证据为 `docs/D0_RELEASE_MANIFEST.json` 和 `docs/D0_RELEASE.md`。D0 是工程治理阶段，不是 C2.5，当前产品版本继续为 C2.4；正式范围只以 `docs/D0_REQUIREMENTS_LOCK.json` 所列三份文件为准。D0 未修改六链、筛选、贝叶斯、UI、业务数据库、现役任务、唯一调度器、快捷方式或用户设置；D0 完成不自动授权下一产品版本或业务修复。
+- C2.5“管理者控制面”已由用户于 2026-08-14 明确回复“按冻结稿冻结 C2.5”正式冻结，当前阶段为 `requirements_frozen_waiting_development_authorization`，尚未开发。正式范围只以 `docs/C2.5_REQUIREMENTS_LOCK.json` 所列十二份文件为准：管理者知情权第一优先，所有自动、手动、隐藏、恢复和旧版可执行入口必须登记；现役控制必须复用唯一调度器、运行锁和状态来源；冻结基线、当前有效规则、活动覆盖和历史必须分开；C2.4的29个路由批准删除0。企鹅、口号和南极蓝不变，视觉与反馈对齐Apple桌面原则，鼠标、键盘、窗口和系统缩放遵循Windows。开发前就绪阻断已通过技术补充收口，但92项追踪仍全部为pending；只有用户另行明确回复“开始 C2.5 整版开发”后才能建立实现worktree并开始产品代码。
 - 用户于 2026-08-08 以“按原流程纠正 Gate 0”冻结 Gate 0 工具范围。正式范围只以 `docs/GATE0_REQUIREMENTS_LOCK.json` 所列文件为准；该工具已经完成实现、独立后台扫描、终验修复和放行。该冻结只授权 Gate 0 独立工具，不授权 C2.1 产品编码。
 
 ## 数据与可恢复性
@@ -100,7 +101,7 @@
 2. 助手可以在能力、成本或长任务风险存在明显差异时给出一次非强制建议，但不得把建议变成短口令、固定结尾或反复提醒。
 3. 版本规划、需求冻结、实现、开发自测、最终验收和发布仍是不同责任阶段；取消模型门禁不等于取消阶段门禁。
 4. C2.4 已发布；业务或页面维护前必须核验 C2.4 需求锁及 C2.2/C2.3 继承依赖哈希，桌面容器维护还必须核验 C2.3 需求锁。开发自测不能替代独立终验，任何范围变化或下一版本仍需用户明确授权。
-5. C2.4 已冻结但未授权开发；只有用户另行明确授权“开始 C2.4 整版开发”后，才能建立实现基线并修改冻结范围内产品。实现和终验都必须先执行 Tier 0 核心集合对账，再扩展到规则、恢复、真实桌面和边缘功能。
+5. C2.5 已正式冻结但未授权开发；只有用户另行明确授权“开始 C2.5 整版开发”后，才能按 D0 流程建立独立 worktree 和实现基线。实现和终验都必须先执行任务入口登记、单一通道和真实状态 Tier 0 对账，再扩展到控制、规则、继承、真实桌面和边缘功能。
 6. 最终验收必须独立执行当前冻结版本按风险定义的完整验收，不相信实现报告本身；局部修复先定点重验，只有跨越影响边界时才扩大回归，冻结范围缺陷可直接修复并重验，不要求更换模型。
 7. 任何模型的修改都只能追溯到用户确认的需求或明确验收问题；范围变化、评分变化、动作变化和新版本仍需用户授权。
 8. 只有完整验收通过后，才能更新最终清单、`docs/STATUS.md` 和发布状态。
@@ -130,3 +131,4 @@
 20. `docs/C2.4_PHASE.json`、`docs/C2.4_REQUIREMENTS_LOCK.json`、`docs/C2.4_PRD.md`、`docs/C2.4_PAGE_DATA_CONTRACT.md`、`docs/C2.4_DESIGN_SPEC.md`、`docs/C2.4_COPY_DICTIONARY.md`、`docs/C2.4_RULE_CONFIG.json`、`docs/C2.4_RULE_REGRESSION_MANIFEST.json`、`docs/C2.4_INHERITANCE_MANIFEST.json`、`docs/C2.4_TEST_STRATEGY.md`、`docs/C2.4_ACCEPTANCE_PLAN.md`、`docs/C2.4_HANDOFF.md`（执行 C2.4 发布后维护、复验或回滚时必须完整读取并核验哈希）
 20. `docs/C2.4_PHASE.json`、`docs/C2.4_REQUIREMENTS_LOCK.json`、`docs/C2.4_PRD.md`、`docs/C2.4_PAGE_DATA_CONTRACT.md`、`docs/C2.4_DESIGN_SPEC.md`、`docs/C2.4_COPY_DICTIONARY.md`、`docs/C2.4_RULE_CONFIG.json`、`docs/C2.4_RULE_REGRESSION_MANIFEST.json`、`docs/C2.4_INHERITANCE_MANIFEST.json`、`docs/C2.4_TEST_STRATEGY.md`、`docs/C2.4_ACCEPTANCE_PLAN.md`、`docs/C2.4_HANDOFF.md`（执行 C2.4 开发、终验、修复或发布时必须完整读取并核验哈希）
 21. `docs/D0_PHASE.json`、`docs/D0_REQUIREMENTS_LOCK.json`、`docs/D0_FREEZE_DRAFT.md`、`docs/D0_DEVELOPMENT_WORKFLOW.md`、`docs/D0_ACCEPTANCE_PLAN.md`（执行 D0 或规划其后的版本、核心修复和发布流程时必须完整读取并核验哈希）
+22. `docs/C2.5_PHASE.json`、`docs/C2.5_REQUIREMENTS_LOCK.json`、`docs/C2.5_PRD.md`、`docs/C2.5_PAGE_DATA_CONTRACT.md`、`docs/C2.5_PRODUCT_DESIGN_SYSTEM.md`、`docs/C2.5_DESIGN_SPEC.md`、`docs/C2.5_COPY_DICTIONARY.md`、`docs/C2.5_TASK_INVENTORY.json`、`docs/C2.5_CONTROL_CONTRACT.md`、`docs/C2.5_RULE_TRANSPARENCY_CONTRACT.md`、`docs/C2.5_INHERITANCE_MANIFEST.json`、`docs/C2.5_TEST_STRATEGY.md`、`docs/C2.5_ACCEPTANCE_PLAN.md`、`docs/C2.5_HANDOFF.md`（执行 C2.5 开发、终验、修复或发布时必须完整读取并核验哈希）；开发前还必须读取 `docs/C2.5_DEVELOPMENT_READINESS_BASELINE.json`、`docs/C2.5_TASK_INVENTORY_SUPPLEMENT.json`、`docs/C2.5_REQUIREMENT_TRACEABILITY.json`、`docs/C2.5_GATE_CONTRACT.json` 和 `docs/C2.5_FIXTURE_DESIGN.json` 并通过C2.5 development门禁。这五份文件只收口技术就绪，不改写十二份冻结产品范围。

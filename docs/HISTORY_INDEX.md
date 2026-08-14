@@ -12,6 +12,14 @@
 | 当前产品冻结 | `docs/C2.4_REQUIREMENTS_LOCK.json` | C2.4 唯一正式范围 |
 | 当前产品发布 | `docs/C2.4_RELEASE_MANIFEST.json` | C2.4 发布证据 |
 | 当前产品继承 | `docs/C2.4_INHERITANCE_MANIFEST.json` | 29 个角色路由零删除基线 |
+| 下一产品冻结 | `docs/C2.5_REQUIREMENTS_LOCK.json` | C2.5 管理者控制面正式范围 |
+| C2.5任务清单 | `docs/C2.5_TASK_INVENTORY.json` | 现役、旧版、隐藏和按需入口登记 |
+| C2.5开发前基线 | `docs/C2.5_DEVELOPMENT_READINESS_BASELINE.json` | 最新C2.4源基线、冻结后修复和C2.6隔离 |
+| C2.5任务技术补充 | `docs/C2.5_TASK_INVENTORY_SUPPLEMENT.json` | 20个POST入口和21项任务目录精确映射 |
+| C2.5需求追踪 | `docs/C2.5_REQUIREMENT_TRACEABILITY.json` | A01至J07共92项实现、测试和证据槽位 |
+| C2.5开发门禁 | `docs/C2.5_GATE_CONTRACT.json` | 92项阶段门禁和开发前就绪产物哈希 |
+| C2.5夹具设计 | `docs/C2.5_FIXTURE_DESIGN.json` | 六组隔离夹具场景；设计完成但未实现 |
+| C2.5整体设计 | `docs/C2.5_PRODUCT_DESIGN_SYSTEM.md` | 南极蓝、Apple视觉与Windows操作规范 |
 | 开发体系冻结 | `docs/D0_REQUIREMENTS_LOCK.json` | D0 唯一正式范围 |
 | 开发体系验收 | `docs/D0_ACCEPTANCE_PLAN.md` | A01-H06 验收项目 |
 

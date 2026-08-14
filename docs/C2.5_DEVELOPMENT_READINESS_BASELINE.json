@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "c2.5-development-readiness-baseline-v1",
+  "release": "C2.5",
+  "status": "ready_for_closure_verification",
+  "capturedAt": "2026-08-14T21:00:00+08:00",
+  "purpose": "固定C2.5开发前应继承的正式C2.4源代码事实，并把冻结后修复、C2.6规划和运行资产明确分开。",
+  "productCodeStarted": false,
+  "formalRoot": "F:\\codex项目\\企鹅投研\\凸性",
+  "sourceBaseline": {
+    "commit": "65cafa7525e2a4a34e6362204c370d10fa058e1f",
+    "tag": "c2.4-desktop-acceptance-cleanup-20260814",
+    "tagResolvesToCommit": true,
+    "meaning": "C2.4已发布产品及冻结后桌面验收清理的最新本地正式源代码基线；C2.5就绪提交必须是其后继。"
+  },
+  "frozenC2_5PlanningAnchor": {
+    "planningBaselineCommitRecordedByInheritanceManifest": "0a6c7b5a54b4e69c9b817413cccb5b9f5796b8d5",
+    "requirementsLockPath": "docs/C2.5_REQUIREMENTS_LOCK.json",
+    "requirementsLockSha256": "5b92ebb9107b240de73417957e79d22405bbdb2817356c252f9a14c9e5eea8ae",
+    "developmentMustNotStartFromPlanningBaselineAlone": true,
+    "reason": "规划基线之后已有C2.4调度修复和桌面验收清理；跳过这些提交会回归已发布修复。"
+  },
+  "lineEndingCompatibility": {
+    "path": "docs/D0_RELEASE_MANIFEST.json",
+    "frozenWorkingTreeSha256": "e58e8b6988ce2c28fc766e26acb9e08644e29dc428ecb3eb22eb20b0bca71213",
+    "canonicalGitBlobSha256": "dcddcd0b6a17db4174068066e9bfa441a9272400c662d814c615cde86a5fa04e",
+    "transformation": "CRLF_to_LF_only",
+    "semanticDiff": false,
+    "policy": "不改写C2.5冻结锁；C2.5门禁只接受本条明确登记的工作树CRLF到Git blob LF等价，不允许一般性忽略哈希。"
+  },
+  "postPlanningBaselineCommitsIncluded": [
+    {
+      "commit": "4c0953fca9911a401766f0d3869bb22f355062a1",
+      "subject": "fix: repair C2.4 scheduler reconciliation"
+    },
+    {
+      "commit": "7f6fb76853bb44b22b4b4c8515d302dbc75dc10d",
+      "subject": "test: enforce desktop acceptance cleanup"
+    },
+    {
+      "commit": "092c3b3ced9923fba79dbe5378885898a39e259b",
+      "subject": "docs: record desktop cleanup hotfix release"
+    },
+    {
+      "commit": "b4502cfbda9c5539e42cde290dd66ea4fc76effe",
+      "subject": "docs: update desktop cleanup release status"
+    },
+    {
+      "commit": "65cafa7525e2a4a34e6362204c370d10fa058e1f",
+      "subject": "docs: register desktop cleanup hotfix migration"
+    }
+  ],
+  "remoteObservation": {
+    "remote": "origin/main",
+    "observedCommit": "4c0953fca9911a401766f0d3869bb22f355062a1",
+    "localMainAhead": 4,
+    "localMainBehind": 0,
+    "pushAuthorizedByThisClosure": false,
+    "meaning": "远端差异是已知发布记录差异，不以远端旧提交覆盖本地正式基线；本次不推送。"
+  },
+  "c2_6Isolation": {
+    "branch": "codex/c2-6-planning",
+    "commit": "e617f3fff889db7d53954eba6739ad0119ed718a",
+    "worktree": "F:\\codex项目\\企鹅投研\\凸性-worktrees\\c26-planning",
+    "paths": [
+      "docs/C2.6_PLANNING_DRAFT.md",
+      "docs/C2.6_PLANNING_STATUS.json"
+    ],
+    "includedInC2_5Baseline": false
+  },
+  "readinessCommitRule": "开发授权后，从包含本基线、C2.5冻结文件、92项追踪、任务补充、门禁合同和夹具设计的干净main提交建立独立codex/ worktree；不得从0a6c7b5或C2.6分支建立。",
+  "explicitlyExcluded": [
+    "任何C2.5页面、接口、控制器、状态组合器或设计令牌实现",
+    "data/convexity.db和data/c2.1-pipeline.db",
+    "runtime状态、锁、日志、游标和用户配置",
+    "Windows计划任务、快捷方式和正式桌面入口变更",
+    "C2.6规划文件和任何C2.6实现"
+  ]
+}

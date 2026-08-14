@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "c2.5-fixture-design-v1",
+  "release": "C2.5",
+  "status": "design_only_not_implemented",
+  "purpose": "在产品开发前固定可复现的测试夹具边界、真值和预期；本文件不创建数据库、不启动任务、不实现产品。",
+  "fixtureRootPlanned": "fixtures/c2.5",
+  "runtimeEvidenceRootPlanned": "runtime/temp-artifacts/<c2.5-test-run>",
+  "productionDataAllowed": false,
+  "fixturePrinciples": [
+    "所有ID、时间、进程、心跳、锁、进度、结果和错误都显式给定，不从当前生产运行状态复制。",
+    "只读验收使用固定小型SQLite或JSON快照；控制测试使用隔离替身，禁止调用正式POST接口。",
+    "未知、真实零、部分成功、失败和陈旧必须是不同夹具，不用空对象兼任。",
+    "每个夹具包含输入、权威来源、预期组合状态、允许操作、禁止操作和断言。",
+    "视觉夹具只使用虚构项目和任务名称，不携带密钥、令牌、正式日志或生产响应。"
+  ],
+  "fixtureSets": [
+    {
+      "id": "task_state_matrix",
+      "plannedPath": "fixtures/c2.5/task-state-matrix.json",
+      "covers": ["B01-B10", "C01-C08", "F01-F07"],
+      "scenarios": [
+        "idle_healthy",
+        "running_with_live_pid_lock_and_heartbeat",
+        "safe_pause_requested_before_checkpoint",
+        "paused_at_checkpoint",
+        "partial_success_with_scoped_source_failure",
+        "failed_with_recovery_entry",
+        "stale_running_without_live_basis",
+        "disabled_gate0",
+        "legacy_c18_and_c21_executable_but_not_primary",
+        "known_total_progress",
+        "unknown_total_progress",
+        "real_zero_result"
+      ]
+    },
+    {
+      "id": "windows_scheduler_matrix",
+      "plannedPath": "fixtures/c2.5/windows-scheduler-matrix.json",
+      "covers": ["B01-B03", "B07-B09", "C03-C05", "G08"],
+      "scenarios": [
+        "machine_name_and_current_role_both_visible",
+        "last_result_267009_means_scheduler_process_still_running_only",
+        "windows_next_check_separate_from_business_next_due",
+        "hidden_vbs_downstream_resolved",
+        "single_scheduler_no_second_business_channel"
+      ]
+    },
+    {
+      "id": "rule_transparency_matrix",
+      "plannedPath": "fixtures/c2.5/rule-transparency-matrix.json",
+      "covers": ["E01-E12"],
+      "scenarios": [
+        "frozen_baseline_without_override",
+        "active_override_no_effect_on_same_input",
+        "active_override_changes_asset_set",
+        "disabled_threshold_preserves_raw_evidence",
+        "unapproved_override_rejected",
+        "expired_override_rejected",
+        "damaged_override_rejected",
+        "bayesian_score_not_eligibility_or_convexity_signal"
+      ]
+    },
+    {
+      "id": "control_safety_matrix",
+      "plannedPath": "fixtures/c2.5/control-safety-matrix.json",
+      "covers": ["D01-D14", "J01-J06"],
+      "scenarios": [
+        "preview_then_confirm_success",
+        "duplicate_request_id_does_not_restart",
+        "expired_confirmation_token_rejected",
+        "used_confirmation_token_rejected",
+        "state_drift_after_preview_rejected",
+        "existing_writer_lock_rejected",
+        "pause_request_visible_before_checkpoint",
+        "frequency_allowlist_and_authoritative_readback",
+        "source_retry_scope_validation",
+        "partition_retry_validation",
+        "failure_keeps_previous_state_and_audit",
+        "restart_and_page_reopen_recovery"
+      ]
+    },
+    {
+      "id": "inheritance_registry_matrix",
+      "plannedPath": "fixtures/c2.5/inheritance-registry-matrix.json",
+      "covers": ["B04-B06", "B10", "F08-F12", "G03-G08"],
+      "scenarios": [
+        "29_inherited_routes_exact_set",
+        "21_update_task_ids_exact_set",
+        "20_post_endpoints_exact_set",
+        "approved_deletion_zero",
+        "frontend_admin_boundary",
+        "asset_id_return_context",
+        "rwa_runtime_reference_zero",
+        "last_complete_snapshot_preserved_on_failure"
+      ]
+    },
+    {
+      "id": "desktop_visual_interaction_matrix",
+      "plannedPath": "fixtures/c2.5/desktop-visual-interaction-matrix.json",
+      "covers": ["H01-H08", "I01-I08"],
+      "viewports": ["1180x760", "1440x900", "maximized"],
+      "dpi": [100, 125, 150],
+      "scenarios": [
+        "brand_and_single_token_system",
+        "button_and_progress_state_gallery",
+        "notifications_confirmations_errors_and_empty_states",
+        "chart_with_definition_time_filter_and_table",
+        "mouse_hover_scroll_right_click_and_copy",
+        "keyboard_tab_shift_tab_enter_space_escape_arrows",
+        "window_minimize_restore_close_drag_resize_snap",
+        "single_instance_window_memory_fault_page_external_link",
+        "reduced_motion_keeps_information_and_controls"
+      ]
+    }
+  ],
+  "implementationGate": {
+    "beforeProductCode": "只要求本设计通过结构校验；不得为通过门禁而创建伪产品接口或伪运行状态。",
+    "duringImplementation": "按风险分段逐组落地夹具，先任务登记与单一通道，再控制、规则、继承、桌面和恢复。",
+    "beforeIndependentAcceptance": "所有实现阶段夹具和证据必须绑定固定候选提交；真实桌面验收另行独立执行。"
+  }
+}
