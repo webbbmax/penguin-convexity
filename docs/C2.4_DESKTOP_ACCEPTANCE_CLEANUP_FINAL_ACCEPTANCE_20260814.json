@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "c2.4-desktop-acceptance-cleanup-final-acceptance-v1",
+  "status": "scoped_acceptance_passed_with_pre_existing_performance_observation",
+  "acceptedAt": "2026-08-14T20:19:54+08:00",
+  "candidateCommit": "7f6fb76853bb44b22b4b4c8515d302dbc75dc10d",
+  "scope": "只发布桌面验收清场：测试无论通过或失败，桌面宿主、企鹅专用WebView2、8766服务和测试进程都必须恢复到测试前状态。",
+  "nonScope": [
+    "C2.4业务规则、贝叶斯、页面、数据库和快照",
+    "唯一Windows调度器和用户暂停/频率设置",
+    "C2.5/C2.6规划文件",
+    "C2.3既有启动性能门槛的重新设计或放宽"
+  ],
+  "verification": {
+    "intentionalFailureCleanup": {
+      "status": "passed",
+      "evidence": "scripts/test-desktop-acceptance-cleanup.ps1：故意抛错后，显式测试进程、临时8766监听、桌面/WebView2/端口快照均恢复。"
+    },
+    "guardRegressionTests": {"passed": 3, "failed": 0},
+    "powershellSyntax": "passed",
+    "pythonCompile": "passed",
+    "frozenRequirementHashes": "D0、C2.3、C2.4均匹配",
+    "secretBoundary": "passed",
+    "databaseReadOnlyIntegrity": {
+      "main": {"quickCheck": "ok", "foreignKeyErrors": 0},
+      "pipeline": {"quickCheck": "ok", "foreignKeyErrors": 0}
+    },
+    "realDesktopFailurePath": {
+      "runs": [
+        {"productReadyMs": 5568, "result": "旧5秒性能断言失败；清场后桌面=0、专用WebView2=0、8766无监听"},
+        {"productReadyMs": 5393, "result": "旧5秒性能断言失败；清场后桌面=0、专用WebView2=0、8766无监听"}
+      ],
+      "cleanupResult": "passed",
+      "meaning": "两次真实桌面失败路径均证明finally清场生效，不留下桌面或服务。"
+    }
+  },
+  "knownPreExistingObservation": {
+    "status": "open_separate_issue",
+    "issue": "C2.3桌面烟测的既有5秒页面就绪门槛在本机连续测得5.393至5.568秒；历史日志还记录过5.349和5.826秒。",
+    "notCausedByThisHotfix": true,
+    "reasonNotFixedHere": "用户授权的是桌面验收清场独立发布；本热修不改变C2.3冻结性能标准，也不以放宽断言掩盖该问题。"
+  },
+  "releaseDecision": {
+    "userAuthorization": "发布吧，不合并发布了，一码是一码",
+    "decision": "按独立热修复发布清场能力；既有性能问题作为单独问题保留，不混入本热修代码。",
+    "formalMainContainedOnlyThisHotfix": true,
+    "c25C26PlanningPreservedSeparately": true
+  }
+}

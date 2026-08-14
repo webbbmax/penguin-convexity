@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "c2.4-desktop-acceptance-cleanup-release-manifest-v1",
+  "release": "C2.4桌面验收清场热修复",
+  "status": "released",
+  "releasedAt": "2026-08-14T20:19:54+08:00",
+  "userAuthorization": "发布吧，不合并发布了，一码是一码",
+  "releaseTag": "c2.4-desktop-acceptance-cleanup-20260814",
+  "formalBranch": "main",
+  "baseProductionCommit": "4c0953fca9911a401766f0d3869bb22f355062a1",
+  "hotfixCodeCommit": "7f6fb76853bb44b22b4b4c8515d302dbc75dc10d",
+  "acceptance": {
+    "path": "docs/C2.4_DESKTOP_ACCEPTANCE_CLEANUP_FINAL_ACCEPTANCE_20260814.json",
+    "scope": "桌面、企鹅专用WebView2、8766服务和测试进程的finally清场与测试前状态对账",
+    "result": "scoped_acceptance_passed_with_pre_existing_performance_observation"
+  },
+  "boundaries": {
+    "businessRulesChanged": false,
+    "databaseChanged": false,
+    "runtimeStateChanged": false,
+    "schedulerChanged": false,
+    "desktopContainerBinaryChanged": false,
+    "desktopShortcutChanged": false,
+    "c25C26PlanningIncluded": false
+  },
+  "coreArtifacts": [
+    {"path": "scripts/desktop-acceptance-guard.ps1", "bytes": 8035, "sha256": "06270e88fb5fbe57e0795fc85b0c84bb34ef1f81e68de8629455b36f5b279de2"},
+    {"path": "scripts/test-c2.3-desktop-smoke.ps1", "bytes": 12034, "sha256": "871a69a0ec313b67c1a1f9fff2af8478458626a5f59e35738f01364b976342ef"},
+    {"path": "scripts/test-c2.3-independent-lifecycle.ps1", "bytes": 11466, "sha256": "525feb9ec8d2e3f1da5483499e5097f08b2699d822eaf3b5f79ee6791b2fdc3b"},
+    {"path": "scripts/test-convexity-cold-start.ps1", "bytes": 4018, "sha256": "6f17817bb1adaceb9b889316b8f97da78dbb25ed2d97a513d57174cc0375b73f"},
+    {"path": "scripts/test-convexity-window-integration.ps1", "bytes": 7109, "sha256": "e1d360a927d96f3225dd987a29ae3a4778b2382c7247be304a07253b3923c511"},
+    {"path": "scripts/test-desktop-acceptance-cleanup.ps1", "bytes": 3119, "sha256": "bd5d9b14b8c80e8d1477c764704b2798bd2a310c3e8b0e3cbabac17d04200cfb"},
+    {"path": "scripts/test_desktop_acceptance_cleanup.py", "bytes": 2470, "sha256": "c88874a72ad59d4f97f70544e0c783988445eb52ff184da887ccbca8bae478ad"},
+    {"path": "scripts/run_priority_acceptance.py", "bytes": 2160, "sha256": "8585a5faacc23a2116c06305c7c52c201098deb0bc4480854b0c6a2ee9d03549"},
+    {"path": "docs/DESKTOP_ACCEPTANCE_CLEANUP_POLICY.json", "bytes": 979, "sha256": "6a2fd959666fb7c4d71a20179eae2c2731e31a12645b163398087be577f69475"}
+  ],
+  "rollback": {
+    "codeOnly": true,
+    "target": "4c0953fca9911a401766f0d3869bb22f355062a1",
+    "databaseRollback": false,
+    "schedulerSettingRollback": false,
+    "requiresUserAuthorization": true
+  },
+  "knownSeparateIssue": "C2.3既有5秒桌面就绪性能门槛未在本热修中修改；详情见独立终验记录。"
+}
