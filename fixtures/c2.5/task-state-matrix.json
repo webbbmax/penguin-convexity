@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "c2.5-task-state-fixture-v1",
+  "observedAt": "2026-08-14T12:00:00Z",
+  "scenarios": [
+    {"id":"idle_healthy","input":{"state":"completed","pid":null,"lock":false,"lastHeartbeatAt":"2026-08-14T11:55:00Z"},"expected":{"liveState":"completed"}},
+    {"id":"running_with_live_pid_lock_and_heartbeat","input":{"state":"running","pid":4242,"pidLive":true,"lock":true,"lastHeartbeatAt":"2026-08-14T11:59:30Z"},"expected":{"liveState":"running"}},
+    {"id":"safe_pause_requested_before_checkpoint","input":{"state":"running","pid":4242,"pidLive":true,"lock":true,"pauseRequested":true,"lastHeartbeatAt":"2026-08-14T11:59:30Z"},"expected":{"liveState":"pause_requested"}},
+    {"id":"paused_at_checkpoint","input":{"state":"paused","pid":null,"lock":false,"pauseRequested":true,"checkpoint":{"partitionId":"p-17"}},"expected":{"liveState":"safe_paused"}},
+    {"id":"partial_success_with_scoped_source_failure","input":{"state":"partial","failure":{"sourceId":"market-a","affectedObjectCount":3}},"expected":{"liveState":"partial","globalFailure":false}},
+    {"id":"failed_with_recovery_entry","input":{"state":"failed","checkpoint":{"cursor":"c-9"}},"expected":{"liveState":"failed","recoveryAvailable":true}},
+    {"id":"stale_running_without_live_basis","input":{"state":"running","pid":4242,"pidLive":false,"lock":false,"lastHeartbeatAt":"2026-08-14T09:00:00Z"},"expected":{"liveState":"stale"}},
+    {"id":"disabled_gate0","input":{"state":"disabled","taskId":"gate0.backfill.disabled"},"expected":{"liveState":"disabled","controls":[]}},
+    {"id":"legacy_c18_and_c21_executable_but_not_primary","input":{"state":"unknown","lifecycleClass":"legacy_callable"},"expected":{"liveState":"unknown","controls":[]}},
+    {"id":"known_total_progress","input":{"completed":25,"total":100},"expected":{"kind":"determinate","percent":25}},
+    {"id":"unknown_total_progress","input":{"completed":25,"total":null},"expected":{"kind":"indeterminate","percent":null}},
+    {"id":"real_zero_result","input":{"state":"completed","outcome":"no_data","completed":0,"total":0},"expected":{"liveState":"completed","outcome":"no_data","kind":"not_applicable","percent":null}}
+  ]
+}

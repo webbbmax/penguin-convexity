@@ -1,0 +1,13 @@
+{
+  "schemaVersion":"c2.5-desktop-visual-fixture-v1",
+  "viewports":["1180x760","1440x900","maximized"],
+  "dpi":[100,125,150],
+  "brand":{"product":"企鹅投研-凸性","slogan":"洞见共识之外的价值","palette":"antarctic-blue","logo":"desktop/assets/penguin-research-icon.png"},
+  "buttonStates":["default","hover","pressed","focus_visible","loading","disabled","failed"],
+  "progressStates":["instant","short_indeterminate","determinate","unknown_total","pause_requested","partial","failed"],
+  "feedbackStates":["notification","confirmation","field_error","global_error","empty"],
+  "inputs":["left_click","right_click","hover","wheel","copy","tab","shift_tab","enter","space","escape","arrow_keys"],
+  "windowBehaviors":["minimize","maximize_restore","close","drag","resize","snap","single_instance","window_memory","fault_page","external_link_isolation"],
+  "reducedMotionKeepsInformation":true,
+  "macosWindowSimulation":false
+}

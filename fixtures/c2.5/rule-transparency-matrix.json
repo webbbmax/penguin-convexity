@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "c2.5-rule-transparency-fixture-v1",
+  "baseline": {"sellQuotePublicMaximumLossPct":15,"sellQuoteStrongPathMaximumLossPct":10,"severeImmediateExitLossPctGte":20},
+  "activeOverride": {"status":"user_authorized_active_trial","approvedAt":"2026-08-13","quoteSuccessOnly":true,"disabledGateCount":6},
+  "items": [
+    {"assetId":"asset-pass-both","sellQuoteState":"success","sellQuoteLossPct":8,"riskSourceState":"success","confirmedHardBlock":false,"expectedBaseline":true,"expectedEffective":true},
+    {"assetId":"asset-override-added","sellQuoteState":"success","sellQuoteLossPct":18,"riskSourceState":"no_data","confirmedHardBlock":false,"expectedBaseline":false,"expectedEffective":true},
+    {"assetId":"asset-hard-block","sellQuoteState":"success","sellQuoteLossPct":5,"riskSourceState":"success","confirmedHardBlock":true,"expectedBaseline":false,"expectedEffective":false}
+  ],
+  "invalidOverrides": [
+    {"id":"unapproved","approvedAt":null,"expectedActive":false},
+    {"id":"expired","effectiveUntil":"2026-08-01T00:00:00Z","expectedActive":false},
+    {"id":"damaged","contentSha256":"mismatch","expectedActive":false}
+  ],
+  "bayesBoundary":"ranking_and_calibration_only_not_eligibility_or_convexity_signal"
+}

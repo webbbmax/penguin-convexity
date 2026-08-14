@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from init_db import DEFAULT_DB_PATH
 from build_project_master_pool import build_master_pool_snapshot, write_master_pool_snapshot
@@ -94,6 +94,8 @@ from candidate_production_runtime import (
     request_pause as request_candidate_production_pause,
     retry_partition as retry_candidate_partition,
 )
+from c2_5_control import C25ControlService, ControlError
+from c2_5_control_plane import C25ControlPlane
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -114,6 +116,9 @@ STARTUP_REBUILD_STATE = {
     "finishedAt": None,
     "error": "",
 }
+C25_SERVICE_LOCK = threading.Lock()
+C25_PLANE = None
+C25_CONTROL = None
 C21_STARTUP_SNAPSHOTS = (
     (APP_ROOT / "c2-1-front-snapshot.js", "window.PENGUIN_CONVEXITY_C21 = "),
     (APP_ROOT / "c2-1-admin-snapshot.js", "window.PENGUIN_CONVEXITY_C21_ADMIN = "),
@@ -268,6 +273,18 @@ def set_startup_rebuild_state(**updates):
         return dict(STARTUP_REBUILD_STATE)
 
 
+def get_c25_services():
+    global C25_PLANE, C25_CONTROL
+    with C25_SERVICE_LOCK:
+        if C25_PLANE is None:
+            C25_PLANE = C25ControlPlane(
+                project_root=PROJECT_ROOT,
+                startup_state_provider=get_startup_rebuild_state,
+            )
+            C25_CONTROL = C25ControlService(C25_PLANE)
+        return C25_PLANE, C25_CONTROL
+
+
 def rebuild_pool_snapshot():
     connection = open_main_database_readonly()
     try:
@@ -397,7 +414,9 @@ class QuietHandler(SimpleHTTPRequestHandler):
             raise ValueError("请求内容不是有效 JSON") from error
 
     def do_GET(self):
-        request_path = self.path.split("?", 1)[0]
+        parsed_request = urlparse(self.path)
+        request_path = parsed_request.path
+        query = parse_qs(parsed_request.query)
         if request_path == "/":
             self.send_response(302)
             self.send_header("Location", "/desktop/index.html")
@@ -459,9 +478,47 @@ class QuietHandler(SimpleHTTPRequestHandler):
         if request_path in {"/api/c2.2/status", "/api/c2.4/status"}:
             self.send_json(200, c22_status_payload())
             return
+        if request_path.startswith("/api/c2.5/"):
+            plane, _control = get_c25_services()
+            try:
+                if request_path == "/api/c2.5/control-plane":
+                    payload = plane.control_plane_payload()
+                elif request_path == "/api/c2.5/tasks":
+                    payload = plane.tasks_payload()
+                elif request_path == "/api/c2.5/task":
+                    payload = plane.task_payload((query.get("taskId") or [""])[0])
+                elif request_path == "/api/c2.5/chains-sources":
+                    payload = plane.chains_sources_payload()
+                elif request_path == "/api/c2.5/rules":
+                    payload = plane.rules_payload()
+                elif request_path == "/api/c2.5/decision-trace":
+                    payload = plane.decision_trace_payload((query.get("assetId") or [""])[0])
+                elif request_path == "/api/c2.5/snapshots":
+                    payload = plane.snapshots_payload()
+                elif request_path == "/api/c2.5/runs-audit":
+                    payload = plane.runs_audit_payload()
+                else:
+                    self.send_json(404, {"error": "接口不存在"})
+                    return
+                status_code = 404 if payload.get("status") == "not_found" else 400 if payload.get("status") == "invalid_request" else 200
+                self.send_json(status_code, payload)
+            except Exception as error:
+                self.send_json(500, {"error": f"管理组合状态读取失败：{type(error).__name__}: {error}"})
+            return
         super().do_GET()
 
     def do_POST(self):
+        if self.path in {"/api/c2.5/control/preview", "/api/c2.5/control/execute"}:
+            _plane, control = get_c25_services()
+            try:
+                payload = self.read_json()
+                status_code, result = control.preview(payload) if self.path.endswith("/preview") else control.execute(payload)
+                self.send_json(status_code, result)
+            except ControlError as error:
+                self.send_json(error.status_code, {"status": "rejected", "code": error.code, "error": str(error)})
+            except Exception as error:
+                self.send_json(500, {"status": "failed", "code": "program_failure", "error": f"管理控制失败：{type(error).__name__}: {error}"})
+            return
         if self.path not in {
             "/api/refresh-candidates",
             "/api/gate-screening",

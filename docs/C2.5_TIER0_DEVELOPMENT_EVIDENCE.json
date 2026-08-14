@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "c2.5-tier0-development-evidence-v1",
+  "status": "passed",
+  "observedAt": "2026-08-14T14:18:06.822299Z",
+  "candidateBinding": "the Git commit containing this evidence",
+  "taskRegistry": {
+    "taskCount": 41,
+    "topLevelTaskCount": 20,
+    "catalogTaskCount": 21,
+    "duplicateTaskIds": [],
+    "missingEntries": [],
+    "approvedDeletionCount": 0
+  },
+  "entryReconciliation": {
+    "inheritedPostObserved": 20,
+    "inheritedPostRegistered": 20,
+    "managedControlEndpoints": [
+      "/api/c2.5/control/preview",
+      "/api/c2.5/control/execute"
+    ],
+    "missingPostEndpoints": [],
+    "unregisteredPostEndpoints": []
+  },
+  "singleChannel": {
+    "windowsSchedulerCount": 1,
+    "schedulerTaskName": "PenguinConvexity-C1.8-Scheduler",
+    "observedState": "Running",
+    "lastTaskResult": 267009,
+    "interpretation": "计划任务仍在运行；不等同于业务成功或失败",
+    "secondSchedulerCreated": false,
+    "secondBusinessDatabaseCreated": false,
+    "secondCSharpBusinessChannelCreated": false
+  },
+  "legacySafety": {
+    "gate0State": "disabled",
+    "gate0Controls": [],
+    "historyBacklogState": "completed",
+    "historyRestartFromBeginningAvailable": false
+  },
+  "formalReadOnlyProbe": {
+    "databaseCount": 2,
+    "openMode": "sqlite_uri_mode_ro",
+    "queryOnly": true,
+    "quickCheck": "ok",
+    "foreignKeyViolations": 0,
+    "unchangedDuringProbe": true,
+    "formalMainClean": true,
+    "formalMainCommit": "becd256b170b0a3a1a45de0b8c4f4a426eb9065a"
+  },
+  "sourceEvidence": [
+    "scripts/c2_5_control_plane.py",
+    "scripts/c2_5_formal_readonly_probe.py",
+    "scripts/c2_5_formal_product_probe.py",
+    "scripts/test_c2_5_control_plane.py",
+    "runtime/temp-artifacts/c2-5-visual-qa-20260814T135724Z-a02b9189/tier0-development-evidence.json",
+    "runtime/temp-artifacts/c2-5-visual-qa-20260814T135724Z-a02b9189/formal-product-readonly-probe.json"
+  ]
+}

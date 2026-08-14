@@ -1,0 +1,13 @@
+{
+  "schemaVersion":"c2.5-inheritance-registry-fixture-v1",
+  "approvedDeletionCount":0,
+  "inheritedRouteCount":29,
+  "newManagerRouteCount":11,
+  "productionPostEndpointCount":20,
+  "updateTaskCatalogCount":21,
+  "frontendAdminShellsSeparate":true,
+  "detailContext":{"assetId":"fixture-asset","returnTo":"candidate-pool.html","filter":"chain=solana-mainnet","page":2,"scrollY":640},
+  "snapshotFailure":{"previousCompleteSnapshotPreserved":true,"stale":true},
+  "forbiddenRuntimeReferences":["\\企鹅投研\\RWA\\","/企鹅投研/RWA/"],
+  "singleChannel":{"windowsSchedulerCount":1,"businessHttpServiceCount":1,"csharpBusinessChannelCount":0,"managerAuditIsTaskStateAuthority":false}
+}

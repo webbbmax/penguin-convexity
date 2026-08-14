@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "c2.5-implementation-manifest-v1",
+  "release": "C2.5",
+  "status": "implementation_complete_waiting_independent_acceptance",
+  "candidateBinding": "the Git commit containing this manifest",
+  "baselineCommit": "becd256b170b0a3a1a45de0b8c4f4a426eb9065a",
+  "branch": "codex/c2-5-manager-control-plane",
+  "currentPublishedProductRemains": "C2.4",
+  "implementation": {
+    "registeredTasks": 41,
+    "topLevelTasks": 20,
+    "catalogTasks": 21,
+    "inheritedRoutes": 29,
+    "approvedRouteDeletions": 0,
+    "newManagerRoutes": 11,
+    "informationDomains": 8,
+    "controlFlow": "preview-confirm-execute-authoritative-readback",
+    "confirmationTtlMinutes": 5,
+    "allowedIntervalsHours": [1, 3, 6, 12, 24],
+    "formalDatabaseWrites": 0,
+    "newSchedulers": 0,
+    "newBusinessDatabases": 0,
+    "newCSharpBusinessChannels": 0
+  },
+  "requirements": {
+    "total": 92,
+    "implementationPassed": 79,
+    "acceptancePending": 13,
+    "traceability": "docs/C2.5_REQUIREMENT_TRACEABILITY.json"
+  },
+  "developmentTests": {
+    "c25UnitAndContract": {"passed": 43, "failed": 0},
+    "c24TargetedInheritance": {"passed": 9, "failed": 0, "skipped": 1},
+    "formalReadOnlyProbe": "passed",
+    "browserImplementationQa": "passed_at_1180x760",
+    "dotnetTest": "not_run_no_dotnet_sdk_installed"
+  },
+  "independentAcceptance": {
+    "started": false,
+    "passed": false,
+    "pendingRequirementIds": ["A03", "I01", "I02", "I03", "I04", "I05", "I06", "I07", "I08", "J04", "J05", "J06", "J07"]
+  },
+  "forbiddenActionsNotTaken": [
+    "未合并正式main",
+    "未发布或打正式标签",
+    "未修改正式数据库、调度器、快捷方式或用户设置",
+    "未重跑Gate0或从头重跑历史候选",
+    "未把C2.6纳入C2.5"
+  ]
+}

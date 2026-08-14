@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "c2.5-windows-scheduler-fixture-v1",
+  "rows": [
+    {
+      "taskName": "PenguinConvexity-C1.8-Scheduler",
+      "displayName": "当前统一自动更新调度器",
+      "enabled": true,
+      "state": "Ready",
+      "lastTaskResult": 0,
+      "lastRunTime": "2026-08-14T11:45:00Z",
+      "nextRunTime": "2026-08-14T12:15:00Z",
+      "actions": ["wscript.exe scripts\\run-c2-1-update-hidden.vbs C:\\Python312\\python.exe"],
+      "hiddenDownstream": ["temp_artifact_retention.py sweep --min-interval-hours 24", "run_c2_2_update.py --job due --trigger automatic"]
+    },
+    {
+      "taskName": "PenguinConvexity-Gate0-Backfill",
+      "displayName": "Gate 0历史回填任务",
+      "enabled": false,
+      "state": "Disabled",
+      "lastTaskResult": 267009,
+      "lastRunTime": "2026-08-08T02:00:00Z",
+      "nextRunTime": null,
+      "actions": ["python gate0_backfill_background.py --resume"]
+    }
+  ],
+  "assertions": {
+    "result267009Meaning": "scheduler_process_running_only",
+    "windowsNextCheckIsBusinessDue": false,
+    "activeBusinessSchedulers": 1,
+    "secondBusinessChannel": false
+  }
+}

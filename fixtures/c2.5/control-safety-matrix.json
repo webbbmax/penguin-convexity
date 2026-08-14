@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "c2.5-control-safety-fixture-v1",
+  "allowedIntervals":[1,3,6,12,24],
+  "registeredSources":{"c22.screening":["candidate-market"],"c22.convexity_tracking":["tracking-market"]},
+  "partitions":[{"partitionId":"part-failed-1","queue":"daily_incremental","state":"failed"}],
+  "scenarios":[
+    "preview_then_confirm_success",
+    "duplicate_request_id_does_not_restart",
+    "expired_confirmation_token_rejected",
+    "used_confirmation_token_rejected",
+    "state_drift_after_preview_rejected",
+    "existing_writer_lock_rejected",
+    "pause_request_visible_before_checkpoint",
+    "frequency_allowlist_and_authoritative_readback",
+    "source_retry_scope_validation",
+    "partition_retry_validation",
+    "failure_keeps_previous_state_and_audit",
+    "restart_and_page_reopen_recovery"
+  ],
+  "forbiddenActions":["kill_process","enable_gate0","run_gate0","restart_history_from_zero","edit_frozen_rules","direct_legacy_run"]
+}

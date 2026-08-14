@@ -5,6 +5,16 @@
   "migrationRelease": "M1.0",
   "convexityRelease": "C1.7",
   "experienceRelease": "C2.2",
+  "developmentCandidates": {
+    "C2.5": {
+      "status": "implementation_complete_waiting_independent_acceptance",
+      "branch": "codex/c2-5-manager-control-plane",
+      "baselineCommit": "becd256b170b0a3a1a45de0b8c4f4a426eb9065a",
+      "formalProductRemains": "C2.4",
+      "formalRuntimeChanged": false,
+      "implementationManifest": "docs/C2.5_IMPLEMENTATION_MANIFEST.json"
+    }
+  },
   "policy": {
     "strategy": "copy_then_verify",
     "sourceReadOnly": true,
