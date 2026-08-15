@@ -28,10 +28,18 @@ def compact_rule(row: dict) -> dict:
             "difference",
             "unit",
             "status",
+            "baselineVersion",
+            "effectiveVersion",
+            "sourcePath",
             "sourceSha256",
+            "effectiveSourcePath",
+            "effectiveSourceSha256",
             "approvedBy",
             "approvedAt",
             "counts",
+            "addedAssetIds",
+            "removedAssetIds",
+            "stateChangedAssetIds",
             "passExample",
             "nonPassExample",
         )
@@ -100,14 +108,45 @@ def main() -> int:
         }
         for row in snapshots.get("snapshots") or []
     ]
-    required_rules = {"public_sell_quote_loss", "strong_path_sell_quote_loss", "severe_immediate_exit_loss"}
+    required_rules = {
+        "public_eligibility_result",
+        "public_risk_source_success",
+        "public_no_confirmed_hard_block",
+        "public_no_confirmed_severe_anomaly",
+        "strong_path_trade_demand_state",
+        "strong_path_liquidity_exit_state",
+        "strong_path_supply_holder_state",
+        "strong_path_indexed_pool_state",
+        "immediate_exit_state",
+        "public_sell_quote_loss",
+        "strong_path_sell_quote_loss",
+        "severe_immediate_exit_loss",
+        "sell_quote_loss_pct_lte_10_or_15",
+        "sell_quote_loss_pct_gte_20_immediate_exit",
+        "liquidity_drop_pct_gte_80_path_invalidation",
+        "supply_decimals_or_unit_change_path_invalidation",
+        "cross_source_price_deviation_pct_gte_25_path_pause",
+        "sell_tax_pct_gte_20_as_hard_block",
+    }
     observed_rules = {row.get("ruleId") for row in rules.get("rules") or []}
     replay_sets = rules.get("replaySets") or {}
     fixed_replay = replay_sets.get("fixedHistorical") or {}
     current_replay = replay_sets.get("currentReadOnly") or {}
+    current_rule_union = sorted({
+        asset_id
+        for row in current_replay.get("ruleImpacts") or []
+        for asset_id in row.get("stateChangedAssetIds") or []
+    })
+    rollback_rule_union = sorted({
+        asset_id
+        for row in (rollback_preview.get("currentReadOnly") or {}).get("ruleImpacts") or []
+        for asset_id in row.get("stateChangedAssetIds") or []
+    })
     passed = bool(
         rules.get("status") == "ready"
-        and required_rules.issubset(observed_rules)
+        and required_rules == observed_rules
+        and rules.get("effective", {}).get("reconciledRuleCount") == len(required_rules)
+        and rules.get("effective", {}).get("expectedRuleCount") == len(required_rules)
         and sum(row.get("effectiveValue") == "disabled_as_gate" for row in rules.get("rules") or []) == 6
         and rules.get("replay", {}).get("sameInput")
         and rules.get("replay", {}).get("assetIdSetRecomputed")
@@ -117,8 +156,12 @@ def main() -> int:
         and current_replay.get("readOnly") is True
         and int((fixed_replay.get("replay") or {}).get("inputCount") or 0) > 0
         and fixed_replay.get("sourcePath") != current_replay.get("sourcePath")
+        and current_replay.get("replay", {}).get("unionMatchesPerRule") is True
+        and current_replay.get("replay", {}).get("affectedAssetIds") == current_rule_union
         and rollback_preview.get("fixedHistorical", {}).get("sampleKind") == "fixed_historical"
         and rollback_preview.get("currentReadOnly", {}).get("sampleKind") == "current_read_only"
+        and rollback_preview.get("currentReadOnly", {}).get("replay", {}).get("unionMatchesPerRule") is True
+        and rollback_preview.get("affectedAssetIds") == rollback_rule_union
         and set(rollback_preview.get("affectedTaskIds") or []) == {"c22.screening", "c22.convexity_tracking"}
         and len(rollback_preview.get("affectedSnapshots") or []) == 3
         and all(row.get("snapshotId") for row in rollback_preview.get("affectedSnapshots") or [])
@@ -147,6 +190,12 @@ def main() -> int:
                     "effectivePassedCount",
                     "addedAssetIds",
                     "removedAssetIds",
+                    "publicEligibilityAffectedAssetIds",
+                    "affectedAssetIds",
+                    "affectedAssetCount",
+                    "affectedByArea",
+                    "governedRuleCount",
+                    "unionMatchesPerRule",
                     "sameInput",
                     "assetIdSetRecomputed",
                 )

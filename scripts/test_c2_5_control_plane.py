@@ -20,7 +20,7 @@ from c2_5_control import C25ControlService, ControlError
 from c2_5_control_plane import C25ControlPlane, compose_authoritative_job_state, progress_payload
 from c2_4_rules import evaluate_public_baseline, evaluate_strong_paths, normal_exit_decision
 from c2_5_rule_governance import RuleGovernanceStore
-from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, reconcile_rule_values, replay_rules, validate_active_override
+from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, reconcile_rule_values, replay_governed_rules, replay_rules, validate_active_override
 
 
 def read_fixture(name: str) -> dict:
@@ -149,6 +149,21 @@ def complete_item(asset_id: str, loss: float, risk_state: str = "success", hard_
         "projectEvidenceAttributable": True,
         "relationshipClass": "A",
         "confirmedHardBlock": hard_block,
+        "ageDays": 10,
+        "liquidityUsd": 10000,
+        "liquidityDropPct": 0,
+        "observedBuys": 10,
+        "observedSells": 10,
+        "volumeUsd": 1000,
+        "transactionCount": 20,
+        "volumeLiquidityRatio": 0.1,
+        "cohortThresholds": {
+            "liquidityP50": 5000,
+            "volumeP40": 100,
+            "volumeP50": 500,
+            "transactionsP50": 10,
+            "volumeLiquidityRatioP50": 0.05,
+        },
     }
 
 
@@ -222,6 +237,34 @@ class RuleTransparencyTests(unittest.TestCase):
         self.assertNotEqual(replays["fixedHistorical"]["sourcePath"], replays["currentReadOnly"]["sourcePath"])
         self.assertEqual(replays["currentReadOnly"]["snapshotId"], "tracking-current-1")
 
+    def test_governed_union_covers_strong_path_immediate_exit_and_risk_only_counterexamples(self):
+        fixture = read_fixture("rule-governance-union-counterexamples.json")
+        for case in fixture["cases"]:
+            item = {**fixture["baseItem"], **case["overrides"], "assetId": case["assetId"]}
+            replay = replay_governed_rules(
+                [item],
+                source_version=fixture["sourceVersion"],
+                target_version=fixture["targetVersion"],
+            )
+            changed = sorted(row["ruleId"] for row in replay["rules"] if row["stateChangedAssetIds"])
+            self.assertEqual(changed, sorted(case["expectedChangedRuleIds"]), case["id"])
+            self.assertEqual(replay["affectedAssetIds"], [case["assetId"]], case["id"])
+            self.assertTrue(replay["unionMatchesPerRule"], case["id"])
+
+    def test_overall_affected_set_is_exact_union_of_every_registered_rule(self):
+        items = [
+            {**complete_item("union-strong", 12), "projectEvidenceQualified": False, "projectEvidenceAttributable": False},
+            {**complete_item("union-risk", 8, "no_data"), "projectEvidenceQualified": False, "projectEvidenceAttributable": False, "sellQuoteState": "no_data", "sellQuoteLossPct": None},
+        ]
+        replay = replay_governed_rules(
+            items,
+            source_version="c2.4-rules-v1",
+            target_version="c2.4-public-baseline-quote-success-trial-v1",
+        )
+        per_rule_union = sorted({asset_id for row in replay["rules"] for asset_id in row["stateChangedAssetIds"]})
+        self.assertEqual(replay["affectedAssetIds"], per_rule_union)
+        self.assertEqual(replay["affectedAssetIds"], ["union-risk", "union-strong"])
+
     def test_unapproved_expired_or_damaged_override_is_rejected(self):
         now = datetime(2026, 8, 14, tzinfo=timezone.utc)
         base = {"status": "user_authorized_active_trial", "authorizedAt": "2026-08-13", "frozenBaseline": {"ruleConfigSha256": "775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988"}}
@@ -238,10 +281,11 @@ class RuleTransparencyTests(unittest.TestCase):
         case = fixture["cases"][0]
         payload = build_rule_transparency([case["item"]])
         changed = sorted(row["ruleId"] for row in payload["rules"] if row["counts"]["changed"])
-        self.assertEqual(changed, case["expectedChangedRuleIds"])
+        expected = set(case["expectedChangedRuleIds"])
+        self.assertEqual(changed, sorted(expected))
         self.assertEqual(
-            {row["ruleId"]: row["counts"]["changed"] for row in payload["rules"] if row["ruleId"] != case["expectedChangedRuleIds"][0]},
-            {row["ruleId"]: 0 for row in payload["rules"] if row["ruleId"] != case["expectedChangedRuleIds"][0]},
+            {row["ruleId"]: row["counts"]["changed"] for row in payload["rules"] if row["ruleId"] not in expected},
+            {row["ruleId"]: 0 for row in payload["rules"] if row["ruleId"] not in expected},
         )
 
     def test_code_reconciliation_is_per_rule_and_detects_one_field_mismatch(self):

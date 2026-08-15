@@ -210,6 +210,15 @@ def effective_rule_manifest(version: str) -> dict[str, Any]:
         raise ValueError(f"未知规则版本：{version}")
     if version == FROZEN_PUBLIC_RULE_VERSION:
         return {
+            "public_eligibility_result": "all_frozen_public_baseline_checks",
+            "public_risk_source_success": "required",
+            "public_no_confirmed_hard_block": "required",
+            "public_no_confirmed_severe_anomaly": "required",
+            "strong_path_trade_demand_state": "frozen_path_conditions",
+            "strong_path_liquidity_exit_state": "frozen_path_conditions",
+            "strong_path_supply_holder_state": "frozen_path_conditions",
+            "strong_path_indexed_pool_state": "frozen_path_conditions",
+            "immediate_exit_state": "hard_block_or_loss_gte_20_or_sell_tax_gte_20",
             "public_sell_quote_loss": 15,
             "strong_path_sell_quote_loss": 10,
             "severe_immediate_exit_loss": 20,
@@ -221,6 +230,15 @@ def effective_rule_manifest(version: str) -> dict[str, Any]:
             "sell_tax_pct_gte_20_as_hard_block": "enabled",
         }
     return {
+        "public_eligibility_result": "approved_trial_public_baseline_checks",
+        "public_risk_source_success": "not_required_raw_state_preserved",
+        "public_no_confirmed_hard_block": "required",
+        "public_no_confirmed_severe_anomaly": "not_required_raw_state_preserved",
+        "strong_path_trade_demand_state": "approved_trial_path_conditions",
+        "strong_path_liquidity_exit_state": "approved_trial_path_conditions",
+        "strong_path_supply_holder_state": "approved_trial_path_conditions",
+        "strong_path_indexed_pool_state": "approved_trial_path_conditions",
+        "immediate_exit_state": "confirmed_trade_block_only",
         "public_sell_quote_loss": "quote_success_loss_recorded",
         "strong_path_sell_quote_loss": "quote_success_no_confirmed_trade_block",
         "severe_immediate_exit_loss": "record_only_no_immediate_exit_gate",

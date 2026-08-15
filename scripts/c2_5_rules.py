@@ -15,6 +15,9 @@ from c2_4_rules import (
     effective_rule_manifest,
     evaluate_public_baseline_version,
     evaluate_rule_condition,
+    evaluate_strong_paths,
+    load_config,
+    number,
 )
 
 
@@ -114,9 +117,16 @@ def normalize_rule_replay_item(item: dict[str, Any]) -> dict[str, Any]:
         for row in item.get("firstGateChecks", [])
         if isinstance(row, dict) and row.get("code")
     }
+    market = item.get("market") if isinstance(item.get("market"), dict) else {}
+    path_metrics: dict[str, Any] = {}
+    for path in item.get("strongPaths", []):
+        if isinstance(path, dict) and isinstance(path.get("metrics"), dict):
+            path_metrics.update({key: value for key, value in path["metrics"].items() if value is not None})
     project_evidence = item.get("projectEvidenceState") == "success" or baseline_checks.get("project_evidence") is True
     return {
         **item,
+        **path_metrics,
+        **{key: value for key, value in market.items() if value is not None},
         "contractAddress": item.get("contractAddress") or item.get("tokenAddress"),
         "pairAddress": item.get("pairAddress") or item.get("poolId"),
         "tokenSide": item.get("tokenSide") or item.get("assetDirection"),
@@ -125,7 +135,86 @@ def normalize_rule_replay_item(item: dict[str, Any]) -> dict[str, Any]:
         "projectEvidenceAttributable": item.get("projectEvidenceAttributable") if item.get("projectEvidenceAttributable") is not None else project_evidence,
         "confirmedHardBlock": item.get("confirmedHardBlock") if item.get("confirmedHardBlock") is not None else first_gate_checks.get("no_confirmed_trade_block") is False,
         "confirmedSevereAnomaly": item.get("confirmedSevereAnomaly") if item.get("confirmedSevereAnomaly") is not None else bool(item.get("severeAnomaly")),
+        "supplyHistoryState": item.get("supplyHistoryState") or source_states.get("supply"),
+        "poolHistoryState": item.get("poolHistoryState") or source_states.get("path4"),
+        "sellQuoteIndependent": item.get("sellQuoteIndependent") if item.get("sellQuoteIndependent") is not None else "sell_quote_or_verified_route" in (item.get("independentSourceTypes") or []),
     }
+
+
+STRONG_PATH_RULES = {
+    "strong_path_trade_demand_state": "trade_demand_formation",
+    "strong_path_liquidity_exit_state": "liquidity_exit_quality",
+    "strong_path_supply_holder_state": "supply_holder_improvement",
+    "strong_path_indexed_pool_state": "indexed_pool_activity_vs_supply_adjusted_valuation",
+}
+
+
+def _binary_state(*, applicable: bool, passed: bool, comparable: bool = True) -> dict[str, Any]:
+    return {
+        "applicable": applicable,
+        "comparable": comparable,
+        "passed": passed if applicable and comparable else None,
+        "state": "passed" if passed else "failed" if applicable and comparable else "unknown" if not comparable else "not_applicable",
+    }
+
+
+def _stored_path_state(item: dict[str, Any], path_code: str) -> str | None:
+    return next(
+        (str(row.get("status")) for row in item.get("strongPaths", []) if isinstance(row, dict) and row.get("pathCode") == path_code and row.get("status")),
+        None,
+    )
+
+
+def evaluate_governed_rule_states(item: dict[str, Any], version: str, config: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    states: dict[str, dict[str, Any]] = {}
+    public = evaluate_public_baseline_version(item, version)
+    states["public_eligibility_result"] = _binary_state(applicable=True, passed=bool(public["passed"]))
+
+    trial = version == TRIAL_PUBLIC_RULE_VERSION
+    risk_state = item.get("riskSourceState") or item.get("riskState")
+    risk_success = risk_state in {"success", "complete", "completed"}
+    states["public_risk_source_success"] = _binary_state(applicable=risk_state is not None, passed=trial or risk_success)
+    hard_block = any(bool(item.get(key)) for key in ("confirmedHardBlock", "confirmedFreeze", "confirmedBlacklist", "confirmedSellBlock"))
+    states["public_no_confirmed_hard_block"] = _binary_state(applicable=True, passed=not hard_block)
+    severe = bool(item.get("confirmedSevereAnomaly") or item.get("severeAnomaly"))
+    states["public_no_confirmed_severe_anomaly"] = _binary_state(applicable=True, passed=trial or not severe)
+
+    stored_version = (item.get("publicBaseline") or {}).get("ruleVersion") if isinstance(item.get("publicBaseline"), dict) else None
+    computed_paths: dict[str, str] | None = None
+    for rule_id, path_code in STRONG_PATH_RULES.items():
+        stored = _stored_path_state(item, path_code)
+        if item.get("deepTrackingState") != "completed" and stored:
+            status, comparable = stored, True
+        elif version == stored_version and stored:
+            status, comparable = stored, True
+        elif path_code in {"supply_holder_improvement", "indexed_pool_activity_vs_supply_adjusted_valuation"} and item.get("supplyUnitScaleStable") is None:
+            status, comparable = "unknown", False
+        else:
+            if computed_paths is None:
+                computed_paths = {
+                    row["pathCode"]: row["status"]
+                    for row in evaluate_strong_paths(item, config=config, active_version=version)
+                }
+            status, comparable = computed_paths[path_code], True
+        states[rule_id] = {
+            "applicable": True,
+            "comparable": comparable,
+            "passed": status == "formed" if comparable else None,
+            "state": status,
+        }
+
+    loss = number(item.get("sellQuoteLossPct"))
+    sell_tax = number(item.get("sellTaxPct"))
+    immediate = hard_block or (not trial and ((loss is not None and loss >= 20) or (sell_tax is not None and sell_tax >= 20)))
+    states["immediate_exit_state"] = _binary_state(applicable=True, passed=not immediate)
+
+    outcome_ids = set(states)
+    for rule_id in effective_rule_manifest(version):
+        if rule_id in outcome_ids:
+            continue
+        condition = evaluate_rule_condition(rule_id, item, version)
+        states[rule_id] = _binary_state(applicable=bool(condition["applicable"]), passed=bool(condition["passed"]))
+    return states
 
 
 def replay_version_change(
@@ -176,9 +265,19 @@ def replay_version_change(
     }
 
 
-def replay_rules(items: list[dict[str, Any]], *, override_active: bool) -> dict[str, Any]:
+def replay_rules(
+    items: list[dict[str, Any]],
+    *,
+    override_active: bool,
+    governed_replay: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     effective_version = TRIAL_PUBLIC_RULE_VERSION if override_active else FROZEN_PUBLIC_RULE_VERSION
     replay = replay_version_change(
+        items,
+        source_version=FROZEN_PUBLIC_RULE_VERSION,
+        target_version=effective_version,
+    )
+    governed = governed_replay or replay_governed_rules(
         items,
         source_version=FROZEN_PUBLIC_RULE_VERSION,
         target_version=effective_version,
@@ -187,6 +286,12 @@ def replay_rules(items: list[dict[str, Any]], *, override_active: bool) -> dict[
         **replay,
         "baselinePassedCount": replay["sourcePassedCount"],
         "effectivePassedCount": replay["targetPassedCount"],
+        "publicEligibilityAffectedAssetIds": replay["affectedAssetIds"],
+        "affectedAssetIds": governed["affectedAssetIds"],
+        "affectedAssetCount": governed["affectedAssetCount"],
+        "affectedByArea": governed["affectedByArea"],
+        "governedRuleCount": governed["ruleCount"],
+        "unionMatchesPerRule": governed["unionMatchesPerRule"],
         "rows": [
             {
                 "assetId": row["assetId"],
@@ -233,15 +338,32 @@ def build_dual_replay_evidence(
     }
 
     def replay_sample(sample: dict[str, Any]) -> dict[str, Any]:
+        sample_items = [row for row in sample.get("items", []) if isinstance(row, dict)]
         replay = replay_version_change(
-            [row for row in sample.get("items", []) if isinstance(row, dict)],
+            sample_items,
             source_version=source_version,
             target_version=target_version,
         )
         replay.pop("rows", None)
+        governed = replay_governed_rules(
+            sample_items,
+            source_version=source_version,
+            target_version=target_version,
+        )
+        rule_impacts = [
+            {key: value for key, value in row.items() if key != "rows"}
+            for row in governed["rules"]
+        ]
+        replay["publicEligibilityAffectedAssetIds"] = replay["affectedAssetIds"]
+        replay["affectedAssetIds"] = governed["affectedAssetIds"]
+        replay["affectedAssetCount"] = governed["affectedAssetCount"]
+        replay["affectedByArea"] = governed["affectedByArea"]
+        replay["governedRuleCount"] = governed["ruleCount"]
+        replay["unionMatchesPerRule"] = governed["unionMatchesPerRule"]
         return {
             **{key: value for key, value in sample.items() if key != "items"},
             "replay": replay,
+            "ruleImpacts": rule_impacts,
         }
 
     fixed_result = replay_sample(historical)
@@ -263,45 +385,121 @@ def _unavailable(reason: str, source_path: str) -> dict[str, str]:
     return {"reason": reason, "sourcePath": source_path}
 
 
-def replay_one_rule(rule_id: str, items: list[dict[str, Any]], effective_version: str) -> dict[str, Any]:
-    rows = []
+def replay_governed_rules(
+    items: list[dict[str, Any]],
+    *,
+    source_version: str,
+    target_version: str,
+) -> dict[str, Any]:
+    source_manifest = effective_rule_manifest(source_version)
+    target_manifest = effective_rule_manifest(target_version)
+    if list(source_manifest) != list(target_manifest):
+        raise ValueError("前后规则登记集合不一致，拒绝生成不完整影响预览。")
+    rule_ids = list(target_manifest)
+    buckets: dict[str, list[dict[str, Any]]] = {rule_id: [] for rule_id in rule_ids}
+    config = load_config(RULE_PATH)
     for item in items:
         asset_id = str(item.get("assetId") or item.get("asset_id") or "").strip()
         if not asset_id:
             continue
-        baseline = evaluate_rule_condition(rule_id, item, FROZEN_PUBLIC_RULE_VERSION)
-        effective = evaluate_rule_condition(rule_id, item, effective_version)
-        applicable = bool(baseline["applicable"] or effective["applicable"])
-        rows.append(
+        replay_item = normalize_rule_replay_item(item)
+        source_states = evaluate_governed_rule_states(replay_item, source_version, config)
+        target_states = evaluate_governed_rule_states(replay_item, target_version, config)
+        for rule_id in rule_ids:
+            source = source_states[rule_id]
+            target = target_states[rule_id]
+            applicable = bool(source["applicable"] or target["applicable"])
+            comparable = bool(source["comparable"] and target["comparable"])
+            changed = bool(applicable and comparable and source["state"] != target["state"])
+            buckets[rule_id].append(
+                {
+                    "assetId": asset_id,
+                    "applicable": applicable,
+                    "comparable": comparable,
+                    "sourceState": source["state"],
+                    "targetState": target["state"],
+                    "baselinePassed": source["passed"] if applicable and comparable else None,
+                    "effectivePassed": target["passed"] if applicable and comparable else None,
+                    "changed": changed,
+                }
+            )
+
+    impacts = []
+    for rule_id in rule_ids:
+        rows = buckets[rule_id]
+        applicable_rows = [row for row in rows if row["applicable"]]
+        comparable_rows = [row for row in applicable_rows if row["comparable"]]
+        changed_rows = [row for row in comparable_rows if row["changed"]]
+        source_passed = [row for row in comparable_rows if row["baselinePassed"]]
+        target_passed = [row for row in comparable_rows if row["effectivePassed"]]
+        waiting = [row for row in applicable_rows if not row["comparable"] or row["targetState"] in {"unknown", "unavailable", "waiting", "no_data"}]
+        failed = [
+            row for row in comparable_rows
+            if not row["effectivePassed"] and row["targetState"] not in {"unknown", "unavailable", "waiting", "no_data"}
+        ]
+        added = sorted(row["assetId"] for row in changed_rows if not row["baselinePassed"] and row["effectivePassed"])
+        removed = sorted(row["assetId"] for row in changed_rows if row["baselinePassed"] and not row["effectivePassed"])
+        state_changed = sorted(row["assetId"] for row in changed_rows)
+        impacts.append(
             {
-                "assetId": asset_id,
-                "applicable": applicable,
-                "baselinePassed": baseline["passed"] if applicable else None,
-                "effectivePassed": effective["passed"] if applicable else None,
-                "changed": applicable and baseline["passed"] != effective["passed"],
+                "ruleId": rule_id,
+                "sourceVersion": source_version,
+                "targetVersion": target_version,
+                "counts": {
+                    "input": len(rows),
+                    "applicable": len(applicable_rows),
+                    "notApplicable": len(rows) - len(applicable_rows),
+                    "waiting": len(waiting),
+                    "failed": len(failed),
+                    "baselinePassed": len(source_passed),
+                    "effectivePassed": len(target_passed),
+                    "entered": len(added),
+                    "withdrawn": len(removed),
+                    "changed": len(changed_rows),
+                },
+                "addedAssetIds": added,
+                "removedAssetIds": removed,
+                "stateChangedAssetIds": state_changed,
+                "passExample": target_passed[0]["assetId"] if target_passed else _unavailable("当前输入没有该规则的真实通过样本", "C2.4 tracking snapshot"),
+                "nonPassExample": failed[0]["assetId"] if failed else _unavailable("当前输入没有该规则的真实未通过样本", "C2.4 tracking snapshot"),
+                "differenceExample": state_changed[0] if state_changed else None,
+                "rows": rows,
             }
         )
-    applicable_rows = [row for row in rows if row["applicable"]]
-    changed_rows = [row for row in applicable_rows if row["changed"]]
-    baseline_passed = [row for row in applicable_rows if row["baselinePassed"]]
-    effective_passed = [row for row in applicable_rows if row["effectivePassed"]]
-    effective_failed = [row for row in applicable_rows if not row["effectivePassed"]]
-    return {
-        "counts": {
-            "input": len(rows),
-            "applicable": len(applicable_rows),
-            "notApplicable": len(rows) - len(applicable_rows),
-            "baselinePassed": len(baseline_passed),
-            "effectivePassed": len(effective_passed),
-            "changed": len(changed_rows),
-        },
-        "addedAssetIds": sorted(row["assetId"] for row in changed_rows if row["effectivePassed"]),
-        "removedAssetIds": sorted(row["assetId"] for row in changed_rows if not row["effectivePassed"]),
-        "passExample": effective_passed[0]["assetId"] if effective_passed else _unavailable("当前输入没有该规则的真实通过样本", "C2.4 tracking snapshot"),
-        "nonPassExample": effective_failed[0]["assetId"] if effective_failed else _unavailable("当前输入没有该规则的真实未通过样本", "C2.4 tracking snapshot"),
-        "differenceExample": changed_rows[0]["assetId"] if changed_rows else None,
-        "rows": rows,
+
+    impact_map = {row["ruleId"]: set(row["stateChangedAssetIds"]) for row in impacts}
+    areas = {
+        "publicEligibility": ["public_eligibility_result"],
+        "strongPaths": list(STRONG_PATH_RULES),
+        "immediateExit": ["immediate_exit_state", "severe_immediate_exit_loss", "sell_quote_loss_pct_gte_20_immediate_exit"],
+        "riskAndHardBlock": ["public_risk_source_success", "public_no_confirmed_hard_block", "public_no_confirmed_severe_anomaly", "sell_tax_pct_gte_20_as_hard_block"],
+        "invalidationPauseAndUnitStability": ["liquidity_drop_pct_gte_80_path_invalidation", "supply_decimals_or_unit_change_path_invalidation", "cross_source_price_deviation_pct_gte_25_path_pause"],
     }
+    affected_by_area = {
+        area: sorted(set().union(*(impact_map[rule_id] for rule_id in ids)))
+        for area, ids in areas.items()
+    }
+    affected = sorted(set().union(*(set(row["stateChangedAssetIds"]) for row in impacts)))
+    return {
+        "schemaVersion": "c2.5-governed-rule-replay-v1",
+        "sourceVersion": source_version,
+        "targetVersion": target_version,
+        "ruleCount": len(impacts),
+        "rules": impacts,
+        "affectedByArea": affected_by_area,
+        "affectedAssetIds": affected,
+        "affectedAssetCount": len(affected),
+        "unionMatchesPerRule": affected == sorted(set().union(*(set(row["stateChangedAssetIds"]) for row in impacts))),
+    }
+
+
+def replay_one_rule(rule_id: str, items: list[dict[str, Any]], effective_version: str) -> dict[str, Any]:
+    replay = replay_governed_rules(
+        items,
+        source_version=FROZEN_PUBLIC_RULE_VERSION,
+        target_version=effective_version,
+    )
+    return next(row for row in replay["rules"] if row["ruleId"] == rule_id)
 
 
 def reconcile_rule_values(rules: list[dict[str, Any]], code_manifest: dict[str, Any]) -> list[dict[str, Any]]:
@@ -361,13 +559,22 @@ def build_rule_transparency(
 
     disabled = list((trial.get("activeOverrides") or {}).get("disabledAsGates") or [])
     values = [
+        ("public_eligibility_result", "当前公开资格结果", "all_frozen_public_baseline_checks", "approved_trial_public_baseline_checks", "state", "公开底线总结果"),
+        ("public_risk_source_success", "风险来源成功", "required", "not_required_raw_state_preserved", "state", "公开底线风险"),
+        ("public_no_confirmed_hard_block", "无已确认硬阻断", "required", "required", "state", "公开底线风险"),
+        ("public_no_confirmed_severe_anomaly", "无已确认严重异常", "required", "not_required_raw_state_preserved", "state", "公开底线风险"),
+        ("strong_path_trade_demand_state", "交易需求强路径状态", "frozen_path_conditions", "approved_trial_path_conditions", "state", "强路径"),
+        ("strong_path_liquidity_exit_state", "流动性退出强路径状态", "frozen_path_conditions", "approved_trial_path_conditions", "state", "强路径"),
+        ("strong_path_supply_holder_state", "供应持币改善强路径状态", "frozen_path_conditions", "approved_trial_path_conditions", "state", "强路径"),
+        ("strong_path_indexed_pool_state", "全池活动估值强路径状态", "frozen_path_conditions", "approved_trial_path_conditions", "state", "强路径"),
+        ("immediate_exit_state", "立即退出状态", "hard_block_or_loss_gte_20_or_sell_tax_gte_20", "confirmed_trade_block_only", "state", "立即退出"),
         ("public_sell_quote_loss", "公开卖出报价损失", 15, "quote_success_loss_recorded", "%", "公开底线"),
         ("strong_path_sell_quote_loss", "流动性路径卖出报价损失", 10, "quote_success_no_confirmed_trade_block", "%", "强路径"),
         ("severe_immediate_exit_loss", "严重退出损失", 20, "record_only_no_immediate_exit_gate", "%", "立即退出"),
     ]
     rules: list[dict[str, Any]] = []
     for rule_id, name, baseline_value, trial_value, unit, scope in values:
-        changed = override_active
+        changed = bool(override_active and baseline_value != trial_value)
         rules.append(
             {
                 "ruleId": rule_id,
@@ -380,6 +587,10 @@ def build_rule_transparency(
                 "status": "overridden" if changed else "baseline",
                 "sourcePath": "docs/C2.4_RULE_CONFIG.json",
                 "sourceSha256": rule_hash,
+                "baselineVersion": FROZEN_PUBLIC_RULE_VERSION,
+                "effectiveVersion": selected_version,
+                "effectiveSourcePath": "docs/C2.4_RULE_RELAXATION_TRIAL_20260813.json" if changed else "docs/C2.4_RULE_CONFIG.json",
+                "effectiveSourceSha256": trial_hash if changed else rule_hash,
                 "approvedBy": active_override["approvedBy"] if changed else "C2.4 requirements lock",
                 "approvedAt": active_override["approvedAt"] if changed else None,
                 "effectiveFrom": active_override["effectiveFrom"] if changed else None,
@@ -409,6 +620,10 @@ def build_rule_transparency(
                 "status": "overridden" if override_active else "baseline",
                 "sourcePath": "docs/C2.4_RULE_RELAXATION_TRIAL_20260813.json",
                 "sourceSha256": trial_hash or None,
+                "baselineVersion": FROZEN_PUBLIC_RULE_VERSION,
+                "effectiveVersion": selected_version,
+                "effectiveSourcePath": "docs/C2.4_RULE_RELAXATION_TRIAL_20260813.json" if override_active else "docs/C2.4_RULE_CONFIG.json",
+                "effectiveSourceSha256": trial_hash if override_active else rule_hash,
                 "approvedBy": active_override["approvedBy"] if override_active else "C2.4 requirements lock",
                 "approvedAt": active_override["approvedAt"] if override_active else None,
                 "effectiveFrom": active_override["effectiveFrom"] if override_active else None,
@@ -419,12 +634,18 @@ def build_rule_transparency(
         )
 
     inputs = items or []
+    governed_replay = replay_governed_rules(
+        inputs,
+        source_version=FROZEN_PUBLIC_RULE_VERSION,
+        target_version=selected_version,
+    )
+    impact_map = {row["ruleId"]: row for row in governed_replay["rules"]}
     for row in rules:
-        rule_replay = replay_one_rule(row["ruleId"], inputs, selected_version)
-        row.update({key: rule_replay[key] for key in ("counts", "addedAssetIds", "removedAssetIds", "passExample", "nonPassExample", "differenceExample")})
+        rule_replay = impact_map[row["ruleId"]]
+        row.update({key: rule_replay[key] for key in ("counts", "addedAssetIds", "removedAssetIds", "stateChangedAssetIds", "passExample", "nonPassExample", "differenceExample")})
     code_manifest = effective_rule_manifest(selected_version)
     rules = reconcile_rule_values(rules, code_manifest)
-    replay = replay_rules(inputs, override_active=override_active)
+    replay = replay_rules(inputs, override_active=override_active, governed_replay=governed_replay)
     replay_sets = build_dual_replay_evidence(
         inputs,
         source_version=FROZEN_PUBLIC_RULE_VERSION,

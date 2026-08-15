@@ -170,6 +170,13 @@ class RuleGovernanceStore:
         for key, sample_kind in expected.items():
             sample = replay_evidence.get(key)
             replay = sample.get("replay") if isinstance(sample, dict) else None
+            rule_impacts = sample.get("ruleImpacts") if isinstance(sample, dict) else None
+            rule_union = sorted({
+                asset_id
+                for row in (rule_impacts or [])
+                if isinstance(row, dict)
+                for asset_id in (row.get("stateChangedAssetIds") or [])
+            })
             if (
                 not isinstance(sample, dict)
                 or sample.get("sampleKind") != sample_kind
@@ -177,8 +184,13 @@ class RuleGovernanceStore:
                 or not isinstance(replay, dict)
                 or replay.get("sameInput") is not True
                 or replay.get("assetIdSetRecomputed") is not True
+                or replay.get("unionMatchesPerRule") is not True
+                or int(replay.get("governedRuleCount") or 0) != 18
+                or not isinstance(rule_impacts, list)
+                or len(rule_impacts) != 18
+                or replay.get("affectedAssetIds") != rule_union
             ):
-                raise ValueError("固定历史样本和当前只读样本必须分别完成同输入assetId重放。")
+                raise ValueError("固定历史样本和当前只读样本必须分别完成18条受治理规则重放及影响并集校验。")
         if int(replay_evidence["fixedHistorical"]["replay"].get("inputCount") or 0) < 1:
             raise ValueError("固定历史样本不能为空。")
 

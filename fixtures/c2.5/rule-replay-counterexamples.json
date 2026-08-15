@@ -19,13 +19,23 @@
         "projectEvidenceQualified": true,
         "projectEvidenceAttributable": true,
         "relationshipClass": "A",
+        "ageDays": 10,
+        "liquidityUsd": 10000,
         "liquidityDropPct": 10,
+        "observedBuys": 10,
+        "observedSells": 10,
+        "volumeUsd": 1000,
+        "transactionCount": 20,
+        "volumeLiquidityRatio": 0.1,
+        "cohortThresholds": {"liquidityP50":5000,"volumeP40":100,"volumeP50":500,"transactionsP50":10,"volumeLiquidityRatioP50":0.05},
         "supplyUnitScaleChanged": false,
         "crossSourcePriceDeviationPct": 30,
         "sellTaxPct": 5
       },
       "expectedChangedRuleIds": [
-        "cross_source_price_deviation_pct_gte_25_path_pause"
+        "cross_source_price_deviation_pct_gte_25_path_pause",
+        "strong_path_liquidity_exit_state",
+        "strong_path_trade_demand_state"
       ]
     }
   ]

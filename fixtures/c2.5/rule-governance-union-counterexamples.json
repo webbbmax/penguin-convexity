@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "c2.5-rule-governance-union-counterexamples-v1",
+  "sourceVersion": "c2.4-rules-v1",
+  "targetVersion": "c2.4-public-baseline-quote-success-trial-v1",
+  "baseItem": {
+    "chainId": "base-mainnet",
+    "contractAddress": "counterexample-contract",
+    "pairAddress": "counterexample-pair",
+    "tokenSide": "base",
+    "t0Status": "verified_in_supported_scope",
+    "deepTrackingState": "completed",
+    "evaluationWindowId": "counterexample-window",
+    "evaluationCompletedAt": "2026-08-15T00:00:00Z",
+    "riskSourceState": "success",
+    "sellQuoteState": "success",
+    "sellQuoteLossPct": 8,
+    "projectEvidenceQualified": false,
+    "projectEvidenceAttributable": false,
+    "relationshipClass": "A",
+    "confirmedHardBlock": false,
+    "confirmedSevereAnomaly": false,
+    "ageDays": 10,
+    "liquidityUsd": 10000,
+    "liquidityDropPct": 0,
+    "observedBuys": 10,
+    "observedSells": 10,
+    "volumeUsd": 1000,
+    "transactionCount": 20,
+    "volumeLiquidityRatio": 0.1,
+    "cohortThresholds": {
+      "liquidityP50": 5000,
+      "volumeP40": 100,
+      "volumeP50": 500,
+      "transactionsP50": 10,
+      "volumeLiquidityRatioP50": 0.05
+    }
+  },
+  "cases": [
+    {
+      "id": "only_strong_path_changes",
+      "assetId": "counterexample-only-strong-path",
+      "overrides": {"sellQuoteLossPct": 12},
+      "expectedChangedRuleIds": ["strong_path_liquidity_exit_state", "strong_path_sell_quote_loss"]
+    },
+    {
+      "id": "only_immediate_exit_changes",
+      "assetId": "counterexample-only-immediate-exit",
+      "overrides": {"sellQuoteState": "no_data", "sellQuoteLossPct": 20},
+      "expectedChangedRuleIds": ["immediate_exit_state", "severe_immediate_exit_loss", "sell_quote_loss_pct_gte_20_immediate_exit"]
+    },
+    {
+      "id": "only_risk_source_rule_changes",
+      "assetId": "counterexample-only-risk-source",
+      "overrides": {"riskSourceState": "no_data", "sellQuoteState": "no_data", "sellQuoteLossPct": null},
+      "expectedChangedRuleIds": ["public_risk_source_success"]
+    }
+  ]
+}

@@ -5,19 +5,22 @@
   "items": [
     {
       "assetId":"asset-pass-both","chainId":"solana-mainnet","contractAddress":"contract-pass-both","pairAddress":"pair-pass-both","tokenSide":"base","t0Status":"verified_in_supported_scope",
-      "deepTrackingState":"completed","evaluationWindowId":"historical-window-1","evaluationCompletedAt":"2026-08-13T08:00:00Z",
+      "deepTrackingState":"completed","evaluationWindowId":"historical-window-1","evaluationCompletedAt":"2026-08-13T08:00:00Z","ageDays":10,
+      "liquidityUsd":10000,"liquidityDropPct":0,"observedBuys":10,"observedSells":10,"volumeUsd":1000,"transactionCount":20,"volumeLiquidityRatio":0.1,"cohortThresholds":{"liquidityP50":5000,"volumeP40":100,"volumeP50":500,"transactionsP50":10,"volumeLiquidityRatioP50":0.05},
       "sellQuoteState":"success","sellQuoteLossPct":8,"riskSourceState":"success","projectEvidenceQualified":true,"projectEvidenceAttributable":true,"relationshipClass":"A","confirmedHardBlock":false,
       "expectedBaseline":true,"expectedEffective":true
     },
     {
       "assetId":"asset-override-added","chainId":"solana-mainnet","contractAddress":"contract-override-added","pairAddress":"pair-override-added","tokenSide":"base","t0Status":"verified_in_supported_scope",
-      "deepTrackingState":"completed","evaluationWindowId":"historical-window-1","evaluationCompletedAt":"2026-08-13T08:00:00Z",
+      "deepTrackingState":"completed","evaluationWindowId":"historical-window-1","evaluationCompletedAt":"2026-08-13T08:00:00Z","ageDays":10,
+      "liquidityUsd":10000,"liquidityDropPct":0,"observedBuys":10,"observedSells":10,"volumeUsd":1000,"transactionCount":20,"volumeLiquidityRatio":0.1,"cohortThresholds":{"liquidityP50":5000,"volumeP40":100,"volumeP50":500,"transactionsP50":10,"volumeLiquidityRatioP50":0.05},
       "sellQuoteState":"success","sellQuoteLossPct":18,"riskSourceState":"no_data","projectEvidenceQualified":true,"projectEvidenceAttributable":true,"relationshipClass":"A","confirmedHardBlock":false,
       "expectedBaseline":false,"expectedEffective":true
     },
     {
       "assetId":"asset-hard-block","chainId":"solana-mainnet","contractAddress":"contract-hard-block","pairAddress":"pair-hard-block","tokenSide":"base","t0Status":"verified_in_supported_scope",
-      "deepTrackingState":"completed","evaluationWindowId":"historical-window-1","evaluationCompletedAt":"2026-08-13T08:00:00Z",
+      "deepTrackingState":"completed","evaluationWindowId":"historical-window-1","evaluationCompletedAt":"2026-08-13T08:00:00Z","ageDays":10,
+      "liquidityUsd":10000,"liquidityDropPct":0,"observedBuys":10,"observedSells":10,"volumeUsd":1000,"transactionCount":20,"volumeLiquidityRatio":0.1,"cohortThresholds":{"liquidityP50":5000,"volumeP40":100,"volumeP50":500,"transactionsP50":10,"volumeLiquidityRatioP50":0.05},
       "sellQuoteState":"success","sellQuoteLossPct":5,"riskSourceState":"success","projectEvidenceQualified":true,"projectEvidenceAttributable":true,"relationshipClass":"A","confirmedHardBlock":true,
       "expectedBaseline":false,"expectedEffective":false
     }

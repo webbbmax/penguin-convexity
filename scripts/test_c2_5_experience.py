@@ -155,6 +155,11 @@ class ApiContractTests(unittest.TestCase):
         self.assertTrue(all(row["status"] in {"success", "no_data", "quota_limited", "source_failure", "unsupported", "configuration_missing", "program_failure"} for row in chains["rows"]))
         rules = self.plane.rules_payload()
         self.assertEqual([row["status"] for row in rules["history"]], ["frozen_baseline", "active"])
+        self.assertEqual(rules["effective"]["reconciledRuleCount"], 18)
+        self.assertEqual(rules["effective"]["expectedRuleCount"], 18)
+        rule_ids = {row["ruleId"] for row in rules["rules"]}
+        self.assertTrue({"public_risk_source_success", "public_no_confirmed_hard_block", "public_no_confirmed_severe_anomaly"}.issubset(rule_ids))
+        self.assertTrue(rules["replay"]["unionMatchesPerRule"])
         snapshots = self.plane.snapshots_payload()
         self.assertTrue(snapshots["stateBoundary"]["separate"])
         self.assertFalse(snapshots["managerCompositionWritesBusinessDatabases"])
