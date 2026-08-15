@@ -45,6 +45,12 @@ def main() -> int:
     root = Path(args.project_root).resolve()
     plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
     rules = plane.rules_payload()
+    governance = rules.get("governance") or {}
+    rollback_target = next(
+        (row.get("version") for row in governance.get("knownVersions") or [] if row.get("version") != governance.get("activeVersion")),
+        None,
+    )
+    rollback_preview = plane.rule_change_preview(rollback_target) if rollback_target else {}
     snapshots = plane.snapshots_payload()
     chains = plane.chains_sources_payload()
     replay_rows = (rules.get("replay") or {}).get("rows") or []
@@ -96,12 +102,26 @@ def main() -> int:
     ]
     required_rules = {"public_sell_quote_loss", "strong_path_sell_quote_loss", "severe_immediate_exit_loss"}
     observed_rules = {row.get("ruleId") for row in rules.get("rules") or []}
+    replay_sets = rules.get("replaySets") or {}
+    fixed_replay = replay_sets.get("fixedHistorical") or {}
+    current_replay = replay_sets.get("currentReadOnly") or {}
     passed = bool(
         rules.get("status") == "ready"
         and required_rules.issubset(observed_rules)
         and sum(row.get("effectiveValue") == "disabled_as_gate" for row in rules.get("rules") or []) == 6
         and rules.get("replay", {}).get("sameInput")
         and rules.get("replay", {}).get("assetIdSetRecomputed")
+        and fixed_replay.get("sampleKind") == "fixed_historical"
+        and current_replay.get("sampleKind") == "current_read_only"
+        and fixed_replay.get("readOnly") is True
+        and current_replay.get("readOnly") is True
+        and int((fixed_replay.get("replay") or {}).get("inputCount") or 0) > 0
+        and fixed_replay.get("sourcePath") != current_replay.get("sourcePath")
+        and rollback_preview.get("fixedHistorical", {}).get("sampleKind") == "fixed_historical"
+        and rollback_preview.get("currentReadOnly", {}).get("sampleKind") == "current_read_only"
+        and set(rollback_preview.get("affectedTaskIds") or []) == {"c22.screening", "c22.convexity_tracking"}
+        and len(rollback_preview.get("affectedSnapshots") or []) == 3
+        and all(row.get("snapshotId") for row in rollback_preview.get("affectedSnapshots") or [])
         and trace.get("status") == "ready"
         and len(compact_snapshots) == 5
         and all(row.get("complete") for row in compact_snapshots)
@@ -131,6 +151,8 @@ def main() -> int:
                     "assetIdSetRecomputed",
                 )
             },
+            "replaySets": replay_sets,
+            "rollbackPreview": rollback_preview,
             "bayesBoundary": rules.get("bayesBoundary"),
         },
         "decisionTrace": trace_summary,

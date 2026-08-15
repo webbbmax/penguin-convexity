@@ -64,6 +64,7 @@ class RuleGovernanceStore:
         self.draft_root = self.root / "drafts"
         self.version_root = self.root / "versions"
         self.decision_root = self.root / "decisions"
+        self.run_link_root = self.root / "run-links"
 
     def _source_hashes(self) -> dict[str, str]:
         hashes = {"ruleConfig": _sha256(self.rule_path), "trial": _sha256(self.trial_path)}
@@ -129,7 +130,23 @@ class RuleGovernanceStore:
         for row in self._all_json(self.draft_root):
             decision = latest_decision.get(row.get("draftId"))
             drafts.append({**row, "status": decision.get("decision") if decision else "pending_approval", "decision": decision})
-        history = sorted(self._all_json(self.version_root), key=lambda row: (str(row.get("effectiveAt") or ""), str(row.get("activationId") or "")))
+        links = {
+            row.get("activationId"): row
+            for row in self._all_json(self.run_link_root)
+            if row.get("activationId")
+        }
+        history = []
+        for row in sorted(self._all_json(self.version_root), key=lambda item: (str(item.get("effectiveAt") or ""), str(item.get("activationId") or ""))):
+            link = links.get(row.get("activationId"))
+            history.append(
+                {
+                    **row,
+                    "linkedRunId": link.get("linkedRunId") if link else None,
+                    "linkedSnapshotIds": link.get("linkedSnapshotIds", []) if link else [],
+                    "runLink": link,
+                    "runLinkStatus": "linked" if link else "pending_next_legal_run",
+                }
+            )
         payload = {
             "schemaVersion": "c2.5-rule-governance-state-v1",
             "activeVersion": selector["activeVersion"],
@@ -141,6 +158,29 @@ class RuleGovernanceStore:
         }
         payload["stateVersion"] = hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
         return payload
+
+    @staticmethod
+    def _validate_replay_evidence(replay_evidence: dict[str, Any]) -> None:
+        if replay_evidence.get("schemaVersion") != "c2.5-rule-dual-replay-evidence-v1":
+            raise ValueError("规则变更必须保存分开的固定历史样本和当前只读样本重放。")
+        expected = {
+            "fixedHistorical": "fixed_historical",
+            "currentReadOnly": "current_read_only",
+        }
+        for key, sample_kind in expected.items():
+            sample = replay_evidence.get(key)
+            replay = sample.get("replay") if isinstance(sample, dict) else None
+            if (
+                not isinstance(sample, dict)
+                or sample.get("sampleKind") != sample_kind
+                or sample.get("readOnly") is not True
+                or not isinstance(replay, dict)
+                or replay.get("sameInput") is not True
+                or replay.get("assetIdSetRecomputed") is not True
+            ):
+                raise ValueError("固定历史样本和当前只读样本必须分别完成同输入assetId重放。")
+        if int(replay_evidence["fixedHistorical"]["replay"].get("inputCount") or 0) < 1:
+            raise ValueError("固定历史样本不能为空。")
 
     def create_draft(
         self,
@@ -154,8 +194,7 @@ class RuleGovernanceStore:
         target = self._validate_version(str(target_version or ""))
         if not all(str(value or "").strip() for value in (reason, scope, end_condition)):
             raise ValueError("规则草案必须填写原因、适用范围和结束条件。")
-        if not replay_evidence.get("sameInput") or not replay_evidence.get("assetIdSetRecomputed"):
-            raise ValueError("规则草案缺少同输入、按assetId独立重算的影响证据。")
+        self._validate_replay_evidence(replay_evidence)
         current = self._selector()
         draft_id = f"rule-draft-{uuid.uuid4().hex}"
         draft = {
@@ -205,6 +244,9 @@ class RuleGovernanceStore:
             "sourceHashes": self._source_hashes(),
             "historicalEvidencePreserved": True,
             "effectiveTiming": "next_legal_run",
+            "linkedRunId": None,
+            "linkedSnapshotIds": [],
+            "runLinkStatus": "pending_next_legal_run",
         }
         _atomic_json(self.version_root / f"{activation_id}.json", activation)
         _atomic_json(
@@ -245,9 +287,45 @@ class RuleGovernanceStore:
     def rollback_version(self, target_version: str, *, reason: str, replay_evidence: dict[str, Any]) -> dict[str, Any]:
         if not str(reason or "").strip():
             raise ValueError("规则回滚必须填写原因。")
-        if not replay_evidence.get("sameInput") or not replay_evidence.get("assetIdSetRecomputed"):
-            raise ValueError("规则回滚缺少同输入、按assetId独立重算证据。")
+        self._validate_replay_evidence(replay_evidence)
         return self._activate(target_version=target_version, kind="rollback", reason=str(reason).strip(), replay_evidence=replay_evidence)
+
+    def link_next_legal_run(
+        self,
+        *,
+        run_id: str,
+        rule_version: str,
+        snapshots: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        selector = self._selector()
+        activation_id = str(selector.get("activationId") or "")
+        if selector["activeVersion"] != rule_version:
+            raise ValueError("运行使用的规则版本与当前选择器不一致，不能关联。")
+        version_path = self.version_root / f"{activation_id}.json"
+        if not version_path.is_file():
+            return {"status": "no_pending_c25_activation", "activationId": activation_id}
+        existing = next(
+            (row for row in self._all_json(self.run_link_root) if row.get("activationId") == activation_id),
+            None,
+        )
+        if existing:
+            return existing
+        run_id = str(run_id or "").strip()
+        snapshot_rows = [row for row in snapshots if isinstance(row, dict) and row.get("snapshotId")]
+        if not run_id or not snapshot_rows:
+            raise ValueError("规则版本生效关联必须包含真实运行ID和快照ID。")
+        link = {
+            "schemaVersion": "c2.5-rule-run-link-v1",
+            "activationId": activation_id,
+            "ruleVersion": rule_version,
+            "linkedRunId": run_id,
+            "linkedSnapshotIds": [str(row["snapshotId"]) for row in snapshot_rows],
+            "snapshots": snapshot_rows,
+            "linkedAt": _iso_time(self.clock()),
+            "linkKind": "first_legal_snapshot_publication",
+        }
+        _atomic_json(self.run_link_root / f"{activation_id}--{Path(run_id).name}.json", link)
+        return link
 
 
 __all__ = ["RuleGovernanceStore"]

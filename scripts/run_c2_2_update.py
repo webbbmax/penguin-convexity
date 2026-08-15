@@ -86,6 +86,53 @@ def build_c22_snapshots() -> dict:
     return payloads
 
 
+def _link_active_rule_run(run_id: str, payloads: dict) -> dict:
+    """Associate the selected C2.5 rule version with its first atomic publication."""
+
+    from c2_5_rule_governance import RuleGovernanceStore
+
+    c24 = payloads.get("c24") if isinstance(payloads.get("c24"), dict) else None
+    if c24 is None:
+        raise RuntimeError("C2.4组合快照缺失，无法关联规则版本与合法运行。")
+    tracking = c24.get("tracking") if isinstance(c24.get("tracking"), dict) else {}
+    rule_version = str(tracking.get("ruleVersion") or "").strip()
+    snapshots = []
+    for key, path in (
+        ("tracking", "app/c2-4-tracking-snapshot.js"),
+        ("front", "app/c2-4-front-snapshot.js"),
+        ("admin", "app/c2-4-admin-snapshot.js"),
+    ):
+        payload = c24.get(key) if isinstance(c24.get(key), dict) else {}
+        snapshot_id = payload.get("buildId")
+        if snapshot_id:
+            snapshots.append(
+                {
+                    "snapshotId": snapshot_id,
+                    "snapshotType": key,
+                    "path": path,
+                    "builtAt": payload.get("generatedAt") or payload.get("builtAt"),
+                }
+            )
+    if not rule_version or len(snapshots) != 3:
+        raise RuntimeError("规则版本生效关联缺少规则版本或三份原子快照ID。")
+    store = RuleGovernanceStore(
+        PROJECT_ROOT / "runtime" / "c2.5" / "rule-governance",
+        rule_path=PROJECT_ROOT / "docs" / "C2.4_RULE_CONFIG.json",
+        trial_path=PROJECT_ROOT / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+    )
+    return store.link_next_legal_run(
+        run_id=run_id,
+        rule_version=rule_version,
+        snapshots=snapshots,
+    )
+
+
+def build_c22_snapshots_for_run(run_id: str) -> dict:
+    payloads = build_c22_snapshots()
+    payloads["ruleVersionRunLink"] = _link_active_rule_run(run_id, payloads)
+    return payloads
+
+
 def reconcile_c24_history() -> dict:
     """Make existing deep-tracking results eligible for durable C2.4 lifecycle migration."""
 
@@ -215,7 +262,7 @@ def _run_screening_with_exclusive_database(trigger: str, run_id: str, source_id:
         return {"status": "failed", "screening": result, "candidateProduction": production, "publication": publication}
     set_status("screening", state="running", stage="snapshot", message="正在发布筛选与组合快照。", trigger=trigger, run_id=run_id, completed=5, total=6)
     c24_history = reconcile_c24_history()
-    snapshots = build_c22_snapshots()
+    snapshots = build_c22_snapshots_for_run(run_id)
     remaining = (result.get("retrySource") or {}).get("remainingRecoverableScopes")
     completion_message = (
         f"单项更新已完成；仍有{remaining}个范围连接失败，旧的成功数据已保留。"
@@ -262,7 +309,7 @@ def run_tracking(trigger: str, run_id: str, dry_run: bool, source_id: str | None
             return result
         set_status("convexity_tracking", state="running", stage="snapshot", message="正在发布单项来源更新后的跟踪快照。", trigger=trigger, run_id=run_id, completed=2, total=3)
         reconcile_c24_history()
-        snapshots = build_c22_snapshots()
+        snapshots = build_c22_snapshots_for_run(run_id)
         completion_message = "单项来源已尝试；未完成的项目保留为可重试状态。" if result.get("partial") else "单项来源更新已完成。"
         set_status("convexity_tracking", state="partial" if result.get("partial") else "completed", stage="snapshot_published", message=completion_message, trigger=trigger, run_id=run_id, completed=3, total=3, lastCompletedAt=now_iso(), nextDueAt=next_run_at("convexity_tracking"))
         return {"status": "completed", "trackingSource": result, "snapshot": snapshots["tracking"]["buildId"]}
@@ -372,7 +419,7 @@ def run_tracking(trigger: str, run_id: str, dry_run: bool, source_id: str | None
         ),
     }
     if paused_during_handoff:
-        snapshots = build_c22_snapshots()
+        snapshots = build_c22_snapshots_for_run(run_id)
         set_status(
             "convexity_tracking",
             state="paused",
@@ -404,7 +451,7 @@ def run_tracking(trigger: str, run_id: str, dry_run: bool, source_id: str | None
 
     if queue_incomplete:
         reconcile_c24_history()
-        snapshots = build_c22_snapshots()
+        snapshots = build_c22_snapshots_for_run(run_id)
         set_status(
             "convexity_tracking",
             state="partial",
@@ -491,7 +538,7 @@ def run_tracking(trigger: str, run_id: str, dry_run: bool, source_id: str | None
     deep_structure = run_deep_structure_batch(limit=1)
     set_status("convexity_tracking", state="running", stage="snapshot", message="正在发布跟踪与组合快照。", trigger=trigger, run_id=run_id, completed=tracking_total - 1, total=tracking_total)
     reconcile_c24_history()
-    snapshots = build_c22_snapshots()
+    snapshots = build_c22_snapshots_for_run(run_id)
     queue = candidate_tracking.get("queue") or {}
     status = "partial" if (
         result.get("status") == "partial_success"

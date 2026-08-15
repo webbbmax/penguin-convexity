@@ -21,6 +21,7 @@ from c2_4_rules import (
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RULE_PATH = PROJECT_ROOT / "docs" / "C2.4_RULE_CONFIG.json"
 TRIAL_PATH = PROJECT_ROOT / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json"
+FIXED_HISTORY_PATH = PROJECT_ROOT / "fixtures" / "c2.5" / "rule-transparency-matrix.json"
 EXPECTED_RULE_SHA256 = "775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988"
 EXPECTED_TRIAL_SHA256 = "7f6ccc9e35ab6ba7b5212911116facd9698489c0f7d0f27b9dbcf16dc0c7e202"
 
@@ -98,40 +99,162 @@ def evaluate_frozen_public_baseline(item: dict[str, Any]) -> dict[str, Any]:
     return evaluate_public_baseline_version(item, FROZEN_PUBLIC_RULE_VERSION)
 
 
-def replay_rules(items: list[dict[str, Any]], *, override_active: bool) -> dict[str, Any]:
-    baseline_passed: list[str] = []
-    effective_passed: list[str] = []
+def normalize_rule_replay_item(item: dict[str, Any]) -> dict[str, Any]:
+    """Expand the read-only C2.4 tracking projection back to evaluator fields."""
+
+    source_states = item.get("sourceStates") if isinstance(item.get("sourceStates"), dict) else {}
+    baseline = item.get("publicBaseline") if isinstance(item.get("publicBaseline"), dict) else {}
+    baseline_checks = {
+        row.get("code"): row.get("passed")
+        for row in baseline.get("checks", [])
+        if isinstance(row, dict) and row.get("code")
+    }
+    first_gate_checks = {
+        row.get("code"): row.get("passed")
+        for row in item.get("firstGateChecks", [])
+        if isinstance(row, dict) and row.get("code")
+    }
+    project_evidence = item.get("projectEvidenceState") == "success" or baseline_checks.get("project_evidence") is True
+    return {
+        **item,
+        "contractAddress": item.get("contractAddress") or item.get("tokenAddress"),
+        "pairAddress": item.get("pairAddress") or item.get("poolId"),
+        "tokenSide": item.get("tokenSide") or item.get("assetDirection"),
+        "riskSourceState": item.get("riskSourceState") or source_states.get("risk") or item.get("riskState"),
+        "projectEvidenceQualified": item.get("projectEvidenceQualified") if item.get("projectEvidenceQualified") is not None else project_evidence,
+        "projectEvidenceAttributable": item.get("projectEvidenceAttributable") if item.get("projectEvidenceAttributable") is not None else project_evidence,
+        "confirmedHardBlock": item.get("confirmedHardBlock") if item.get("confirmedHardBlock") is not None else first_gate_checks.get("no_confirmed_trade_block") is False,
+        "confirmedSevereAnomaly": item.get("confirmedSevereAnomaly") if item.get("confirmedSevereAnomaly") is not None else bool(item.get("severeAnomaly")),
+    }
+
+
+def replay_version_change(
+    items: list[dict[str, Any]],
+    *,
+    source_version: str,
+    target_version: str,
+) -> dict[str, Any]:
+    source_passed: list[str] = []
+    target_passed: list[str] = []
     rows: list[dict[str, Any]] = []
-    effective_version = TRIAL_PUBLIC_RULE_VERSION if override_active else FROZEN_PUBLIC_RULE_VERSION
     for item in items:
         asset_id = str(item.get("assetId") or item.get("asset_id") or "").strip()
         if not asset_id:
             continue
-        baseline = evaluate_public_baseline_version(item, FROZEN_PUBLIC_RULE_VERSION)
-        effective = evaluate_public_baseline_version(item, effective_version)
-        if baseline["passed"]:
-            baseline_passed.append(asset_id)
-        if effective["passed"]:
-            effective_passed.append(asset_id)
+        replay_item = normalize_rule_replay_item(item)
+        source = evaluate_public_baseline_version(replay_item, source_version)
+        target = evaluate_public_baseline_version(replay_item, target_version)
+        if source["passed"]:
+            source_passed.append(asset_id)
+        if target["passed"]:
+            target_passed.append(asset_id)
         rows.append(
             {
                 "assetId": asset_id,
-                "baselinePassed": baseline["passed"],
-                "effectivePassed": effective["passed"],
-                "changed": baseline["passed"] != effective["passed"],
+                "sourcePassed": source["passed"],
+                "targetPassed": target["passed"],
+                "changed": source["passed"] != target["passed"],
             }
         )
-    baseline_set = set(baseline_passed)
-    effective_set = set(effective_passed)
+    source_set = set(source_passed)
+    target_set = set(target_passed)
+    added = sorted(target_set - source_set)
+    removed = sorted(source_set - target_set)
     return {
+        "sourceVersion": source_version,
+        "targetVersion": target_version,
         "inputCount": len(rows),
-        "baselinePassedCount": len(baseline_set),
-        "effectivePassedCount": len(effective_set),
-        "addedAssetIds": sorted(effective_set - baseline_set),
-        "removedAssetIds": sorted(baseline_set - effective_set),
-        "unchangedAssetIds": sorted(baseline_set & effective_set),
+        "sourcePassedCount": len(source_set),
+        "targetPassedCount": len(target_set),
+        "addedAssetIds": added,
+        "removedAssetIds": removed,
+        "affectedAssetIds": sorted(set(added) | set(removed)),
+        "unchangedAssetIds": sorted(source_set & target_set),
         "rows": rows,
         "sameInput": True,
+        "assetIdSetRecomputed": True,
+    }
+
+
+def replay_rules(items: list[dict[str, Any]], *, override_active: bool) -> dict[str, Any]:
+    effective_version = TRIAL_PUBLIC_RULE_VERSION if override_active else FROZEN_PUBLIC_RULE_VERSION
+    replay = replay_version_change(
+        items,
+        source_version=FROZEN_PUBLIC_RULE_VERSION,
+        target_version=effective_version,
+    )
+    return {
+        **replay,
+        "baselinePassedCount": replay["sourcePassedCount"],
+        "effectivePassedCount": replay["targetPassedCount"],
+        "rows": [
+            {
+                "assetId": row["assetId"],
+                "baselinePassed": row["sourcePassed"],
+                "effectivePassed": row["targetPassed"],
+                "changed": row["changed"],
+            }
+            for row in replay["rows"]
+        ],
+    }
+
+
+def _fixed_history_sample(path: Path = FIXED_HISTORY_PATH) -> dict[str, Any]:
+    fixture = load_json(path)
+    items = fixture.get("items") if isinstance(fixture.get("items"), list) else []
+    return {
+        "sampleKind": "fixed_historical",
+        "sourcePath": "fixtures/c2.5/rule-transparency-matrix.json",
+        "sourceSha256": sha256(path),
+        "snapshotId": fixture.get("schemaVersion"),
+        "readOnly": True,
+        "items": [row for row in items if isinstance(row, dict)],
+    }
+
+
+def build_dual_replay_evidence(
+    current_items: list[dict[str, Any]],
+    *,
+    source_version: str,
+    target_version: str,
+    current_source: dict[str, Any] | None = None,
+    fixed_history: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    historical = fixed_history or _fixed_history_sample()
+    current = {
+        "sampleKind": "current_read_only",
+        "sourcePath": "C2.4 tracking snapshot",
+        "sourceSha256": None,
+        "snapshotId": None,
+        "dataAsOf": None,
+        "readOnly": True,
+        **(current_source or {}),
+        "items": current_items,
+    }
+
+    def replay_sample(sample: dict[str, Any]) -> dict[str, Any]:
+        replay = replay_version_change(
+            [row for row in sample.get("items", []) if isinstance(row, dict)],
+            source_version=source_version,
+            target_version=target_version,
+        )
+        replay.pop("rows", None)
+        return {
+            **{key: value for key, value in sample.items() if key != "items"},
+            "replay": replay,
+        }
+
+    fixed_result = replay_sample(historical)
+    current_result = replay_sample(current)
+    return {
+        "schemaVersion": "c2.5-rule-dual-replay-evidence-v1",
+        "sourceVersion": source_version,
+        "targetVersion": target_version,
+        "fixedHistorical": fixed_result,
+        "currentReadOnly": current_result,
+        "affectedAssetIds": current_result["replay"]["affectedAssetIds"],
+        "fixedHistoricalAffectedAssetIds": fixed_result["replay"]["affectedAssetIds"],
+        "sameInputWithinEachSample": True,
         "assetIdSetRecomputed": True,
     }
 
@@ -208,6 +331,8 @@ def build_rule_transparency(
     trial_path: Path = TRIAL_PATH,
     active_version: str | None = None,
     governance: dict[str, Any] | None = None,
+    current_source: dict[str, Any] | None = None,
+    fixed_history: dict[str, Any] | None = None,
     now: datetime | None = None,
 ) -> dict[str, Any]:
     observed_at = now or utc_now()
@@ -300,6 +425,13 @@ def build_rule_transparency(
     code_manifest = effective_rule_manifest(selected_version)
     rules = reconcile_rule_values(rules, code_manifest)
     replay = replay_rules(inputs, override_active=override_active)
+    replay_sets = build_dual_replay_evidence(
+        inputs,
+        source_version=FROZEN_PUBLIC_RULE_VERSION,
+        target_version=selected_version,
+        current_source=current_source,
+        fixed_history=fixed_history,
+    )
     reconciled = all(row["codeReconciliation"]["matched"] for row in rules) and len(rules) == len(code_manifest)
     history = [
         {"version": rule.get("ruleVersion"), "status": "active" if selected_version == FROZEN_PUBLIC_RULE_VERSION else "frozen_baseline", "sourceSha256": rule_hash},
@@ -315,6 +447,7 @@ def build_rule_transparency(
         "governance": governance,
         "rules": rules,
         "replay": replay,
+        "replaySets": replay_sets,
         "bayesBoundary": "贝叶斯只用于同链排序、变化和校准，不控制资格或凸性线索。",
         "observedAt": iso_time(observed_at),
     }
@@ -322,9 +455,12 @@ def build_rule_transparency(
 
 __all__ = [
     "build_rule_transparency",
+    "build_dual_replay_evidence",
     "evaluate_frozen_public_baseline",
+    "normalize_rule_replay_item",
     "reconcile_rule_values",
     "replay_one_rule",
     "replay_rules",
+    "replay_version_change",
     "validate_active_override",
 ]

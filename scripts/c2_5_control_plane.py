@@ -19,7 +19,7 @@ from typing import Any, Callable, Iterable
 
 from c2_2_runtime import pid_is_running
 from c2_5_rule_governance import RuleGovernanceStore
-from c2_5_rules import build_rule_transparency, iso_time, utc_now
+from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, iso_time, utc_now
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -880,24 +880,113 @@ class C25ControlPlane:
         }
 
     def _tracking_items(self) -> list[dict[str, Any]]:
+        return self._tracking_rule_sample()["items"]
+
+    def _tracking_rule_sample(self) -> dict[str, Any]:
         for name in ("c2-4-tracking-snapshot.js", "c2-4-front-snapshot.js"):
+            path = self.app_root / name
             try:
-                data = load_js_payload(self.app_root / name)
+                data = load_js_payload(path)
             except (OSError, ValueError, json.JSONDecodeError):
                 continue
             items = data.get("items")
             if isinstance(items, list):
-                return [item for item in items if isinstance(item, dict)]
-        return []
+                return {
+                    "sampleKind": "current_read_only",
+                    "sourcePath": f"app/{name}",
+                    "sourceSha256": canonical_sha256(path),
+                    "snapshotId": data.get("buildId") or name,
+                    "dataAsOf": data.get("dataCutoffAt") or data.get("sourceCutoffAt") or data.get("generatedAt"),
+                    "readOnly": True,
+                    "items": [item for item in items if isinstance(item, dict)],
+                }
+        return {
+            "sampleKind": "current_read_only",
+            "sourcePath": "app/c2-4-tracking-snapshot.js",
+            "sourceSha256": None,
+            "snapshotId": None,
+            "dataAsOf": None,
+            "readOnly": True,
+            "items": [],
+            "unavailableReason": "当前完整跟踪快照不可用",
+        }
+
+    def _fixed_rule_sample(self) -> dict[str, Any]:
+        path = self.project_root / "fixtures" / "c2.5" / "rule-transparency-matrix.json"
+        if not path.is_file():
+            path = PROJECT_ROOT / "fixtures" / "c2.5" / "rule-transparency-matrix.json"
+        fixture = load_json(path, {})
+        items = fixture.get("items") if isinstance(fixture.get("items"), list) else []
+        return {
+            "sampleKind": "fixed_historical",
+            "sourcePath": "fixtures/c2.5/rule-transparency-matrix.json",
+            "sourceSha256": canonical_sha256(path) if path.is_file() else None,
+            "snapshotId": fixture.get("schemaVersion"),
+            "readOnly": True,
+            "items": [item for item in items if isinstance(item, dict)],
+            **({"unavailableReason": "固定历史规则样本不可用"} if not items else {}),
+        }
+
+    def _rule_affected_snapshots(self) -> list[dict[str, Any]]:
+        rows = []
+        for logical_id, name, producer in (
+            ("c24-tracking", "c2-4-tracking-snapshot.js", "c22.convexity_tracking"),
+            ("c24-front", "c2-4-front-snapshot.js", "c22.convexity_tracking"),
+            ("c24-admin", "c2-4-admin-snapshot.js", "c22.convexity_tracking"),
+        ):
+            path = self.app_root / name
+            try:
+                data = load_js_payload(path)
+                rows.append(
+                    {
+                        "logicalSnapshotId": logical_id,
+                        "snapshotId": data.get("buildId") or logical_id,
+                        "path": f"app/{name}",
+                        "producerTaskId": producer,
+                        "builtAt": data.get("generatedAt") or data.get("builtAt"),
+                        "complete": bool(data.get("isComplete", True)),
+                    }
+                )
+            except (OSError, ValueError, json.JSONDecodeError) as error:
+                rows.append(
+                    {
+                        "logicalSnapshotId": logical_id,
+                        "snapshotId": logical_id,
+                        "path": f"app/{name}",
+                        "producerTaskId": producer,
+                        "builtAt": None,
+                        "complete": False,
+                        "unavailableReason": str(error),
+                    }
+                )
+        return rows
+
+    def rule_change_preview(self, target_version: str) -> dict[str, Any]:
+        governance = self.rule_governance.state()
+        current = self._tracking_rule_sample()
+        fixed = self._fixed_rule_sample()
+        replay = build_dual_replay_evidence(
+            current["items"],
+            source_version=governance["activeVersion"],
+            target_version=target_version,
+            current_source={key: value for key, value in current.items() if key != "items"},
+            fixed_history=fixed,
+        )
+        replay["affectedTaskIds"] = ["c22.screening", "c22.convexity_tracking"]
+        replay["affectedSnapshots"] = self._rule_affected_snapshots()
+        return replay
 
     def rules_payload(self) -> dict[str, Any]:
         governance = self.rule_governance.state()
+        current = self._tracking_rule_sample()
         return build_rule_transparency(
-            self._tracking_items(),
+            current["items"],
             rule_path=self.project_root / "docs" / "C2.4_RULE_CONFIG.json",
             trial_path=self.project_root / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
             active_version=governance["activeVersion"],
             governance=governance,
+            current_source={key: value for key, value in current.items() if key != "items"},
+            fixed_history=self._fixed_rule_sample(),
             now=self.clock(),
         )
 

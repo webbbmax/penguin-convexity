@@ -12,6 +12,40 @@ import run_c2_2_update as update
 
 
 class C24RuntimeTests(unittest.TestCase):
+    def test_atomic_snapshot_publication_links_the_rule_version_to_the_run(self):
+        payloads = {
+            "tracking": {"buildId": "c22-tracking"},
+            "c24": {
+                "tracking": {"buildId": "tracking-build", "ruleVersion": "c2.4-rules-v1"},
+                "front": {"buildId": "front-build"},
+                "admin": {"buildId": "admin-build"},
+            },
+        }
+        with (
+            patch.object(update, "build_c22_snapshots", return_value=payloads),
+            patch.object(update, "_link_active_rule_run", return_value={"status": "linked"}) as link,
+        ):
+            result = update.build_c22_snapshots_for_run("c22-rule-link-run")
+        link.assert_called_once_with("c22-rule-link-run", payloads)
+        self.assertEqual(result["ruleVersionRunLink"]["status"], "linked")
+
+    def test_rule_run_link_contains_real_run_and_three_snapshot_ids(self):
+        payloads = {
+            "c24": {
+                "tracking": {"buildId": "tracking-build", "ruleVersion": "c2.4-rules-v1", "generatedAt": "2026-08-15T00:00:00Z"},
+                "front": {"buildId": "front-build", "generatedAt": "2026-08-15T00:00:00Z"},
+                "admin": {"buildId": "admin-build", "generatedAt": "2026-08-15T00:00:00Z"},
+            }
+        }
+        with patch("c2_5_rule_governance.RuleGovernanceStore") as store_type:
+            store_type.return_value.link_next_legal_run.return_value = {"status": "linked"}
+            result = update._link_active_rule_run("c22-real-run", payloads)
+        self.assertEqual(result["status"], "linked")
+        kwargs = store_type.return_value.link_next_legal_run.call_args.kwargs
+        self.assertEqual(kwargs["run_id"], "c22-real-run")
+        self.assertEqual(kwargs["rule_version"], "c2.4-rules-v1")
+        self.assertEqual([row["snapshotId"] for row in kwargs["snapshots"]], ["tracking-build", "front-build", "admin-build"])
+
     def test_changed_first_gate_contracts_are_rechecked_in_the_same_cycle(self):
         connection = unittest.mock.MagicMock()
         with (
@@ -89,6 +123,7 @@ class C24RuntimeTests(unittest.TestCase):
             patch.object(update, "set_status"),
             patch.object(update, "pause_current_requested", return_value=False),
             patch.object(update, "build_c22_snapshots", return_value={"tracking": {"buildId": "tracking"}}),
+            patch.object(update, "_link_active_rule_run", return_value={"status": "linked"}),
             patch.object(update, "reconcile_c24_history"),
             patch.object(update, "load_json", return_value={}),
             patch("candidate_production_runtime.pause_for_screening", return_value={"status": "idle", "resumeAfter": False}),
@@ -121,6 +156,7 @@ class C24RuntimeTests(unittest.TestCase):
             patch.object(update, "set_status"),
             patch.object(update, "pause_current_requested", return_value=False),
             patch.object(update, "build_c22_snapshots", return_value={"tracking": {"buildId": "tracking"}}),
+            patch.object(update, "_link_active_rule_run", return_value={"status": "linked"}),
             patch.object(update, "reconcile_c24_history"),
             patch("candidate_production_runtime.pause_for_screening", return_value={"status": "idle", "resumeAfter": False}),
             patch("candidate_production_runtime.resume_after_screening"),

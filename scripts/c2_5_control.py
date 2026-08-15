@@ -255,12 +255,13 @@ class C25ControlService:
         proposed: dict[str, Any] = {"action": action, "parameters": {}}
         if action == "rule_create_draft":
             target = str(parameters.get("targetVersion") or "").strip()
+            replay_evidence = self.plane.rule_change_preview(target) if target in known else {}
             normalized = {
                 "targetVersion": target,
                 "reason": str(parameters.get("reason") or "").strip(),
                 "scope": str(parameters.get("scope") or "").strip(),
                 "endCondition": str(parameters.get("endCondition") or "").strip(),
-                "replayEvidence": payload["replay"],
+                "replayEvidence": replay_evidence,
             }
             if target not in known or not all(normalized[key] for key in ("reason", "scope", "endCondition")):
                 raise ControlError("规则草案必须选择已冻结版本，并填写原因、范围和结束条件。")
@@ -272,7 +273,7 @@ class C25ControlService:
             draft = next((row for row in state["drafts"] if row.get("draftId") == draft_id and row.get("status") == "pending_approval"), None)
             if draft is None:
                 raise ControlError("规则草案不存在或已经完成审批。", code="rule_draft_unavailable", status_code=409)
-            normalized = {"draftId": draft_id}
+            normalized = {"draftId": draft_id, "replayEvidence": draft.get("replayEvidence") or {}}
             if action == "rule_reject_draft":
                 normalized["reason"] = str(parameters.get("reason") or "").strip()
                 if not normalized["reason"]:
@@ -288,7 +289,7 @@ class C25ControlService:
             proposed["parameters"] = {
                 "targetVersion": target,
                 "reason": reason,
-                "replayEvidence": payload["replay"],
+                "replayEvidence": self.plane.rule_change_preview(target),
                 "rollbackOf": state.get("activeActivationId") or state["activeVersion"],
             }
         else:
@@ -356,15 +357,18 @@ class C25ControlService:
             after = {"pauseRequested": False}
         elif action == "rollback_control_change":
             after = {**(after.get("restore") or {}), "rollbackOf": after.get("auditId"), "originalAction": after.get("originalAction")}
-        elif action.startswith("rule_"):
-            after = {key: value for key, value in after.items() if key != "replayEvidence"}
         pause_requested = task["liveState"] in {"pause_requested", "safe_paused"}
+        replay_evidence = after.get("replayEvidence") if action.startswith("rule_") else None
         return {
             "before": {"liveState": task["liveState"], "schedule": task["schedule"], "checkpoint": task["checkpoint"], "pauseRequested": pause_requested},
             "afterRequested": after,
             "readWriteObjects": {"reads": task["inputs"], "writes": task["outputs"]},
             "conflictTaskIds": ["c22.screening", "c22.convexity_tracking"] if proposed["action"] in {"run_now", "resume_checkpoint", "retry_registered_source"} else [],
             "frontendImpact": task["affectedPages"],
+            "affectedAssetIds": (replay_evidence or {}).get("affectedAssetIds", []),
+            "affectedTaskIds": (replay_evidence or {}).get("affectedTaskIds", []),
+            "affectedSnapshots": (replay_evidence or {}).get("affectedSnapshots", []),
+            "replayEvidence": replay_evidence,
             "recovery": "运行已启动后不能撤销事实；可在安全点暂停。" if proposed["action"] in {"run_now", "resume_checkpoint"} else "规则历史与原始证据不改写；回滚生成新版本记录并在下一次合法运行生效。" if action.startswith("rule_") else "按审计前值回滚并权威回读。",
         }
 

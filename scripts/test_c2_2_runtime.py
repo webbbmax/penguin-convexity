@@ -222,6 +222,7 @@ class C22RuntimeTests(unittest.TestCase):
                 "front": {"buildId": "front"},
                 "tracking": {"buildId": "tracking"},
             }),
+            patch.object(c22_update, "_link_active_rule_run", return_value={"status": "linked"}),
             patch("candidate_production_runtime.pause_for_screening", return_value={
                 "status": "idle", "resumeAfter": False,
             }),
@@ -264,6 +265,7 @@ class C22RuntimeTests(unittest.TestCase):
             patch.object(c22_update, "build_c22_snapshots", return_value={
                 "tracking": {"buildId": "tracking-checkpoint"},
             }) as build_snapshots,
+            patch.object(c22_update, "_link_active_rule_run", return_value={"status": "linked"}),
             patch("candidate_production_runtime.pause_for_screening", return_value={
                 "status": "idle", "resumeAfter": False,
             }),
@@ -308,6 +310,7 @@ class C22RuntimeTests(unittest.TestCase):
             patch.object(c22_update, "build_c22_snapshots", return_value={
                 "tracking": {"buildId": "tracking-checkpoint"},
             }),
+            patch.object(c22_update, "_link_active_rule_run", return_value={"status": "linked"}),
             patch("candidate_production_runtime.pause_for_screening", return_value={
                 "status": "idle", "resumeAfter": False,
             }),
@@ -344,6 +347,7 @@ class C22RuntimeTests(unittest.TestCase):
             patch.object(c22_update, "build_c22_snapshots", return_value={
                 "tracking": {"buildId": "tracking-current-cycle"},
             }),
+            patch.object(c22_update, "_link_active_rule_run", return_value={"status": "linked"}),
             patch("candidate_production_runtime.pause_for_screening", return_value={
                 "status": "idle", "resumeAfter": False,
             }),

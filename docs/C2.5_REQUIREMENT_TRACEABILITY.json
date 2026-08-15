@@ -661,7 +661,9 @@
       "evidenceExpected": "同输入双规则重放证据",
       "status": "passed",
       "evidence": [
-        "scripts/test_c2_5_control_plane.py::RuleTransparencyTests",
+        "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_fixed_historical_and_current_readonly_samples_replay_separately",
+        "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_current_tracking_projection_is_expanded_before_replay",
+        "scripts/c2_5_rules.py::build_dual_replay_evidence",
         "docs/C2.5_DEVELOPMENT_SELF_TEST.md#验证结果"
       ]
     },
@@ -1329,6 +1331,8 @@
       "evidence": [
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_rule_approval_and_explicit_version_rollback_preserve_history",
         "scripts/test_c2_5_control_plane.py::ControlSafetyTests.test_rule_draft_approval_and_rollback_use_protected_two_stage_control",
+        "scripts/test_c2_4_runtime.py::C24RuntimeTests.test_rule_run_link_contains_real_run_and_three_snapshot_ids",
+        "scripts/run_c2_2_update.py::build_c22_snapshots_for_run",
         "docs/C2.5_FIXED_CANDIDATE_PRE_REVIEW.md"
       ]
     },

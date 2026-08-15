@@ -20,7 +20,7 @@ from c2_5_control import C25ControlService, ControlError
 from c2_5_control_plane import C25ControlPlane, compose_authoritative_job_state, progress_payload
 from c2_4_rules import evaluate_public_baseline, evaluate_strong_paths, normal_exit_decision
 from c2_5_rule_governance import RuleGovernanceStore
-from c2_5_rules import build_rule_transparency, reconcile_rule_values, replay_rules, validate_active_override
+from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, reconcile_rule_values, replay_rules, validate_active_override
 
 
 def read_fixture(name: str) -> dict:
@@ -173,6 +173,55 @@ class RuleTransparencyTests(unittest.TestCase):
         self.assertTrue(replay["sameInput"])
         self.assertTrue(replay["assetIdSetRecomputed"])
 
+    def test_current_tracking_projection_is_expanded_before_replay(self):
+        compact = {
+            "assetId": "compact-current",
+            "chainId": "base-mainnet",
+            "tokenAddress": "token-current",
+            "poolId": "pool-current",
+            "assetDirection": "base",
+            "t0Status": "verified_in_supported_scope",
+            "deepTrackingState": "completed",
+            "evaluationWindowId": "window-current",
+            "evaluationCompletedAt": "2026-08-15T00:00:00Z",
+            "relationshipClass": "A",
+            "sellQuoteState": "success",
+            "sellQuoteLossPct": 18,
+            "projectEvidenceState": "success",
+            "sourceStates": {"risk": "no_data"},
+            "firstGateChecks": [{"code": "no_confirmed_trade_block", "passed": True}],
+            "publicBaseline": {"checks": [{"code": "project_evidence", "passed": True}]},
+            "severeAnomaly": False,
+        }
+        replay = replay_rules([compact], override_active=True)
+        self.assertEqual(replay["effectivePassedCount"], 1)
+        self.assertEqual(replay["addedAssetIds"], ["compact-current"])
+
+    def test_fixed_historical_and_current_readonly_samples_replay_separately(self):
+        payload = build_rule_transparency(
+            [complete_item("current-pass", 8), complete_item("current-added", 18, "no_data")],
+            current_source={
+                "sourcePath": "app/c2-4-tracking-snapshot.js",
+                "sourceSha256": "current-readonly-sha",
+                "snapshotId": "tracking-current-1",
+                "dataAsOf": "2026-08-14T11:00:00Z",
+                "readOnly": True,
+            },
+        )
+        replays = payload["replaySets"]
+        self.assertEqual(replays["fixedHistorical"]["sampleKind"], "fixed_historical")
+        self.assertEqual(replays["currentReadOnly"]["sampleKind"], "current_read_only")
+        self.assertEqual(replays["fixedHistorical"]["replay"]["inputCount"], 3)
+        self.assertEqual(replays["currentReadOnly"]["replay"]["inputCount"], 2)
+        self.assertEqual(replays["fixedHistorical"]["replay"]["sourcePassedCount"], 1)
+        self.assertEqual(replays["fixedHistorical"]["replay"]["targetPassedCount"], 2)
+        self.assertEqual(replays["fixedHistorical"]["replay"]["affectedAssetIds"], ["asset-override-added"])
+        self.assertEqual(replays["currentReadOnly"]["replay"]["affectedAssetIds"], ["current-added"])
+        self.assertEqual(replays["affectedAssetIds"], ["current-added"])
+        self.assertEqual(replays["fixedHistoricalAffectedAssetIds"], ["asset-override-added"])
+        self.assertNotEqual(replays["fixedHistorical"]["sourcePath"], replays["currentReadOnly"]["sourcePath"])
+        self.assertEqual(replays["currentReadOnly"]["snapshotId"], "tracking-current-1")
+
     def test_unapproved_expired_or_damaged_override_is_rejected(self):
         now = datetime(2026, 8, 14, tzinfo=timezone.utc)
         base = {"status": "user_authorized_active_trial", "authorizedAt": "2026-08-13", "frozenBaseline": {"ruleConfigSha256": "775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988"}}
@@ -213,7 +262,12 @@ class RuleTransparencyTests(unittest.TestCase):
                 trial_path=PROJECT_ROOT / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
                 clock=lambda: datetime(2026, 8, 14, 12, 0, tzinfo=timezone.utc),
             )
-            evidence = {"sameInput": True, "assetIdSetRecomputed": True, "inputCount": 2}
+            evidence = build_dual_replay_evidence(
+                [complete_item("current-added", 18, "success")],
+                source_version="c2.4-public-baseline-quote-success-trial-v1",
+                target_version="c2.4-rules-v1",
+                current_source={"sourcePath": "fixture-current", "snapshotId": "snapshot-before", "readOnly": True},
+            )
             draft = store.create_draft(
                 target_version="c2.4-rules-v1",
                 reason="恢复冻结基线",
@@ -255,6 +309,21 @@ class RuleTransparencyTests(unittest.TestCase):
             self.assertEqual(state["activeVersion"], "c2.4-public-baseline-quote-success-trial-v1")
             self.assertEqual(len(state["history"]), 2)
             self.assertEqual(state["drafts"][0]["replayEvidence"], evidence)
+            self.assertEqual(state["history"][-1]["runLinkStatus"], "pending_next_legal_run")
+            link = store.link_next_legal_run(
+                run_id="c22-20260814T120100Z-convexity_tracking",
+                rule_version="c2.4-public-baseline-quote-success-trial-v1",
+                snapshots=[
+                    {"snapshotId": "tracking-build-1", "path": "app/c2-4-tracking-snapshot.js"},
+                    {"snapshotId": "front-build-1", "path": "app/c2-4-front-snapshot.js"},
+                    {"snapshotId": "admin-build-1", "path": "app/c2-4-admin-snapshot.js"},
+                ],
+            )
+            self.assertEqual(link["linkedRunId"], "c22-20260814T120100Z-convexity_tracking")
+            linked = next(row for row in store.state()["history"] if row["activationId"] == rollback["activationId"])
+            self.assertEqual(linked["runLinkStatus"], "linked")
+            self.assertEqual(linked["linkedRunId"], "c22-20260814T120100Z-convexity_tracking")
+            self.assertEqual(linked["linkedSnapshotIds"], ["tracking-build-1", "front-build-1", "admin-build-1"])
 
 
 class FakePlane:
@@ -300,6 +369,26 @@ class FakePlane:
 
     def rules_payload(self) -> dict:
         return build_rule_transparency([complete_item("governance-sample", 18, "success")])
+
+    def rule_change_preview(self, target_version: str) -> dict:
+        source_version = (
+            "c2.4-public-baseline-quote-success-trial-v1"
+            if target_version == "c2.4-rules-v1"
+            else "c2.4-rules-v1"
+        )
+        evidence = build_dual_replay_evidence(
+            [complete_item("governance-sample", 18, "success")],
+            source_version=source_version,
+            target_version=target_version,
+            current_source={"sourcePath": "fixture-current", "snapshotId": "tracking-current", "readOnly": True},
+        )
+        evidence["affectedTaskIds"] = ["c22.screening", "c22.convexity_tracking"]
+        evidence["affectedSnapshots"] = [
+            {"snapshotId": "tracking-current", "path": "app/c2-4-tracking-snapshot.js"},
+            {"snapshotId": "front-current", "path": "app/c2-4-front-snapshot.js"},
+            {"snapshotId": "admin-current", "path": "app/c2-4-admin-snapshot.js"},
+        ]
+        return evidence
 
 
 class ControlSafetyTests(unittest.TestCase):
@@ -530,6 +619,13 @@ class ControlSafetyTests(unittest.TestCase):
             },
         )
         _, preview = self.service.preview(draft_request)
+        impact = preview["impactPreview"][0]
+        self.assertIn("governance-sample", impact["affectedAssetIds"])
+        self.assertEqual(set(impact["affectedTaskIds"]), {"c22.screening", "c22.convexity_tracking"})
+        self.assertEqual([row["snapshotId"] for row in impact["affectedSnapshots"]], ["tracking-current", "front-current", "admin-current"])
+        self.assertEqual(impact["replayEvidence"]["fixedHistorical"]["sampleKind"], "fixed_historical")
+        self.assertEqual(impact["replayEvidence"]["currentReadOnly"]["sampleKind"], "current_read_only")
+        self.assertIn("replayEvidence", impact["afterRequested"])
         _, created = self.service.execute({"requestId": draft_request["requestId"], "confirmationToken": preview["confirmationToken"]})
         draft_id = created["results"][0]["backend"]["draftId"]
         approve_request = self.request("rule-approve", action="rule_approve_draft", task_id="rule.governance", parameters={"draftId": draft_id})
@@ -544,6 +640,10 @@ class ControlSafetyTests(unittest.TestCase):
             parameters={"targetVersion": "c2.4-public-baseline-quote-success-trial-v1", "reason": "恢复已批准试行"},
         )
         _, preview = self.service.preview(rollback_request)
+        rollback_impact = preview["impactPreview"][0]
+        self.assertEqual(set(rollback_impact["affectedTaskIds"]), {"c22.screening", "c22.convexity_tracking"})
+        self.assertEqual(len(rollback_impact["affectedSnapshots"]), 3)
+        self.assertIn("replayEvidence", rollback_impact["afterRequested"])
         _, rolled_back = self.service.execute({"requestId": rollback_request["requestId"], "confirmationToken": preview["confirmationToken"]})
         state = rolled_back["authoritativeReadback"][0]
         self.assertEqual(state["activeVersion"], "c2.4-public-baseline-quote-success-trial-v1")

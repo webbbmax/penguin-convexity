@@ -106,7 +106,7 @@ class DesignSystemTests(unittest.TestCase):
         self.assertNotIn("preventDefault()", self.js.replace('event.preventDefault();', ''))
 
     def test_chart_includes_definition_time_filter_and_exact_table(self):
-        for marker in ("口径：同一份完整跟踪输入", "数据时间：", "筛选：当前完整输入", "查看精确表格", 'id="ruleExactTable"'):
+        for marker in ("口径：当前只读样本使用同一输入", "固定历史样本重放", "当前只读样本重放", "数据时间：", "筛选：当前完整输入", "查看精确表格", 'id="ruleExactTable"'):
             self.assertIn(marker, self.js)
 
     def test_eight_information_domains_and_version_once(self):
