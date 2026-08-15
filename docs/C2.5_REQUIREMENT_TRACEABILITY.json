@@ -570,6 +570,7 @@
       "status": "passed",
       "evidence": [
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests",
+        "scripts/c2_4_rules.py::effective_rule_manifest/evaluate_rule_condition",
         "docs/C2.5_DEVELOPMENT_SELF_TEST.md#验证结果"
       ]
     },
@@ -585,6 +586,7 @@
       "status": "passed",
       "evidence": [
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests",
+        "fixtures/c2.5/rule-replay-counterexamples.json",
         "docs/C2.5_DEVELOPMENT_SELF_TEST.md#验证结果"
       ]
     },
@@ -1309,7 +1311,10 @@
       ],
       "evidenceExpected": "固定候选上的回滚测试",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "scripts/test_c2_5_control_plane.py::ControlSafetyTests.test_frequency_and_future_pause_rollback_restore_explicit_audit_before_value",
+        "docs/C2.5_FIXED_CANDIDATE_PRE_REVIEW.md"
+      ]
     },
     {
       "id": "J05",
@@ -1321,7 +1326,11 @@
       ],
       "evidenceExpected": "规则版本回滚和历史保留测试",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_rule_approval_and_explicit_version_rollback_preserve_history",
+        "scripts/test_c2_5_control_plane.py::ControlSafetyTests.test_rule_draft_approval_and_rollback_use_protected_two_stage_control",
+        "docs/C2.5_FIXED_CANDIDATE_PRE_REVIEW.md"
+      ]
     },
     {
       "id": "J06",

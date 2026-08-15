@@ -15,6 +15,9 @@
     "newManagerRoutes": 11,
     "informationDomains": 8,
     "controlFlow": "preview-confirm-execute-authoritative-readback",
+    "controlRollback": "explicit-audit-before-value-preview-confirm-execute-readback",
+    "ruleGovernance": "draft-diff-replay-approve-reject-version-next-legal-run-explicit-rollback",
+    "ruleImpactReconciliation": "per-rule-applicability-counts-assetIds-samples-and-exact-code-field-match",
     "confirmationTtlMinutes": 5,
     "allowedIntervalsHours": [1, 3, 6, 12, 24],
     "formalDatabaseWrites": 0,
@@ -29,9 +32,12 @@
     "traceability": "docs/C2.5_REQUIREMENT_TRACEABILITY.json"
   },
   "developmentTests": {
-    "c25UnitAndContract": {"passed": 43, "failed": 0},
-    "c24TargetedInheritance": {"passed": 9, "failed": 0, "skipped": 1},
+    "c25UnitAndContract": {"passed": 49, "failed": 0},
+    "c24TargetedInheritance": {"passed": 46, "failed": 0, "scope": "rules-tracking-runtime"},
+    "combinedTargeted": {"passed": 95, "failed": 0},
     "formalReadOnlyProbe": "passed",
+    "formalRuleFieldReconciliation": {"passed": 9, "failed": 0},
+    "fixedCandidatePreReview": "passed_for_three_reported_blockers",
     "browserImplementationQa": "passed_at_1180x760",
     "dotnetTest": "not_run_no_dotnet_sdk_installed"
   },

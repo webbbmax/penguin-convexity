@@ -59,6 +59,7 @@ from c2_4_rules import (  # noqa: E402
     evaluate_public_baseline,
     evaluate_strong_paths,
     lifecycle_pool,
+    load_active_rule_version,
     load_config,
     number,
     rank_home_by_chain,
@@ -498,6 +499,7 @@ def _path_cohort_thresholds(
 
 def _path_input(base: dict[str, Any], market: dict[str, Any], previous_market: dict[str, Any], risk: dict[str, Any], supply: dict[str, Any], previous_supply: dict[str, Any], pool: dict[str, Any]) -> dict[str, Any]:
     market_payload = _json(market.get("payload_json"), {}) or {}
+    risk_payload = _json(risk.get("payload_json"), {}) or {}
     pool_payload = _json(pool.get("payload_json"), {}) or {}
     previous_liquidity = number(previous_market.get("liquidity_usd"))
     current_liquidity = number(market.get("liquidity_usd"))
@@ -523,6 +525,8 @@ def _path_input(base: dict[str, Any], market: dict[str, Any], previous_market: d
         "confirmedHardBlock": confirmed_trade_block(risk),
         "severeAnomaly": confirmed_trade_block(risk),
         "materialCrossSourceConflict": bool(market_payload.get("materialCrossSourceConflict")),
+        "crossSourcePriceDeviationPct": market_payload.get("crossSourcePriceDeviationPct", market_payload.get("cross_source_price_deviation_pct")),
+        "sellTaxPct": risk.get("sell_tax_pct", risk_payload.get("sellTaxPct", risk_payload.get("sell_tax_pct"))),
         "supplyHistoryState": "success" if previous_supply and supply.get("source_status") == "success" and previous_supply.get("source_status") == "success" else "no_data",
         "supplyUnitScaleStable": pool_payload.get("unitScaleStable") if pool_payload.get("unitScaleStable") is not None else (supply.get("decimals") == previous_supply.get("decimals") if previous_supply else None),
         "top10ShareChangePercentagePoints": current_top10 - previous_top10 if current_top10 is not None and previous_top10 is not None else None,
@@ -616,6 +620,7 @@ def _build(
 ) -> dict[str, dict[str, Any]]:
     generated_at = _now()
     config = load_config()
+    active_rule_version = load_active_rule_version()
     base_rows = [dict(row) for row in connection.execute(
         """SELECT p.*,c.network_id,c.token_address,c.gate0_pool_id,c.canonical_name,c.symbol,
         c.website_domain,c.official_repo,q.source_queue,q.completed_at first_gate_completed_at,
@@ -796,12 +801,12 @@ def _build(
             "projectEvidenceQualified": evidence["qualified"],
             "projectEvidenceAttributable": evidence["attributable"],
         }
-        baseline = evaluate_public_baseline(baseline_input)
+        baseline = evaluate_public_baseline(baseline_input, active_version=active_rule_version)
         history = public_history.get(candidate_id, {})
         lifecycle_state = lifecycle_history.get(candidate_id, {})
         history_active = bool(history) and bool(int(history.get("public_active", 1) or 0))
         effective_public = bool(baseline["passed"] or (history_active and not lifecycle_state.get("stopped_at")))
-        paths = evaluate_strong_paths({**baseline_input, "publicEligible": effective_public}, config) if deep_state == "completed" else [
+        paths = evaluate_strong_paths({**baseline_input, "publicEligible": effective_public}, config, active_version=active_rule_version) if deep_state == "completed" else [
             {"pathCode": code, "status": "unavailable", "plainReason": "等待新的完整首轮基础跟踪结果。", "independentSourceTypes": [], "metrics": {}}
             for code in PATH_LABELS
         ]
@@ -899,7 +904,7 @@ def _build(
     tracking_payload = _finalize({
         "schemaVersion": "c2.4-tracking-snapshot-v1", "generatedAt": generated_at,
         "dataCutoffAt": data_cutoff, "producer": "convexity_deep_tracking",
-        "ruleVersion": config["ruleVersion"], "items": tracking_items,
+        "ruleVersion": active_rule_version, "items": tracking_items,
         "stateCounts": dict(Counter(item["trackingState"] for item in tracking_items)),
         "lifecycleCounts": dict(Counter(item["lifecyclePool"] for item in tracking_items)),
     }, "c24-tracking")

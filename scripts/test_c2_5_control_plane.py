@@ -18,7 +18,9 @@ if str(SCRIPT_ROOT) not in sys.path:
 
 from c2_5_control import C25ControlService, ControlError
 from c2_5_control_plane import C25ControlPlane, compose_authoritative_job_state, progress_payload
-from c2_5_rules import build_rule_transparency, replay_rules, validate_active_override
+from c2_4_rules import evaluate_public_baseline, evaluate_strong_paths, normal_exit_decision
+from c2_5_rule_governance import RuleGovernanceStore
+from c2_5_rules import build_rule_transparency, reconcile_rule_values, replay_rules, validate_active_override
 
 
 def read_fixture(name: str) -> dict:
@@ -182,6 +184,78 @@ class RuleTransparencyTests(unittest.TestCase):
         unapproved = validate_active_override({**base, "status": "draft", "authorizedAt": None}, trial_sha256="7f6ccc9e35ab6ba7b5212911116facd9698489c0f7d0f27b9dbcf16dc0c7e202", rule_sha256="775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988", now=now)
         self.assertFalse(unapproved["active"])
 
+    def test_counterexample_only_changes_the_rule_whose_input_changed(self):
+        fixture = read_fixture("rule-replay-counterexamples.json")
+        case = fixture["cases"][0]
+        payload = build_rule_transparency([case["item"]])
+        changed = sorted(row["ruleId"] for row in payload["rules"] if row["counts"]["changed"])
+        self.assertEqual(changed, case["expectedChangedRuleIds"])
+        self.assertEqual(
+            {row["ruleId"]: row["counts"]["changed"] for row in payload["rules"] if row["ruleId"] != case["expectedChangedRuleIds"][0]},
+            {row["ruleId"]: 0 for row in payload["rules"] if row["ruleId"] != case["expectedChangedRuleIds"][0]},
+        )
+
+    def test_code_reconciliation_is_per_rule_and_detects_one_field_mismatch(self):
+        payload = build_rule_transparency([complete_item("pass", 8)])
+        self.assertTrue(payload["effective"]["reconciledWithCode"])
+        self.assertTrue(all(row["codeReconciliation"]["matched"] for row in payload["rules"]))
+        code_manifest = {row["ruleId"]: row["effectiveValue"] for row in payload["rules"]}
+        code_manifest["public_sell_quote_loss"] = "damaged-code-value"
+        reconciled = reconcile_rule_values(payload["rules"], code_manifest)
+        failures = [row["ruleId"] for row in reconciled if not row["codeReconciliation"]["matched"]]
+        self.assertEqual(failures, ["public_sell_quote_loss"])
+
+    def test_rule_approval_and_explicit_version_rollback_preserve_history(self):
+        with tempfile.TemporaryDirectory() as temp:
+            store = RuleGovernanceStore(
+                Path(temp),
+                rule_path=PROJECT_ROOT / "docs" / "C2.4_RULE_CONFIG.json",
+                trial_path=PROJECT_ROOT / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+                clock=lambda: datetime(2026, 8, 14, 12, 0, tzinfo=timezone.utc),
+            )
+            evidence = {"sameInput": True, "assetIdSetRecomputed": True, "inputCount": 2}
+            draft = store.create_draft(
+                target_version="c2.4-rules-v1",
+                reason="恢复冻结基线",
+                scope="全部现役规则消费端",
+                end_condition="验证完成后保持",
+                replay_evidence=evidence,
+            )
+            activation = store.approve_draft(draft["draftId"])
+            self.assertEqual(activation["activeVersion"], "c2.4-rules-v1")
+            strict = evaluate_public_baseline(
+                complete_item("loss-18", 18, "success"),
+                selector_path=store.selector_path,
+            )
+            self.assertFalse(strict["passed"])
+            strict_path = evaluate_strong_paths(
+                {
+                    **complete_item("strict-path", 18, "success"),
+                    "ageDays": 10,
+                    "liquidityUsd": 20000,
+                    "liquidityDropPct": 10,
+                },
+                selector_path=store.selector_path,
+            )[1]
+            self.assertEqual(strict_path["status"], "not_formed")
+            self.assertTrue(normal_exit_decision({"sellQuoteLossPct": 20}, "window-1", False, selector_path=store.selector_path)["immediate"])
+            rollback = store.rollback_version(
+                "c2.4-public-baseline-quote-success-trial-v1",
+                reason="回滚到明确历史版本",
+                replay_evidence=evidence,
+            )
+            relaxed = evaluate_public_baseline(
+                complete_item("loss-18", 18, "success"),
+                selector_path=store.selector_path,
+            )
+            self.assertTrue(relaxed["passed"])
+            self.assertEqual(evaluate_strong_paths({**complete_item("trial-path", 99), "ageDays": 10, "liquidityUsd": 0, "liquidityDropPct": 100}, selector_path=store.selector_path)[1]["status"], "formed")
+            self.assertEqual(rollback["rollbackOfVersion"], "c2.4-rules-v1")
+            state = store.state()
+            self.assertEqual(state["activeVersion"], "c2.4-public-baseline-quote-success-trial-v1")
+            self.assertEqual(len(state["history"]), 2)
+            self.assertEqual(state["drafts"][0]["replayEvidence"], evidence)
+
 
 class FakePlane:
     def __init__(self, root: Path):
@@ -192,6 +266,7 @@ class FakePlane:
         self.sources = ["tracking-market"]
         self.partitions = [{"partition_id": "part-failed-1", "state": "failed"}]
         self.interval = 24
+        self.paused = False
 
     def task_payload(self, task_id: str) -> dict:
         action_sets = {
@@ -211,7 +286,7 @@ class FakePlane:
                 "taskId": task_id,
                 "liveState": self.live_state,
                 "stateVersion": self.version,
-                "schedule": {"mode": "automatic", "intervalHours": self.interval, "paused": False},
+                "schedule": {"mode": "automatic", "intervalHours": self.interval, "paused": self.paused},
                 "checkpoint": {"cursor": "c-1"},
                 "inputs": ["fixture-input"],
                 "outputs": ["fixture-output"],
@@ -222,6 +297,9 @@ class FakePlane:
                 "partitions": self.partitions,
             },
         }
+
+    def rules_payload(self) -> dict:
+        return build_rule_transparency([complete_item("governance-sample", 18, "success")])
 
 
 class ControlSafetyTests(unittest.TestCase):
@@ -242,11 +320,14 @@ class ControlSafetyTests(unittest.TestCase):
             self.calls.append(("update_job_config", (job_code, updates), {}))
             if "intervalHours" in updates:
                 self.plane.interval = int(updates["intervalHours"])
+            if "paused" in updates:
+                self.plane.paused = bool(updates["paused"])
             return {"jobs": {job_code: {**updates}}}
 
         self.adapters = {
             "launch_job": record("launch_job", {"status": "launched", "runId": "run-1"}),
             "pause_job": record("pause_job", True),
+            "pause_screening_pipeline": record("pause_screening_pipeline", True),
             "update_job_config": update_config,
             "launch_candidate": record("launch_candidate"),
             "pause_candidate": record("pause_candidate", True),
@@ -391,6 +472,100 @@ class ControlSafetyTests(unittest.TestCase):
         self.assertEqual(code, 202)
         self.assertEqual(self.calls[-1], ("update_job_config", ("convexity_tracking", {"mode": "automatic", "intervalHours": 3}), {}))
         self.assertEqual(frequency_result["authoritativeReadback"][0]["schedule"]["intervalHours"], 3)
+
+    def test_frequency_and_future_pause_rollback_restore_explicit_audit_before_value(self):
+        frequency_request = self.request("frequency-for-rollback", action="set_interval", parameters={"intervalHours": 3})
+        _, preview = self.service.preview(frequency_request)
+        _, changed = self.service.execute({"requestId": frequency_request["requestId"], "confirmationToken": preview["confirmationToken"]})
+        rollback_request = self.request("frequency-rollback", action="rollback_control_change", parameters={"auditId": changed["auditId"]})
+        _, rollback_preview = self.service.preview(rollback_request)
+        self.assertEqual(rollback_preview["impactPreview"][0]["afterRequested"]["intervalHours"], 24)
+        _, rolled_back = self.service.execute({"requestId": rollback_request["requestId"], "confirmationToken": rollback_preview["confirmationToken"]})
+        self.assertEqual(rolled_back["authoritativeReadback"][0]["schedule"]["intervalHours"], 24)
+        self.assertEqual(self.plane.interval, 24)
+
+        pause_request = self.request("pause-for-rollback", action="pause_future_cycles", task_id="c22.screening")
+        _, preview = self.service.preview(pause_request)
+        _, paused = self.service.execute({"requestId": pause_request["requestId"], "confirmationToken": preview["confirmationToken"]})
+        rollback_request = self.request("pause-rollback", action="rollback_control_change", parameters={"auditId": paused["auditId"]}, task_id="c22.screening")
+        _, rollback_preview = self.service.preview(rollback_request)
+        self.assertFalse(rollback_preview["impactPreview"][0]["afterRequested"]["paused"])
+        _, rolled_back = self.service.execute({"requestId": rollback_request["requestId"], "confirmationToken": rollback_preview["confirmationToken"]})
+        self.assertFalse(rolled_back["authoritativeReadback"][0]["schedule"]["paused"])
+        self.assertFalse(self.plane.paused)
+        result_rows = [json.loads(row) for row in self.service.audit_path.read_text(encoding="utf-8").splitlines() if '"auditStage":"result"' in row]
+        self.assertIn(changed["auditId"], {row["rollbackOf"] for row in result_rows})
+        self.assertIn(paused["auditId"], {row["rollbackOf"] for row in result_rows})
+        with self.assertRaisesRegex(ControlError, "已经回滚") as duplicate:
+            self.service.preview(self.request("frequency-rollback-again", action="rollback_control_change", parameters={"auditId": changed["auditId"]}))
+        self.assertEqual(duplicate.exception.code, "rollback_already_applied")
+
+    def test_screening_pause_failure_is_not_reported_as_success_and_is_compensated(self):
+        self.plane.live_state = "running"
+
+        def fail_associated(_paused):
+            self.calls.append(("pause_screening_pipeline", (_paused,), {}))
+            raise RuntimeError("associated pause failed")
+
+        self.adapters["pause_screening_pipeline"] = fail_associated
+        request = self.request("pause-associated-failure", action="safe_pause", task_id="c22.screening")
+        _, preview = self.service.preview(request)
+        code, result = self.service.execute({"requestId": request["requestId"], "confirmationToken": preview["confirmationToken"]})
+        self.assertEqual(code, 409)
+        self.assertFalse(result["backendAccepted"])
+        self.assertIn("associated pause failed", result["error"])
+        pause_calls = [call for call in self.calls if call[0] == "pause_job"]
+        self.assertEqual([call[1][0] for call in pause_calls], [True, False])
+
+    def test_rule_draft_approval_and_rollback_use_protected_two_stage_control(self):
+        draft_request = self.request(
+            "rule-draft",
+            action="rule_create_draft",
+            task_id="rule.governance",
+            parameters={
+                "targetVersion": "c2.4-rules-v1",
+                "reason": "恢复冻结基线",
+                "scope": "全部现役规则消费端",
+                "endCondition": "验证完成后保持",
+            },
+        )
+        _, preview = self.service.preview(draft_request)
+        _, created = self.service.execute({"requestId": draft_request["requestId"], "confirmationToken": preview["confirmationToken"]})
+        draft_id = created["results"][0]["backend"]["draftId"]
+        approve_request = self.request("rule-approve", action="rule_approve_draft", task_id="rule.governance", parameters={"draftId": draft_id})
+        _, preview = self.service.preview(approve_request)
+        _, approved = self.service.execute({"requestId": approve_request["requestId"], "confirmationToken": preview["confirmationToken"]})
+        self.assertEqual(approved["authoritativeReadback"][0]["activeVersion"], "c2.4-rules-v1")
+
+        rollback_request = self.request(
+            "rule-rollback",
+            action="rule_rollback_version",
+            task_id="rule.governance",
+            parameters={"targetVersion": "c2.4-public-baseline-quote-success-trial-v1", "reason": "恢复已批准试行"},
+        )
+        _, preview = self.service.preview(rollback_request)
+        _, rolled_back = self.service.execute({"requestId": rollback_request["requestId"], "confirmationToken": preview["confirmationToken"]})
+        state = rolled_back["authoritativeReadback"][0]
+        self.assertEqual(state["activeVersion"], "c2.4-public-baseline-quote-success-trial-v1")
+        self.assertEqual(len(state["history"]), 2)
+        result_audits = [json.loads(row) for row in self.service.audit_path.read_text(encoding="utf-8").splitlines() if '"auditStage":"result"' in row]
+        self.assertEqual(result_audits[-1]["rollbackOf"], approved["authoritativeReadback"][0]["activeActivationId"])
+
+        with self.assertRaisesRegex(ControlError, "不同于当前有效版本") as no_op:
+            self.service.preview(
+                self.request(
+                    "rule-no-op-draft",
+                    action="rule_create_draft",
+                    task_id="rule.governance",
+                    parameters={
+                        "targetVersion": "c2.4-public-baseline-quote-success-trial-v1",
+                        "reason": "不应接受的无效草案",
+                        "scope": "全部现役规则消费端",
+                        "endCondition": "不适用",
+                    },
+                )
+            )
+        self.assertEqual(no_op.exception.code, "rule_draft_target_rejected")
 
     def test_batch_preview_is_explicit_and_ordered(self):
         request = self.request("batch", action="batch", task_id="batch", parameters={"items": [

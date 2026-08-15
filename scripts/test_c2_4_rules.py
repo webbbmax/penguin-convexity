@@ -181,6 +181,15 @@ class C24PathAndStateTests(unittest.TestCase):
         path = evaluate_strong_paths(self.complete_path_fixture(liquidityUsd=0, sellQuoteLossPct=99, liquidityDropPct=100))[1]
         self.assertEqual(path["status"], "formed")
 
+    def test_explicit_frozen_version_restores_path_thresholds_and_unit_guard(self):
+        paths = evaluate_strong_paths(
+            self.complete_path_fixture(liquidityUsd=0, sellQuoteLossPct=99, liquidityDropPct=100, supplyUnitScaleStable=False),
+            active_version="c2.4-rules-v1",
+        )
+        self.assertEqual(paths[1]["status"], "not_formed")
+        self.assertEqual(paths[2]["status"], "not_formed")
+        self.assertEqual(paths[3]["status"], "not_formed")
+
     def test_unindexed_pool_count_is_disclosed_but_does_not_reject_indexed_path(self):
         path = evaluate_strong_paths(self.complete_path_fixture(unindexedDiscoveredPoolCount=7))[3]
         self.assertEqual(path["status"], "formed")
@@ -278,6 +287,13 @@ class C24LifecycleRankingTests(unittest.TestCase):
         self.assertTrue(second["exit"])
         self.assertFalse(loss_only["immediate"])
         self.assertTrue(immediate["immediate"])
+
+    def test_explicit_frozen_version_restores_quote_loss_immediate_exit(self):
+        trial = normal_exit_decision({"sellQuoteLossPct": 20}, "window-1", False)
+        frozen = normal_exit_decision({"sellQuoteLossPct": 20}, "window-1", False, active_version="c2.4-rules-v1")
+        self.assertFalse(trial["exit"])
+        self.assertTrue(frozen["exit"])
+        self.assertTrue(frozen["immediate"])
 
 
 if __name__ == "__main__":

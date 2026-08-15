@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from c2_5_control_plane import C25ControlPlane, load_js_payload
+from c2_5_rule_governance import RuleGovernanceStore
 from c2_5_rules import iso_time, utc_now
 
 
@@ -81,6 +82,7 @@ class C25ControlService:
         runtime_root: Path | None = None,
         clock: Callable[[], datetime] = utc_now,
         adapters: dict[str, Callable[..., Any]] | None = None,
+        rule_governance: RuleGovernanceStore | None = None,
     ) -> None:
         self.plane = plane
         self.runtime_root = Path(runtime_root or (plane.runtime_root / "c2.5")).resolve()
@@ -89,10 +91,18 @@ class C25ControlService:
         self.audit_path = self.runtime_root / "management-audit.jsonl"
         self._lock = threading.Lock()
         self.adapters = adapters or self._default_adapters()
+        project_root = Path(getattr(plane, "project_root", Path(__file__).resolve().parent.parent))
+        self.rule_governance = rule_governance or RuleGovernanceStore(
+            self.runtime_root / "rule-governance",
+            rule_path=project_root / "docs" / "C2.4_RULE_CONFIG.json",
+            trial_path=project_root / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+            clock=clock,
+        )
 
     @staticmethod
     def _default_adapters() -> dict[str, Callable[..., Any]]:
         from c2_2_runtime import launch_hidden, request_pause_current, update_config
+        from c2_1_runtime import request_pause_current as request_screening_pipeline_pause
         from candidate_production_runtime import (
             launch_hidden as launch_candidate,
             request_pause as request_candidate_pause,
@@ -104,6 +114,7 @@ class C25ControlService:
         return {
             "launch_job": launch_hidden,
             "pause_job": request_pause_current,
+            "pause_screening_pipeline": request_screening_pipeline_pause,
             "update_job_config": update_config,
             "launch_candidate": launch_candidate,
             "pause_candidate": request_candidate_pause,
@@ -184,19 +195,133 @@ class C25ControlService:
                     result.add(str(source_id))
         return result
 
+    def _audit_record(self, audit_id: str) -> dict[str, Any]:
+        try:
+            lines = self.audit_path.read_text(encoding="utf-8").splitlines()
+        except OSError as error:
+            raise ControlError("找不到可回滚的管理审计记录。", code="rollback_audit_missing", status_code=409) from error
+        for line in reversed(lines):
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if row.get("auditId") == audit_id and row.get("auditStage") == "result":
+                return row
+        raise ControlError("目标审计不是已完成的可回滚操作。", code="rollback_audit_missing", status_code=409)
+
+    def _validate_control_rollback(self, task_id: str, parameters: dict[str, Any]) -> dict[str, Any]:
+        audit_id = str(parameters.get("auditId") or "").strip()
+        target = self._audit_record(audit_id)
+        if target.get("taskId") != task_id or not target.get("backendAccepted"):
+            raise ControlError("只能回滚同一任务已被后端接受的操作。", code="rollback_scope_rejected", status_code=409)
+        for line in self.audit_path.read_text(encoding="utf-8").splitlines():
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if row.get("auditStage") == "result" and row.get("backendAccepted") and row.get("rollbackOf") == audit_id:
+                raise ControlError("该管理操作已经回滚，不能重复执行。", code="rollback_already_applied", status_code=409)
+        original_action = str(target.get("action") or "")
+        if original_action not in {"set_interval", "pause_future_cycles", "resume_future_cycles", "safe_pause", "cancel_pause_request"}:
+            raise ControlError("该审计操作不支持自动回滚。", code="rollback_action_rejected", status_code=409)
+        before_rows = target.get("before") or []
+        before = before_rows[0] if isinstance(before_rows, list) and before_rows else {}
+        schedule = before.get("schedule") if isinstance(before.get("schedule"), dict) else {}
+        restore: dict[str, Any]
+        if original_action == "set_interval":
+            if schedule.get("intervalHours") is None:
+                raise ControlError("目标审计没有可恢复的明确频率前值。", code="rollback_value_missing", status_code=409)
+            restore = {"mode": schedule.get("mode") or "automatic", "intervalHours": int(schedule["intervalHours"])}
+        elif original_action in {"pause_future_cycles", "resume_future_cycles"}:
+            if "paused" not in schedule:
+                raise ControlError("目标审计没有可恢复的明确暂停前值。", code="rollback_value_missing", status_code=409)
+            restore = {"paused": bool(schedule["paused"])}
+        else:
+            if "pauseRequested" not in before:
+                raise ControlError("目标审计没有可恢复的明确安全暂停请求前值。", code="rollback_value_missing", status_code=409)
+            restore = {"pauseRequested": bool(before["pauseRequested"])}
+        return {"auditId": audit_id, "originalAction": original_action, "restore": restore}
+
+    def _rules_payload(self) -> dict[str, Any]:
+        payload = self.plane.rules_payload()
+        if payload.get("status") not in {"ready", "attention"}:
+            raise ControlError("规则透明度当前不可用，不能执行规则治理。", code="rules_unavailable", status_code=409)
+        return payload
+
+    def _validate_rule_control(self, action: str, parameters: dict[str, Any]) -> dict[str, Any]:
+        payload = self._rules_payload()
+        state = self.rule_governance.state()
+        known = {row["version"] for row in state["knownVersions"]}
+        proposed: dict[str, Any] = {"action": action, "parameters": {}}
+        if action == "rule_create_draft":
+            target = str(parameters.get("targetVersion") or "").strip()
+            normalized = {
+                "targetVersion": target,
+                "reason": str(parameters.get("reason") or "").strip(),
+                "scope": str(parameters.get("scope") or "").strip(),
+                "endCondition": str(parameters.get("endCondition") or "").strip(),
+                "replayEvidence": payload["replay"],
+            }
+            if target not in known or not all(normalized[key] for key in ("reason", "scope", "endCondition")):
+                raise ControlError("规则草案必须选择已冻结版本，并填写原因、范围和结束条件。")
+            if target == state["activeVersion"]:
+                raise ControlError("规则草案必须指向不同于当前有效版本的已冻结版本。", code="rule_draft_target_rejected", status_code=409)
+            proposed["parameters"] = normalized
+        elif action in {"rule_approve_draft", "rule_reject_draft"}:
+            draft_id = str(parameters.get("draftId") or "").strip()
+            draft = next((row for row in state["drafts"] if row.get("draftId") == draft_id and row.get("status") == "pending_approval"), None)
+            if draft is None:
+                raise ControlError("规则草案不存在或已经完成审批。", code="rule_draft_unavailable", status_code=409)
+            normalized = {"draftId": draft_id}
+            if action == "rule_reject_draft":
+                normalized["reason"] = str(parameters.get("reason") or "").strip()
+                if not normalized["reason"]:
+                    raise ControlError("拒绝规则草案必须填写原因。")
+            proposed["parameters"] = normalized
+        elif action == "rule_rollback_version":
+            target = str(parameters.get("targetVersion") or "").strip()
+            if target not in known or target == state["activeVersion"]:
+                raise ControlError("必须选择一个明确且不同于当前有效版本的历史版本。", code="rule_rollback_target_rejected", status_code=409)
+            reason = str(parameters.get("reason") or "").strip()
+            if not reason:
+                raise ControlError("规则回滚必须填写原因。")
+            proposed["parameters"] = {
+                "targetVersion": target,
+                "reason": reason,
+                "replayEvidence": payload["replay"],
+                "rollbackOf": state.get("activeActivationId") or state["activeVersion"],
+            }
+        else:
+            raise ControlError("规则治理操作未获准。", code="control_not_allowed", status_code=409)
+        task = {
+            "taskId": "rule.governance",
+            "liveState": "waiting",
+            "stateVersion": state["stateVersion"],
+            "schedule": {"mode": "next_legal_run", "activeVersion": state["activeVersion"]},
+            "checkpoint": None,
+            "inputs": ["冻结规则", "活动试行", "同输入重放证据"],
+            "outputs": ["不可变草案/版本记录", "原子当前版本选择器"],
+            "affectedPages": ["rule-transparency.html", "下一次合法业务快照"],
+        }
+        return {"task": task, "proposed": proposed}
+
     def _validate_single(self, task_id: str, action: str, parameters: dict[str, Any]) -> dict[str, Any]:
+        if task_id == "rule.governance":
+            return self._validate_rule_control(action, parameters)
         detail = self.plane.task_payload(task_id)
         if detail.get("status") != "ready":
             raise ControlError("没有找到这个任务。", code="task_not_found", status_code=404)
         task = detail["task"]
         control = next((item for item in task.get("controls", []) if item.get("action") == action), None)
-        if control is None:
+        if control is None and action != "rollback_control_change":
             reason = next((item.get("reason") for item in task.get("disabledControls", []) if item.get("action") == action), None)
             raise ControlError(reason or "该任务没有获准执行此操作。", code="control_not_allowed", status_code=409)
         if task["liveState"] == "stale":
             raise ControlError("真实状态陈旧，必须先恢复状态一致性。", code="stale_state", status_code=409)
         proposed: dict[str, Any] = {"action": action, "parameters": parameters}
-        if action == "set_interval":
+        if action == "rollback_control_change":
+            proposed["parameters"] = self._validate_control_rollback(task_id, parameters)
+        elif action == "set_interval":
             try:
                 interval = int(parameters.get("intervalHours"))
             except (TypeError, ValueError) as error:
@@ -229,13 +354,18 @@ class C25ControlService:
             after = {"pauseRequested": True, "safePaused": False}
         elif action == "cancel_pause_request":
             after = {"pauseRequested": False}
+        elif action == "rollback_control_change":
+            after = {**(after.get("restore") or {}), "rollbackOf": after.get("auditId"), "originalAction": after.get("originalAction")}
+        elif action.startswith("rule_"):
+            after = {key: value for key, value in after.items() if key != "replayEvidence"}
+        pause_requested = task["liveState"] in {"pause_requested", "safe_paused"}
         return {
-            "before": {"liveState": task["liveState"], "schedule": task["schedule"], "checkpoint": task["checkpoint"]},
+            "before": {"liveState": task["liveState"], "schedule": task["schedule"], "checkpoint": task["checkpoint"], "pauseRequested": pause_requested},
             "afterRequested": after,
             "readWriteObjects": {"reads": task["inputs"], "writes": task["outputs"]},
             "conflictTaskIds": ["c22.screening", "c22.convexity_tracking"] if proposed["action"] in {"run_now", "resume_checkpoint", "retry_registered_source"} else [],
             "frontendImpact": task["affectedPages"],
-            "recovery": "运行已启动后不能撤销事实；可在安全点暂停。" if proposed["action"] in {"run_now", "resume_checkpoint"} else "按审计前值回滚并权威回读。",
+            "recovery": "运行已启动后不能撤销事实；可在安全点暂停。" if proposed["action"] in {"run_now", "resume_checkpoint"} else "规则历史与原始证据不改写；回滚生成新版本记录并在下一次合法运行生效。" if action.startswith("rule_") else "按审计前值回滚并权威回读。",
         }
 
     def preview(self, payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
@@ -262,6 +392,25 @@ class C25ControlService:
                 }
             )
         return status_code, response
+
+    def _current_state_version(self, task_id: str) -> str | None:
+        if task_id == "rule.governance":
+            return self.rule_governance.state()["stateVersion"]
+        current = self.plane.task_payload(task_id)
+        return current.get("task", {}).get("stateVersion") if current.get("status") == "ready" else None
+
+    @staticmethod
+    def _rollback_reference(items: list[dict[str, Any]]) -> Any:
+        references = []
+        for item in items:
+            parameters = item.get("parameters") or {}
+            if item.get("action") == "rollback_control_change" and parameters.get("auditId"):
+                references.append(parameters["auditId"])
+            elif item.get("action") == "rule_rollback_version" and parameters.get("rollbackOf"):
+                references.append(parameters["rollbackOf"])
+        if len(references) == 1:
+            return references[0]
+        return references or None
 
     def _preview(self, payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
         request_id, task_id, action, parameters = self._request(payload)
@@ -319,7 +468,7 @@ class C25ControlService:
                     "backendAccepted": False,
                     "linkedRunId": None,
                     "finalResult": "previewed",
-                    "rollbackOf": None,
+                    "rollbackOf": self._rollback_reference(confirmation["items"]),
                 }
             )
             return 200, {
@@ -336,27 +485,59 @@ class C25ControlService:
                 "auditId": audit_id,
             }
 
+    def _set_pipeline_pause(self, job_code: str, requested: bool) -> dict[str, Any]:
+        primary = self.adapters["pause_job"](requested, job_code)
+        if job_code != "screening":
+            return {"status": "pause_requested" if requested else "accepted", "pauseCurrentRequested": primary}
+        try:
+            associated = self.adapters["pause_screening_pipeline"](requested)
+        except Exception as error:
+            compensation_error = None
+            try:
+                self.adapters["pause_job"](not requested, job_code)
+            except Exception as compensation:
+                compensation_error = compensation
+            detail = f"关联筛选流水线暂停失败：{type(error).__name__}: {error}"
+            if compensation_error:
+                detail += f"；主作业补偿也失败，真实状态需人工核验：{type(compensation_error).__name__}: {compensation_error}"
+            raise ControlError(detail, code="associated_pause_failed", status_code=409) from error
+        return {"status": "pause_requested" if requested else "accepted", "pauseCurrentRequested": primary, "associatedPauseRequested": associated}
+
+    def _execute_rule_control(self, action: str, parameters: dict[str, Any]) -> dict[str, Any]:
+        if action == "rule_create_draft":
+            draft = self.rule_governance.create_draft(
+                target_version=parameters["targetVersion"],
+                reason=parameters["reason"],
+                scope=parameters["scope"],
+                end_condition=parameters["endCondition"],
+                replay_evidence=parameters["replayEvidence"],
+            )
+            return {"status": "accepted", "draftId": draft["draftId"]}
+        if action == "rule_approve_draft":
+            version = self.rule_governance.approve_draft(parameters["draftId"])
+            return {"status": "accepted", "activationId": version["activationId"], "activeVersion": version["activeVersion"], "effectiveTiming": "next_legal_run"}
+        if action == "rule_reject_draft":
+            decision = self.rule_governance.reject_draft(parameters["draftId"], parameters["reason"])
+            return {"status": "accepted", "draftId": decision["draftId"], "decision": "rejected"}
+        if action == "rule_rollback_version":
+            version = self.rule_governance.rollback_version(parameters["targetVersion"], reason=parameters["reason"], replay_evidence=parameters["replayEvidence"])
+            return {"status": "accepted", "activationId": version["activationId"], "activeVersion": version["activeVersion"], "rollbackOfVersion": version["rollbackOfVersion"], "effectiveTiming": "next_legal_run"}
+        raise ControlError("规则治理操作没有适配器。", code="adapter_missing", status_code=409)
+
     def _execute_single(self, item: dict[str, Any]) -> dict[str, Any]:
         task_id = item["taskId"]
         action = item["action"]
         parameters = item.get("parameters") or {}
+        if task_id == "rule.governance":
+            return self._execute_rule_control(action, parameters)
         if task_id in {"c22.screening", "c22.convexity_tracking"}:
             job_code = "screening" if task_id == "c22.screening" else "convexity_tracking"
             if action in {"run_now", "resume_checkpoint"}:
                 return self.adapters["launch_job"](job_code, "manual")
             if action == "safe_pause":
-                requested = self.adapters["pause_job"](True, job_code)
-                if job_code == "screening":
-                    try:
-                        from c2_1_runtime import request_pause_current as request_c21_pause
-
-                        request_c21_pause(True)
-                    except Exception:
-                        pass
-                return {"status": "pause_requested", "pauseCurrentRequested": requested}
+                return self._set_pipeline_pause(job_code, True)
             if action == "cancel_pause_request":
-                requested = self.adapters["pause_job"](False, job_code)
-                return {"status": "accepted", "pauseCurrentRequested": requested}
+                return self._set_pipeline_pause(job_code, False)
             if action == "pause_future_cycles":
                 config = self.adapters["update_job_config"](job_code, {"paused": True})
                 return {"status": "accepted", "config": config}
@@ -368,6 +549,16 @@ class C25ControlService:
                 return {"status": "accepted", "config": config}
             if action == "retry_registered_source":
                 return self.adapters["launch_job"](job_code, "source_retry", parameters["sourceId"])
+            if action == "rollback_control_change":
+                restore = parameters["restore"]
+                original_action = parameters["originalAction"]
+                if original_action == "set_interval":
+                    config = self.adapters["update_job_config"](job_code, restore)
+                    return {"status": "accepted", "config": config, "rollbackOf": parameters["auditId"]}
+                if original_action in {"pause_future_cycles", "resume_future_cycles"}:
+                    config = self.adapters["update_job_config"](job_code, {"paused": restore["paused"]})
+                    return {"status": "accepted", "config": config, "rollbackOf": parameters["auditId"]}
+                return {**self._set_pipeline_pause(job_code, restore["pauseRequested"]), "rollbackOf": parameters["auditId"]}
         if task_id in {"candidate.daily_incremental", "candidate.history_backlog"}:
             queue = "daily_incremental" if task_id == "candidate.daily_incremental" else "historical_backlog"
             if action == "resume_checkpoint":
@@ -438,8 +629,7 @@ class C25ControlService:
             if expires_at is None or now >= expires_at:
                 raise ControlError("确认令牌已过期，请重新预览。", code="expired_confirmation", status_code=409)
             for task_id, expected_version in confirmation.get("stateVersions", {}).items():
-                current = self.plane.task_payload(task_id)
-                if current.get("status") != "ready" or current["task"].get("stateVersion") != expected_version:
+                if self._current_state_version(task_id) != expected_version:
                     raise ControlError("预览后真实状态已改变，请重新预览。", code="state_drift", status_code=409)
             self._audit(
                 {
@@ -456,7 +646,7 @@ class C25ControlService:
                     "backendAccepted": False,
                     "linkedRunId": None,
                     "finalResult": "execution_authorized_pending_backend",
-                    "rollbackOf": None,
+                    "rollbackOf": self._rollback_reference(confirmation.get("items", [])),
                 }
             )
             confirmation["usedAt"] = iso_time(now)
@@ -472,7 +662,7 @@ class C25ControlService:
                 backend_status = str((backend or {}).get("status") or "accepted")
                 item_accepted = backend_status not in {"failed", "not_authorized", "already_running", "blocked", "program_failure"}
                 accepted = accepted and item_accepted
-                results.append({"order": item.get("order"), "taskId": item["taskId"], "action": item["action"], "backendStatus": backend_status, "runId": (backend or {}).get("runId"), "accepted": item_accepted})
+                results.append({"order": item.get("order"), "taskId": item["taskId"], "action": item["action"], "backendStatus": backend_status, "runId": (backend or {}).get("runId"), "accepted": item_accepted, "backend": backend})
                 if not item_accepted:
                     break
         except Exception as error:
@@ -481,8 +671,11 @@ class C25ControlService:
 
         after = []
         for item in confirmation.get("items", []):
-            current = self.plane.task_payload(item["taskId"])
-            after.append(current.get("task") if current.get("status") == "ready" else {"taskId": item["taskId"], "status": current.get("status")})
+            if item["taskId"] == "rule.governance":
+                after.append(self.rule_governance.state())
+            else:
+                current = self.plane.task_payload(item["taskId"])
+                after.append(current.get("task") if current.get("status") == "ready" else {"taskId": item["taskId"], "status": current.get("status")})
         response = {
             "schemaVersion": "c2.5-control-execute-v1",
             "status": "accepted" if accepted else "failed",
@@ -509,7 +702,7 @@ class C25ControlService:
                     "backendAccepted": accepted,
                     "linkedRunId": next((row.get("runId") for row in results if row.get("runId")), None),
                     "finalResult": response["status"],
-                    "rollbackOf": None,
+                    "rollbackOf": self._rollback_reference(confirmation.get("items", [])),
                     "error": error_message or None,
                 }
             )

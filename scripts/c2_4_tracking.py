@@ -13,6 +13,7 @@ from c2_4_rules import (
     evaluate_first_gate,
     evaluate_public_baseline,
     evaluate_strong_paths,
+    load_active_rule_version,
     normal_exit_decision,
 )
 
@@ -88,6 +89,19 @@ def _latest(connection, table: str, candidate_id: int, completed_at: str | None 
     ).fetchone()
 
 
+def _sell_tax_pct(risk) -> object:
+    if not risk:
+        return None
+    keys = set(risk.keys()) if hasattr(risk, "keys") else set()
+    if "sell_tax_pct" in keys and risk["sell_tax_pct"] is not None:
+        return risk["sell_tax_pct"]
+    try:
+        payload = json.loads(risk["payload_json"] or "{}") if "payload_json" in keys else {}
+    except (TypeError, ValueError):
+        payload = {}
+    return payload.get("sellTaxPct", payload.get("sell_tax_pct"))
+
+
 def _evaluation_project_evidence_ids(hard_gate_json: str | None) -> set[str]:
     try:
         payload = json.loads(hard_gate_json or "{}")
@@ -128,6 +142,7 @@ def _current_public_state(
     age_days: int | None,
     evidence_rows,
     completed_at: str | None = None,
+    active_rule_version: str | None = None,
 ) -> str:
     """Recompute the persisted public state from the same C2.4 path inputs as snapshots."""
 
@@ -174,7 +189,7 @@ def _current_public_state(
         "recentQualifyingRepositoryActivity": recent_repository,
         "newVerifiedProductUsage": product_usage,
     }
-    return determine_public_state(item, evaluate_strong_paths(item))["publicState"] or "observing"
+    return determine_public_state(item, evaluate_strong_paths(item, active_version=active_rule_version))["publicState"] or "observing"
 
 
 def record_completed_public_history(connection, candidate_ids: list[int]) -> dict:
@@ -184,6 +199,7 @@ def record_completed_public_history(connection, candidate_ids: list[int]) -> dic
     if not selected:
         return {"checked": 0, "public": 0, "retained": 0, "normalExit": 0, "continued": 0, "stopped": 0}
     initialize_schema(connection)
+    active_rule_version = load_active_rule_version()
     placeholders = ",".join("?" for _ in selected)
     rows = connection.execute(
         f"""SELECT p.*,c.network_id,c.token_address,t.state tracking_state,t.completed_at,
@@ -227,8 +243,9 @@ def record_completed_public_history(connection, candidate_ids: list[int]) -> dic
             "severeAnomaly": confirmed_trade_block(risk),
             "sellQuoteState": market["standard_sell_quote_state"] if market else "no_data",
             "sellQuoteLossPct": market["standard_sell_quote_loss_pct"] if market else None,
+            "sellTaxPct": _sell_tax_pct(risk),
             "projectEvidenceQualified": bool(evidence_rows), "projectEvidenceAttributable": bool(evidence_rows),
-        })
+        }, active_version=active_rule_version)
         lifecycle = connection.execute(
             "SELECT * FROM c2_4_lifecycle_state WHERE candidate_id=?",
             (row["candidate_id"],),
@@ -279,6 +296,7 @@ def record_completed_public_history(connection, candidate_ids: list[int]) -> dic
                 row["age_days"],
                 evidence_rows,
                 completed_at,
+                active_rule_version,
             )
             connection.execute(
                 """INSERT INTO c2_4_public_history(candidate_id,asset_id,first_public_at,last_public_at,
@@ -323,9 +341,10 @@ def record_completed_public_history(connection, candidate_ids: list[int]) -> dic
             "confirmedHardBlock": confirmed_trade_block(risk),
             "severeAnomaly": confirmed_trade_block(risk),
             "sellQuoteLossPct": market["standard_sell_quote_loss_pct"] if market else None,
+            "sellTaxPct": _sell_tax_pct(risk),
             "consecutiveCompletedMisses": int(lifecycle["consecutive_completed_misses"] or 0) if lifecycle else 0,
             "lastExitWindowId": lifecycle["last_exit_window_id"] if lifecycle else "",
-        }, window_id, True)
+        }, window_id, True, active_version=active_rule_version)
         connection.execute(
             """UPDATE c2_4_lifecycle_state SET consecutive_completed_misses=?,
             last_exit_window_id=?,updated_at=? WHERE candidate_id=?""",

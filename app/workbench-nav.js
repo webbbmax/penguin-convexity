@@ -138,7 +138,7 @@
     }
     if (!document.querySelector('script[data-c25-admin-app]')) {
       const app = document.createElement("script");
-      app.src = "c2-5-admin.js?v=c25-1";
+      app.src = "c2-5-admin.js?v=c25-2";
       app.dataset.c25AdminApp = "true";
       document.body.appendChild(app);
     }

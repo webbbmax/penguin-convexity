@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 from c2_2_runtime import pid_is_running
+from c2_5_rule_governance import RuleGovernanceStore
 from c2_5_rules import build_rule_transparency, iso_time, utc_now
 
 
@@ -340,6 +341,31 @@ class C25ControlPlane:
         self.inventory = load_json(self.project_root / "docs" / "C2.5_TASK_INVENTORY.json", {})
         self.supplement = load_json(self.project_root / "docs" / "C2.5_TASK_INVENTORY_SUPPLEMENT.json", {})
         self.inheritance = load_json(self.project_root / "docs" / "C2.5_INHERITANCE_MANIFEST.json", {})
+        self.rule_governance = RuleGovernanceStore(
+            self.runtime_root / "c2.5" / "rule-governance",
+            rule_path=self.project_root / "docs" / "C2.4_RULE_CONFIG.json",
+            trial_path=self.project_root / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+            clock=clock,
+        )
+
+    def _latest_rollback_candidate(self, task_id: str) -> dict[str, Any] | None:
+        rows = self._read_audit()
+        already_rolled_back = {
+            str(row.get("rollbackOf"))
+            for row in rows
+            if row.get("auditStage") == "result" and row.get("backendAccepted") and row.get("rollbackOf")
+        }
+        allowed = {"set_interval", "pause_future_cycles", "resume_future_cycles", "safe_pause", "cancel_pause_request"}
+        for row in reversed(rows):
+            if (
+                row.get("auditStage") == "result"
+                and row.get("backendAccepted")
+                and row.get("taskId") == task_id
+                and row.get("action") in allowed
+                and row.get("auditId") not in already_rolled_back
+            ):
+                return {"auditId": row["auditId"], "action": row["action"], "requestedAt": row.get("requestedAt")}
+        return None
 
     def _runtime_bundle(self) -> dict[str, Any]:
         c22_root = self.runtime_root / "c2.2"
@@ -627,6 +653,18 @@ class C25ControlPlane:
                         {"action": "retry_partition", "label": "重试失败分片", "requiresPreview": True, "reason": reason},
                     ]
                 )
+        if task_id in {"c22.screening", "c22.convexity_tracking"} and overlay["liveState"] not in {"stale", "unknown"}:
+            rollback = self._latest_rollback_candidate(task_id)
+            if rollback:
+                controls.append(
+                    {
+                        "action": "rollback_control_change",
+                        "label": "回滚上次频率 / 暂停变更",
+                        "requiresPreview": True,
+                        "parameters": {"auditId": rollback["auditId"]},
+                        "rollbackTarget": rollback,
+                    }
+                )
         if not controls and not disabled_controls and entry.get("controlPolicy") not in {None, ""}:
             disabled_controls.append({"action": "direct_control", "label": "直接控制", "reason": str(entry.get("controlPolicy"))})
         affected_pages = {
@@ -853,10 +891,13 @@ class C25ControlPlane:
         return []
 
     def rules_payload(self) -> dict[str, Any]:
+        governance = self.rule_governance.state()
         return build_rule_transparency(
             self._tracking_items(),
             rule_path=self.project_root / "docs" / "C2.4_RULE_CONFIG.json",
             trial_path=self.project_root / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+            active_version=governance["activeVersion"],
+            governance=governance,
             now=self.clock(),
         )
 
@@ -882,7 +923,8 @@ class C25ControlPlane:
         merged: dict[str, Any] = {}
         for item in records:
             merged.update(item["record"])
-        rule_payload = build_rule_transparency([merged], rule_path=self.project_root / "docs" / "C2.4_RULE_CONFIG.json", trial_path=self.project_root / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json", now=now)
+        governance = self.rule_governance.state()
+        rule_payload = build_rule_transparency([merged], rule_path=self.project_root / "docs" / "C2.4_RULE_CONFIG.json", trial_path=self.project_root / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json", active_version=governance["activeVersion"], governance=governance, now=now)
         replay_row = (rule_payload.get("replay") or {}).get("rows", [{}])[0]
         evidence = merged.get("evidence") or merged.get("evidenceIds") or merged.get("keyEvidence") or []
         if not isinstance(evidence, list):

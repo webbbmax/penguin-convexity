@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,12 @@ from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_RULE_PATH = PROJECT_ROOT / "docs" / "C2.4_RULE_CONFIG.json"
+DEFAULT_TRIAL_PATH = PROJECT_ROOT / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json"
+DEFAULT_ACTIVE_RULE_PATH = PROJECT_ROOT / "runtime" / "c2.5" / "rule-governance" / "current.json"
+FROZEN_PUBLIC_RULE_VERSION = "c2.4-rules-v1"
+TRIAL_PUBLIC_RULE_VERSION = "c2.4-public-baseline-quote-success-trial-v1"
+EXPECTED_RULE_SHA256 = "775f9fad44e5f0db3b036e797643104a5ff9f075afbc4e1c16835606c8a88988"
+EXPECTED_TRIAL_SHA256 = "7f6ccc9e35ab6ba7b5212911116facd9698489c0f7d0f27b9dbcf16dc0c7e202"
 PUBLIC_STATES = ("convexity_clue", "active_project", "observing")
 DATA_STATES = {
     "success",
@@ -84,7 +91,32 @@ def evaluate_first_gate(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def evaluate_public_baseline(item: dict[str, Any]) -> dict[str, Any]:
+def _canonical_sha256(path: Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def load_active_rule_version(selector_path: Path | None = None) -> str:
+    """Read the C2.5-approved selector; absence preserves the released trial."""
+
+    path = Path(selector_path or DEFAULT_ACTIVE_RULE_PATH)
+    if not path.exists():
+        return TRIAL_PUBLIC_RULE_VERSION
+    value = json.loads(path.read_text(encoding="utf-8"))
+    version = value.get("activeVersion") if isinstance(value, dict) else None
+    if version not in {FROZEN_PUBLIC_RULE_VERSION, TRIAL_PUBLIC_RULE_VERSION}:
+        raise ValueError("C2.5规则选择器包含未知版本，拒绝生成新快照。")
+    hashes = value.get("sourceHashes") if isinstance(value.get("sourceHashes"), dict) else {}
+    if (
+        hashes.get("ruleConfig") != EXPECTED_RULE_SHA256
+        or hashes.get("trial") != EXPECTED_TRIAL_SHA256
+        or _canonical_sha256(DEFAULT_RULE_PATH) != EXPECTED_RULE_SHA256
+        or _canonical_sha256(DEFAULT_TRIAL_PATH) != EXPECTED_TRIAL_SHA256
+    ):
+        raise ValueError("C2.5规则选择器与冻结来源哈希不一致，拒绝生成新快照。")
+    return str(version)
+
+
+def _evaluate_trial_public_baseline(item: dict[str, Any]) -> dict[str, Any]:
     """Apply the user-authorized post-release quote-success-only baseline."""
 
     complete = item.get("deepTrackingState") == "completed" and bool(item.get("evaluationWindowId")) and bool(item.get("evaluationCompletedAt"))
@@ -118,8 +150,119 @@ def evaluate_public_baseline(item: dict[str, Any]) -> dict[str, Any]:
         "publicEligible": passed,
         "checks": checks,
         "trackingState": backend_state,
-        "ruleVersion": "c2.4-public-baseline-quote-success-trial-v1",
+        "ruleVersion": TRIAL_PUBLIC_RULE_VERSION,
     }
+
+
+def _evaluate_frozen_public_baseline(item: dict[str, Any]) -> dict[str, Any]:
+    trial = _evaluate_trial_public_baseline(item)
+    risk_state = item.get("riskSourceState") or item.get("riskState")
+    risk_source_success = risk_state in {"success", "complete", "completed"}
+    loss = number(item.get("sellQuoteLossPct"))
+    quote_threshold_passed = item.get("sellQuoteState") == "success" and loss is not None and loss <= 15
+    severe = any(
+        bool(item.get(key))
+        for key in (
+            "confirmedHardBlock",
+            "confirmedFreeze",
+            "confirmedBlacklist",
+            "confirmedSellBlock",
+            "confirmedSevereAnomaly",
+        )
+    ) or (loss is not None and loss >= 20) or ((number(item.get("sellTaxPct")) or 0) >= 20)
+    checks = [
+        *trial["checks"],
+        _check("risk_source_success", risk_source_success, "风险来源成功返回。" if risk_source_success else "风险来源没有成功返回，不能把未知当安全。"),
+        _check("sell_quote_loss_lte_15", quote_threshold_passed, "100美元标准卖出报价损失不高于15%。" if quote_threshold_passed else "卖出报价损失未知或高于15%。"),
+        _check("no_severe_anomaly", not severe, "没有已确认严重异常。" if not severe else "存在已确认严重异常。"),
+    ]
+    passed = all(row["passed"] for row in checks)
+    return {
+        "passed": passed,
+        "publicEligible": passed,
+        "checks": checks,
+        "trackingState": "complete_tracking" if passed else "waiting_public_baseline",
+        "ruleVersion": FROZEN_PUBLIC_RULE_VERSION,
+    }
+
+
+def evaluate_public_baseline_version(item: dict[str, Any], version: str) -> dict[str, Any]:
+    if version == TRIAL_PUBLIC_RULE_VERSION:
+        return _evaluate_trial_public_baseline(item)
+    if version == FROZEN_PUBLIC_RULE_VERSION:
+        return _evaluate_frozen_public_baseline(item)
+    raise ValueError(f"未知规则版本：{version}")
+
+
+def evaluate_public_baseline(
+    item: dict[str, Any],
+    *,
+    selector_path: Path | None = None,
+    active_version: str | None = None,
+) -> dict[str, Any]:
+    """Apply the explicitly selected approved version on the next legal run."""
+
+    return evaluate_public_baseline_version(item, active_version or load_active_rule_version(selector_path))
+
+
+def effective_rule_manifest(version: str) -> dict[str, Any]:
+    if version not in {FROZEN_PUBLIC_RULE_VERSION, TRIAL_PUBLIC_RULE_VERSION}:
+        raise ValueError(f"未知规则版本：{version}")
+    if version == FROZEN_PUBLIC_RULE_VERSION:
+        return {
+            "public_sell_quote_loss": 15,
+            "strong_path_sell_quote_loss": 10,
+            "severe_immediate_exit_loss": 20,
+            "sell_quote_loss_pct_lte_10_or_15": "enabled",
+            "sell_quote_loss_pct_gte_20_immediate_exit": "enabled",
+            "liquidity_drop_pct_gte_80_path_invalidation": "enabled",
+            "supply_decimals_or_unit_change_path_invalidation": "enabled",
+            "cross_source_price_deviation_pct_gte_25_path_pause": "enabled",
+            "sell_tax_pct_gte_20_as_hard_block": "enabled",
+        }
+    return {
+        "public_sell_quote_loss": "quote_success_loss_recorded",
+        "strong_path_sell_quote_loss": "quote_success_no_confirmed_trade_block",
+        "severe_immediate_exit_loss": "record_only_no_immediate_exit_gate",
+        "sell_quote_loss_pct_lte_10_or_15": "disabled_as_gate",
+        "sell_quote_loss_pct_gte_20_immediate_exit": "disabled_as_gate",
+        "liquidity_drop_pct_gte_80_path_invalidation": "disabled_as_gate",
+        "supply_decimals_or_unit_change_path_invalidation": "disabled_as_gate",
+        "cross_source_price_deviation_pct_gte_25_path_pause": "disabled_as_gate",
+        "sell_tax_pct_gte_20_as_hard_block": "disabled_as_gate",
+    }
+
+
+def evaluate_rule_condition(rule_id: str, item: dict[str, Any], version: str) -> dict[str, Any]:
+    """Evaluate one rule independently so rule-level impact is not copied globally."""
+
+    trial = version == TRIAL_PUBLIC_RULE_VERSION
+    loss = number(item.get("sellQuoteLossPct"))
+    quote_known = item.get("sellQuoteState") is not None
+    hard_block = any(bool(item.get(key)) for key in ("confirmedHardBlock", "confirmedFreeze", "confirmedBlacklist", "confirmedSellBlock"))
+    if rule_id == "public_sell_quote_loss":
+        return {"applicable": quote_known, "passed": item.get("sellQuoteState") == "success" and (trial or (loss is not None and loss <= 15))}
+    if rule_id == "strong_path_sell_quote_loss":
+        return {"applicable": quote_known, "passed": item.get("sellQuoteState") == "success" and not hard_block and (trial or (loss is not None and loss <= 10))}
+    if rule_id in {"severe_immediate_exit_loss", "sell_quote_loss_pct_gte_20_immediate_exit"}:
+        return {"applicable": loss is not None, "passed": bool(trial or (loss is not None and loss < 20))}
+    if rule_id == "sell_quote_loss_pct_lte_10_or_15":
+        return {"applicable": quote_known, "passed": item.get("sellQuoteState") == "success" and (trial or (loss is not None and loss <= 15))}
+    if rule_id == "liquidity_drop_pct_gte_80_path_invalidation":
+        value = number(item.get("liquidityDropPct"))
+        return {"applicable": value is not None, "passed": bool(trial or (value is not None and value < 80))}
+    if rule_id == "supply_decimals_or_unit_change_path_invalidation":
+        keys = ("supplyUnitScaleChanged", "supplyDecimalsChanged", "supplyUnitChanged")
+        applicable = any(key in item for key in keys) or item.get("supplyUnitScaleStable") is not None
+        changed = any(bool(item.get(key)) for key in keys) or item.get("supplyUnitScaleStable") is False
+        return {"applicable": applicable, "passed": bool(trial or not changed)}
+    if rule_id == "cross_source_price_deviation_pct_gte_25_path_pause":
+        value = number(item.get("crossSourcePriceDeviationPct"))
+        return {"applicable": value is not None, "passed": bool(trial or (value is not None and value < 25))}
+    if rule_id == "sell_tax_pct_gte_20_as_hard_block":
+        value = number(item.get("sellTaxPct"))
+        return {"applicable": value is not None, "passed": bool(trial or (value is not None and value < 20))}
+    raise ValueError(f"未知规则：{rule_id}")
 
 
 def _thresholds(item: dict[str, Any], config: dict[str, Any]) -> dict[str, float]:
@@ -153,8 +296,16 @@ def _path(code: str, status: str, reason: str, source_types: list[str], metrics:
     }
 
 
-def evaluate_strong_paths(item: dict[str, Any], config: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+def evaluate_strong_paths(
+    item: dict[str, Any],
+    config: dict[str, Any] | None = None,
+    *,
+    active_version: str | None = None,
+    selector_path: Path | None = None,
+) -> list[dict[str, Any]]:
     config = config or load_config()
+    version = active_version or load_active_rule_version(selector_path)
+    trial = version == TRIAL_PUBLIC_RULE_VERSION
     threshold = _thresholds(item, config)
     buys = number(item.get("observedBuys"))
     sells = number(item.get("observedSells"))
@@ -171,6 +322,8 @@ def evaluate_strong_paths(item: dict[str, Any], config: dict[str, Any] | None = 
             (transactions, threshold["transactionsP50"]),
             (ratio, threshold["volumeLiquidityP50"]),
         ))
+        and (trial or not item.get("materialCrossSourceConflict"))
+        and (trial or (number(item.get("crossSourcePriceDeviationPct")) or 0) < 25)
     )
     demand = _path(
         "trade_demand_formation",
@@ -184,15 +337,22 @@ def evaluate_strong_paths(item: dict[str, Any], config: dict[str, Any] | None = 
     quote_loss = number(item.get("sellQuoteLossPct"))
     liquidity_drop = number(item.get("liquidityDropPct"))
     exit_ready = item.get("sellQuoteState") == "success"
+    strict_exit_inputs_ready = all(value is not None for value in (liquidity, quote_loss, liquidity_drop))
     exit_formed = (
         exit_ready
         and not item.get("confirmedHardBlock")
         and not item.get("confirmedSellBlock")
+        and (trial or strict_exit_inputs_ready)
+        and (trial or liquidity >= max(threshold["liquidityP50"], threshold["liquidityFloor"]))
+        and (trial or quote_loss <= 10)
+        and (trial or liquidity_drop < 80)
+        and (trial or (number(item.get("crossSourcePriceDeviationPct")) or 0) < 25)
     )
+    exit_observable = exit_ready and (trial or strict_exit_inputs_ready)
     exit_path = _path(
         "liquidity_exit_quality",
-        "formed" if exit_formed else "not_formed" if exit_ready else "unavailable",
-        "100美元标准卖出报价成功，且没有已确认的冻结、黑名单或卖出阻断。" if exit_formed else "卖出报价成功，但存在已确认的交易阻断。" if exit_ready else "100美元标准卖出报价尚不可用。",
+        "formed" if exit_formed else "not_formed" if exit_observable else "unavailable",
+        "100美元标准卖出报价成功，且当前有效版本要求的流动性、损失与异常条件均通过。" if exit_formed else "当前有效版本要求的退出质量条件未全部通过。" if exit_observable else "当前有效版本所需的卖出报价或比较窗口尚不可用。",
         ["market_pool_data", "sell_quote_or_verified_route" if item.get("sellQuoteIndependent") else ""],
         {"liquidityUsd": liquidity, "liquidityP50": threshold["liquidityP50"], "liquidityFloorUsd": threshold["liquidityFloor"], "sellQuoteLossPct": quote_loss, "liquidityDropPct": liquidity_drop},
     )
@@ -200,12 +360,13 @@ def evaluate_strong_paths(item: dict[str, Any], config: dict[str, Any] | None = 
     top10_change = number(item.get("top10ShareChangePercentagePoints"))
     hhi_change = number(item.get("holderHhiChangePct"))
     supply_change = number(item.get("supplyChangePct"))
-    supply_ready = item.get("supplyHistoryState") == "success" and volume is not None
+    unit_stable = item.get("supplyUnitScaleStable")
+    supply_ready = item.get("supplyHistoryState") == "success" and volume is not None and (trial or unit_stable is not None)
     supply_formed = supply_ready and volume >= threshold["volumeP40"] and any((
         top10_change is not None and top10_change <= -2,
         hhi_change is not None and hhi_change <= -5,
         supply_change is not None and supply_change <= -0.25,
-    ))
+    )) and (trial or unit_stable is True)
     supply_path = _path(
         "supply_holder_improvement",
         "formed" if supply_formed else "not_formed" if supply_ready else "unavailable",
@@ -226,8 +387,9 @@ def evaluate_strong_paths(item: dict[str, Any], config: dict[str, Any] | None = 
         and item.get("supplyHistoryState") == "success"
         and relative is not None
         and surplus is not None
+        and (trial or unit_stable is not None)
     )
-    pool_formed = pool_ready and relative >= threshold["relativeExpansionP50"] and surplus > 0
+    pool_formed = pool_ready and relative >= threshold["relativeExpansionP50"] and surplus > 0 and (trial or unit_stable is True) and (trial or not item.get("severeAnomaly"))
     pool_path = _path(
         "indexed_pool_activity_vs_supply_adjusted_valuation",
         "formed" if pool_formed else "not_formed" if pool_ready else "unavailable",
@@ -325,11 +487,21 @@ def rank_home_by_chain(items: list[dict[str, Any]], maximum: int = 10) -> dict[s
     return output
 
 
-def normal_exit_decision(item: dict[str, Any], new_window_id: str, below_exit_rule: bool) -> dict[str, Any]:
+def normal_exit_decision(
+    item: dict[str, Any],
+    new_window_id: str,
+    below_exit_rule: bool,
+    *,
+    active_version: str | None = None,
+    selector_path: Path | None = None,
+) -> dict[str, Any]:
+    version = active_version or load_active_rule_version(selector_path)
+    loss = number(item.get("sellQuoteLossPct"))
+    sell_tax = number(item.get("sellTaxPct"))
     immediate = any(
         bool(item.get(key))
         for key in ("confirmedHardBlock", "confirmedFreeze", "confirmedBlacklist", "confirmedSellBlock")
-    )
+    ) or (version == FROZEN_PUBLIC_RULE_VERSION and ((loss is not None and loss >= 20) or (sell_tax is not None and sell_tax >= 20)))
     if immediate:
         return {"exit": True, "immediate": True, "consecutiveMisses": 0}
     previous_window = str(item.get("lastExitWindowId") or "")

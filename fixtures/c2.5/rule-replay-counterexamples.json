@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "c2.5-rule-replay-counterexamples-v1",
+  "cases": [
+    {
+      "id": "only_cross_source_deviation_changes",
+      "item": {
+        "assetId": "counterexample-cross-source-only",
+        "chainId": "solana-mainnet",
+        "contractAddress": "contract-counterexample",
+        "pairAddress": "pair-counterexample",
+        "tokenSide": "base",
+        "t0Status": "verified_in_supported_scope",
+        "deepTrackingState": "completed",
+        "evaluationWindowId": "window-counterexample",
+        "evaluationCompletedAt": "2026-08-14T11:00:00Z",
+        "riskSourceState": "success",
+        "sellQuoteState": "success",
+        "sellQuoteLossPct": 8,
+        "projectEvidenceQualified": true,
+        "projectEvidenceAttributable": true,
+        "relationshipClass": "A",
+        "liquidityDropPct": 10,
+        "supplyUnitScaleChanged": false,
+        "crossSourcePriceDeviationPct": 30,
+        "sellTaxPct": 5
+      },
+      "expectedChangedRuleIds": [
+        "cross_source_price_deviation_pct_gte_25_path_pause"
+      ]
+    }
+  ]
+}
