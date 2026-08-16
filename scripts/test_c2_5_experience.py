@@ -108,6 +108,8 @@ class DesignSystemTests(unittest.TestCase):
     def test_chart_includes_definition_time_filter_and_exact_table(self):
         for marker in ("口径：当前只读样本使用同一输入", "固定历史样本重放", "当前只读样本重放", "数据时间：", "筛选：当前完整输入", "查看精确表格", 'id="ruleExactTable"'):
             self.assertIn(marker, self.js)
+        for marker in ("影响无法完整计算", "rule_create_draft", "rule_approve_draft", "rule_rollback_version", "data-c25-rule-impact-blocker"):
+            self.assertIn(marker, self.js)
 
     def test_eight_information_domains_and_version_once(self):
         nav = (PROJECT_ROOT / "app" / "workbench-nav.js").read_text(encoding="utf-8")
@@ -160,6 +162,13 @@ class ApiContractTests(unittest.TestCase):
         rule_ids = {row["ruleId"] for row in rules["rules"]}
         self.assertTrue({"public_risk_source_success", "public_no_confirmed_hard_block", "public_no_confirmed_severe_anomaly"}.issubset(rule_ids))
         self.assertTrue(rules["replay"]["unionMatchesPerRule"])
+        calculation = rules["replay"]["impactCalculation"]
+        has_gap = calculation["complete"] is not True
+        self.assertTrue(calculation["verificationRequired"])
+        self.assertEqual(calculation["approvalBlocked"], has_gap)
+        if rules["replay"]["inputCount"]:
+            supply = next(row for row in rules["rules"] if row["ruleId"] == "strong_path_supply_holder_state")
+            self.assertGreater(supply["counts"]["changed"], 0)
         snapshots = self.plane.snapshots_payload()
         self.assertTrue(snapshots["stateBoundary"]["separate"])
         self.assertFalse(snapshots["managerCompositionWritesBusinessDatabases"])
@@ -186,6 +195,8 @@ class ApiContractTests(unittest.TestCase):
         product_probe = (PROJECT_ROOT / "scripts" / "c2_5_formal_product_probe.py").read_text(encoding="utf-8")
         self.assertIn("C25ControlPlane", product_probe)
         self.assertNotIn("C25ControlService", product_probe)
+        self.assertIn("direct_strong_path_executor_truth", product_probe)
+        self.assertIn("executorStateDigest", product_probe)
 
 
 if __name__ == "__main__":

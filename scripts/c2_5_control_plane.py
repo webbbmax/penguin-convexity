@@ -961,9 +961,9 @@ class C25ControlPlane:
                 )
         return rows
 
-    def rule_change_preview(self, target_version: str) -> dict[str, Any]:
+    def rule_change_preview(self, target_version: str, *, current_sample: dict[str, Any] | None = None) -> dict[str, Any]:
         governance = self.rule_governance.state()
-        current = self._tracking_rule_sample()
+        current = current_sample or self._tracking_rule_sample()
         fixed = self._fixed_rule_sample()
         replay = build_dual_replay_evidence(
             current["items"],
@@ -976,9 +976,9 @@ class C25ControlPlane:
         replay["affectedSnapshots"] = self._rule_affected_snapshots()
         return replay
 
-    def rules_payload(self) -> dict[str, Any]:
+    def rules_payload(self, *, current_sample: dict[str, Any] | None = None) -> dict[str, Any]:
         governance = self.rule_governance.state()
-        current = self._tracking_rule_sample()
+        current = current_sample or self._tracking_rule_sample()
         return build_rule_transparency(
             current["items"],
             rule_path=self.project_root / "docs" / "C2.4_RULE_CONFIG.json",

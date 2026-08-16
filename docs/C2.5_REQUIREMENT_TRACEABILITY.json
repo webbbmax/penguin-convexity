@@ -665,6 +665,7 @@
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_fixed_historical_and_current_readonly_samples_replay_separately",
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_current_tracking_projection_is_expanded_before_replay",
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_governed_union_covers_strong_path_immediate_exit_and_risk_only_counterexamples",
+        "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_incomplete_current_snapshot_blocks_rule_governance_instead_of_reporting_no_change",
         "scripts/c2_5_rules.py::build_dual_replay_evidence",
         "fixtures/c2.5/rule-governance-union-counterexamples.json",
         "docs/C2.5_DEVELOPMENT_SELF_TEST.md#验证结果"
@@ -683,7 +684,7 @@
       "evidence": [
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_governed_union_covers_strong_path_immediate_exit_and_risk_only_counterexamples",
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_overall_affected_set_is_exact_union_of_every_registered_rule",
-        "scripts/c2_5_formal_product_probe.py::run_probe",
+        "scripts/c2_5_formal_product_probe.py::direct_strong_path_executor_truth",
         "docs/C2.5_DEVELOPMENT_SELF_TEST.md#验证结果"
       ]
     },
@@ -1337,6 +1338,7 @@
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_rule_approval_and_explicit_version_rollback_preserve_history",
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_overall_affected_set_is_exact_union_of_every_registered_rule",
         "scripts/test_c2_5_control_plane.py::ControlSafetyTests.test_rule_draft_approval_and_rollback_use_protected_two_stage_control",
+        "scripts/test_c2_5_control_plane.py::ControlSafetyTests.test_rule_governance_is_blocked_when_executor_impact_is_incomplete",
         "scripts/c2_5_rule_governance.py::_validate_replay_evidence",
         "scripts/test_c2_4_runtime.py::C24RuntimeTests.test_rule_run_link_contains_real_run_and_three_snapshot_ids",
         "scripts/run_c2_2_update.py::build_c22_snapshots_for_run",

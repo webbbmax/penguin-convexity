@@ -193,6 +193,13 @@ class RuleGovernanceStore:
                 raise ValueError("固定历史样本和当前只读样本必须分别完成18条受治理规则重放及影响并集校验。")
         if int(replay_evidence["fixedHistorical"]["replay"].get("inputCount") or 0) < 1:
             raise ValueError("固定历史样本不能为空。")
+        impact_calculation = replay_evidence.get("impactCalculation")
+        if (
+            not isinstance(impact_calculation, dict)
+            or impact_calculation.get("complete") is not True
+            or impact_calculation.get("approvalBlocked") is not False
+        ):
+            raise ValueError("当前只读样本影响无法完整计算，不能批准或回滚规则版本。")
 
     def create_draft(
         self,

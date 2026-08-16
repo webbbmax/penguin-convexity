@@ -164,6 +164,13 @@ def complete_item(asset_id: str, loss: float, risk_state: str = "success", hard_
             "transactionsP50": 10,
             "volumeLiquidityRatioP50": 0.05,
         },
+        "publicBaseline": {"ruleVersion": "c2.4-public-baseline-quote-success-trial-v1"},
+        "strongPaths": [
+            {"pathCode": "trade_demand_formation", "status": "formed", "metrics": {}},
+            {"pathCode": "liquidity_exit_quality", "status": "not_formed" if hard_block else "formed", "metrics": {}},
+            {"pathCode": "supply_holder_improvement", "status": "unavailable", "metrics": {}},
+            {"pathCode": "indexed_pool_activity_vs_supply_adjusted_valuation", "status": "unavailable", "metrics": {}},
+        ],
     }
 
 
@@ -250,6 +257,30 @@ class RuleTransparencyTests(unittest.TestCase):
             self.assertEqual(changed, sorted(case["expectedChangedRuleIds"]), case["id"])
             self.assertEqual(replay["affectedAssetIds"], [case["assetId"]], case["id"])
             self.assertTrue(replay["unionMatchesPerRule"], case["id"])
+            if case.get("expectedSourceState"):
+                supply = next(row for row in replay["rules"] if row["ruleId"] == "strong_path_supply_holder_state")
+                self.assertEqual(supply["rows"][0]["sourceState"], case["expectedSourceState"])
+                self.assertEqual(supply["rows"][0]["targetState"], case["expectedTargetState"])
+
+    def test_incomplete_current_snapshot_blocks_rule_governance_instead_of_reporting_no_change(self):
+        item = {
+            **complete_item("incomplete-supply-projection", 8),
+            "supplyHistoryState": "success",
+            "supplyUnitScaleStable": None,
+            "top10ShareChangePercentagePoints": -3,
+        }
+        evidence = build_dual_replay_evidence(
+            [item],
+            source_version="c2.4-rules-v1",
+            target_version="c2.4-public-baseline-quote-success-trial-v1",
+            current_source={"sourcePath": "fixture-current", "snapshotId": "incomplete-current", "readOnly": True},
+        )
+        supply = next(row for row in evidence["currentReadOnly"]["ruleImpacts"] if row["ruleId"] == "strong_path_supply_holder_state")
+        self.assertEqual(supply["stateChangedAssetIds"], ["incomplete-supply-projection"])
+        self.assertEqual(supply["executorMismatchAssetIds"], ["incomplete-supply-projection"])
+        self.assertTrue(evidence["approvalBlocked"])
+        self.assertFalse(evidence["impactCalculation"]["complete"])
+        self.assertIn("影响无法完整计算", evidence["impactCalculation"]["reason"])
 
     def test_overall_affected_set_is_exact_union_of_every_registered_rule(self):
         items = [
@@ -710,6 +741,40 @@ class ControlSafetyTests(unittest.TestCase):
                 )
             )
         self.assertEqual(no_op.exception.code, "rule_draft_target_rejected")
+
+    def test_rule_governance_is_blocked_when_executor_impact_is_incomplete(self):
+        original_preview = self.plane.rule_change_preview
+
+        def incomplete_preview(target_version):
+            evidence = original_preview(target_version)
+            calculation = {
+                **evidence["impactCalculation"],
+                "status": "incomplete",
+                "complete": False,
+                "approvalBlocked": True,
+                "reason": "当前快照字段不足，影响无法完整计算。",
+                "executorMismatchAssetIds": ["incomplete-supply-projection"],
+            }
+            evidence["impactCalculation"] = calculation
+            evidence["approvalBlocked"] = True
+            evidence["currentReadOnly"]["replay"]["impactCalculation"] = calculation
+            return evidence
+
+        self.plane.rule_change_preview = incomplete_preview
+        request = self.request(
+            "rule-impact-incomplete",
+            action="rule_create_draft",
+            task_id="rule.governance",
+            parameters={
+                "targetVersion": "c2.4-rules-v1",
+                "reason": "不应建立",
+                "scope": "全部现役规则消费端",
+                "endCondition": "不适用",
+            },
+        )
+        with self.assertRaisesRegex(ControlError, "影响无法完整计算") as blocked:
+            self.service.preview(request)
+        self.assertEqual(blocked.exception.code, "rule_impact_incomplete")
 
     def test_batch_preview_is_explicit_and_ordered(self):
         request = self.request("batch", action="batch", task_id="batch", parameters={"items": [

@@ -53,6 +53,18 @@
       "assetId": "counterexample-only-risk-source",
       "overrides": {"riskSourceState": "no_data", "sellQuoteState": "no_data", "sellQuoteLossPct": null},
       "expectedChangedRuleIds": ["public_risk_source_success"]
+    },
+    {
+      "id": "missing_unit_scale_changes_supply_path",
+      "assetId": "counterexample-null-unit-supply-path",
+      "overrides": {
+        "supplyHistoryState": "success",
+        "supplyUnitScaleStable": null,
+        "top10ShareChangePercentagePoints": -3
+      },
+      "expectedChangedRuleIds": ["strong_path_supply_holder_state"],
+      "expectedSourceState": "unavailable",
+      "expectedTargetState": "formed"
     }
   ]
 }

@@ -158,13 +158,6 @@ def _binary_state(*, applicable: bool, passed: bool, comparable: bool = True) ->
     }
 
 
-def _stored_path_state(item: dict[str, Any], path_code: str) -> str | None:
-    return next(
-        (str(row.get("status")) for row in item.get("strongPaths", []) if isinstance(row, dict) and row.get("pathCode") == path_code and row.get("status")),
-        None,
-    )
-
-
 def evaluate_governed_rule_states(item: dict[str, Any], version: str, config: dict[str, Any]) -> dict[str, dict[str, Any]]:
     states: dict[str, dict[str, Any]] = {}
     public = evaluate_public_baseline_version(item, version)
@@ -179,23 +172,12 @@ def evaluate_governed_rule_states(item: dict[str, Any], version: str, config: di
     severe = bool(item.get("confirmedSevereAnomaly") or item.get("severeAnomaly"))
     states["public_no_confirmed_severe_anomaly"] = _binary_state(applicable=True, passed=trial or not severe)
 
-    stored_version = (item.get("publicBaseline") or {}).get("ruleVersion") if isinstance(item.get("publicBaseline"), dict) else None
-    computed_paths: dict[str, str] | None = None
+    computed_paths = {
+        row["pathCode"]: row["status"]
+        for row in evaluate_strong_paths(item, config=config, active_version=version)
+    }
     for rule_id, path_code in STRONG_PATH_RULES.items():
-        stored = _stored_path_state(item, path_code)
-        if item.get("deepTrackingState") != "completed" and stored:
-            status, comparable = stored, True
-        elif version == stored_version and stored:
-            status, comparable = stored, True
-        elif path_code in {"supply_holder_improvement", "indexed_pool_activity_vs_supply_adjusted_valuation"} and item.get("supplyUnitScaleStable") is None:
-            status, comparable = "unknown", False
-        else:
-            if computed_paths is None:
-                computed_paths = {
-                    row["pathCode"]: row["status"]
-                    for row in evaluate_strong_paths(item, config=config, active_version=version)
-                }
-            status, comparable = computed_paths[path_code], True
+        status, comparable = computed_paths[path_code], True
         states[rule_id] = {
             "applicable": True,
             "comparable": comparable,
@@ -292,6 +274,7 @@ def replay_rules(
         "affectedByArea": governed["affectedByArea"],
         "governedRuleCount": governed["ruleCount"],
         "unionMatchesPerRule": governed["unionMatchesPerRule"],
+        "impactCalculation": governed["impactCalculation"],
         "rows": [
             {
                 "assetId": row["assetId"],
@@ -337,7 +320,7 @@ def build_dual_replay_evidence(
         "items": current_items,
     }
 
-    def replay_sample(sample: dict[str, Any]) -> dict[str, Any]:
+    def replay_sample(sample: dict[str, Any], *, verify_stored_executor: bool) -> dict[str, Any]:
         sample_items = [row for row in sample.get("items", []) if isinstance(row, dict)]
         replay = replay_version_change(
             sample_items,
@@ -349,7 +332,16 @@ def build_dual_replay_evidence(
             sample_items,
             source_version=source_version,
             target_version=target_version,
+            verify_stored_executor=verify_stored_executor,
         )
+        if verify_stored_executor and (sample.get("unavailableReason") or not sample_items):
+            governed["impactCalculation"] = {
+                **governed["impactCalculation"],
+                "status": "incomplete",
+                "complete": False,
+                "approvalBlocked": True,
+                "reason": str(sample.get("unavailableReason") or "当前只读样本为空，影响无法完整计算。"),
+            }
         rule_impacts = [
             {key: value for key, value in row.items() if key != "rows"}
             for row in governed["rules"]
@@ -360,14 +352,15 @@ def build_dual_replay_evidence(
         replay["affectedByArea"] = governed["affectedByArea"]
         replay["governedRuleCount"] = governed["ruleCount"]
         replay["unionMatchesPerRule"] = governed["unionMatchesPerRule"]
+        replay["impactCalculation"] = governed["impactCalculation"]
         return {
             **{key: value for key, value in sample.items() if key != "items"},
             "replay": replay,
             "ruleImpacts": rule_impacts,
         }
 
-    fixed_result = replay_sample(historical)
-    current_result = replay_sample(current)
+    fixed_result = replay_sample(historical, verify_stored_executor=False)
+    current_result = replay_sample(current, verify_stored_executor=True)
     return {
         "schemaVersion": "c2.5-rule-dual-replay-evidence-v1",
         "sourceVersion": source_version,
@@ -378,6 +371,8 @@ def build_dual_replay_evidence(
         "fixedHistoricalAffectedAssetIds": fixed_result["replay"]["affectedAssetIds"],
         "sameInputWithinEachSample": True,
         "assetIdSetRecomputed": True,
+        "approvalBlocked": bool(current_result["replay"]["impactCalculation"]["approvalBlocked"]),
+        "impactCalculation": current_result["replay"]["impactCalculation"],
     }
 
 
@@ -390,6 +385,7 @@ def replay_governed_rules(
     *,
     source_version: str,
     target_version: str,
+    verify_stored_executor: bool = False,
 ) -> dict[str, Any]:
     source_manifest = effective_rule_manifest(source_version)
     target_manifest = effective_rule_manifest(target_version)
@@ -397,14 +393,45 @@ def replay_governed_rules(
         raise ValueError("前后规则登记集合不一致，拒绝生成不完整影响预览。")
     rule_ids = list(target_manifest)
     buckets: dict[str, list[dict[str, Any]]] = {rule_id: [] for rule_id in rule_ids}
+    executor_mismatches: dict[str, set[str]] = {rule_id: set() for rule_id in STRONG_PATH_RULES}
+    executor_missing: dict[str, set[str]] = {rule_id: set() for rule_id in STRONG_PATH_RULES}
+    executor_checked: set[str] = set()
+    calculation_errors: list[dict[str, str]] = []
     config = load_config(RULE_PATH)
     for item in items:
         asset_id = str(item.get("assetId") or item.get("asset_id") or "").strip()
         if not asset_id:
             continue
         replay_item = normalize_rule_replay_item(item)
-        source_states = evaluate_governed_rule_states(replay_item, source_version, config)
-        target_states = evaluate_governed_rule_states(replay_item, target_version, config)
+        evaluation_failed = False
+        try:
+            source_states = evaluate_governed_rule_states(replay_item, source_version, config)
+            target_states = evaluate_governed_rule_states(replay_item, target_version, config)
+        except Exception as error:
+            evaluation_failed = True
+            calculation_errors.append({"assetId": asset_id, "error": f"{type(error).__name__}: {error}"[:500]})
+            source_states = target_states = {
+                rule_id: {"applicable": True, "comparable": False, "passed": None, "state": "unavailable"}
+                for rule_id in rule_ids
+            }
+        if verify_stored_executor and not evaluation_failed:
+            stored_version = (item.get("publicBaseline") or {}).get("ruleVersion") if isinstance(item.get("publicBaseline"), dict) else None
+            stored_paths = {
+                str(row.get("pathCode")): str(row.get("status"))
+                for row in item.get("strongPaths", [])
+                if isinstance(row, dict) and row.get("pathCode") and row.get("status")
+            }
+            if stored_version in {source_version, target_version}:
+                executor_checked.add(asset_id)
+                active_states = source_states if stored_version == source_version else target_states
+                for rule_id, path_code in STRONG_PATH_RULES.items():
+                    if path_code not in stored_paths:
+                        executor_missing[rule_id].add(asset_id)
+                    elif active_states[rule_id]["state"] != stored_paths[path_code]:
+                        executor_mismatches[rule_id].add(asset_id)
+            else:
+                for rule_id in STRONG_PATH_RULES:
+                    executor_missing[rule_id].add(asset_id)
         for rule_id in rule_ids:
             source = source_states[rule_id]
             target = target_states[rule_id]
@@ -456,6 +483,8 @@ def replay_governed_rules(
                     "entered": len(added),
                     "withdrawn": len(removed),
                     "changed": len(changed_rows),
+                    "executorMismatches": len(executor_mismatches.get(rule_id, set())),
+                    "executorEvidenceMissing": len(executor_missing.get(rule_id, set())),
                 },
                 "addedAssetIds": added,
                 "removedAssetIds": removed,
@@ -463,6 +492,14 @@ def replay_governed_rules(
                 "passExample": target_passed[0]["assetId"] if target_passed else _unavailable("当前输入没有该规则的真实通过样本", "C2.4 tracking snapshot"),
                 "nonPassExample": failed[0]["assetId"] if failed else _unavailable("当前输入没有该规则的真实未通过样本", "C2.4 tracking snapshot"),
                 "differenceExample": state_changed[0] if state_changed else None,
+                "executorStateDigest": hashlib.sha256(json.dumps(
+                    [{key: row[key] for key in ("assetId", "sourceState", "targetState")} for row in rows],
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")).hexdigest(),
+                "executorMismatchAssetIds": sorted(executor_mismatches.get(rule_id, set())),
+                "executorMissingEvidenceAssetIds": sorted(executor_missing.get(rule_id, set())),
                 "rows": rows,
             }
         )
@@ -480,6 +517,21 @@ def replay_governed_rules(
         for area, ids in areas.items()
     }
     affected = sorted(set().union(*(set(row["stateChangedAssetIds"]) for row in impacts)))
+    mismatch_assets = sorted(set().union(*executor_mismatches.values()))
+    missing_assets = sorted(set().union(*executor_missing.values()))
+    impact_complete = not verify_stored_executor or not (calculation_errors or mismatch_assets or missing_assets)
+    impact_calculation = {
+        "status": "complete" if impact_complete else "incomplete",
+        "complete": impact_complete,
+        "approvalBlocked": not impact_complete,
+        "reason": None if impact_complete else "当前快照字段不足或复算结果与C2.4真实执行结果不一致，影响无法完整计算。",
+        "evaluatorPath": "scripts/c2_4_rules.py::evaluate_strong_paths",
+        "verificationRequired": verify_stored_executor,
+        "verifiedAssetCount": len(executor_checked),
+        "executorMismatchAssetIds": mismatch_assets,
+        "executorMissingEvidenceAssetIds": missing_assets,
+        "calculationErrors": calculation_errors,
+    }
     return {
         "schemaVersion": "c2.5-governed-rule-replay-v1",
         "sourceVersion": source_version,
@@ -490,6 +542,7 @@ def replay_governed_rules(
         "affectedAssetIds": affected,
         "affectedAssetCount": len(affected),
         "unionMatchesPerRule": affected == sorted(set().union(*(set(row["stateChangedAssetIds"]) for row in impacts))),
+        "impactCalculation": impact_calculation,
     }
 
 
@@ -638,11 +691,12 @@ def build_rule_transparency(
         inputs,
         source_version=FROZEN_PUBLIC_RULE_VERSION,
         target_version=selected_version,
+        verify_stored_executor=True,
     )
     impact_map = {row["ruleId"]: row for row in governed_replay["rules"]}
     for row in rules:
         rule_replay = impact_map[row["ruleId"]]
-        row.update({key: rule_replay[key] for key in ("counts", "addedAssetIds", "removedAssetIds", "stateChangedAssetIds", "passExample", "nonPassExample", "differenceExample")})
+        row.update({key: rule_replay[key] for key in ("counts", "addedAssetIds", "removedAssetIds", "stateChangedAssetIds", "passExample", "nonPassExample", "differenceExample", "executorStateDigest", "executorMismatchAssetIds", "executorMissingEvidenceAssetIds")})
     code_manifest = effective_rule_manifest(selected_version)
     rules = reconcile_rule_values(rules, code_manifest)
     replay = replay_rules(inputs, override_active=override_active, governed_replay=governed_replay)
@@ -653,6 +707,7 @@ def build_rule_transparency(
         current_source=current_source,
         fixed_history=fixed_history,
     )
+    replay["impactCalculation"] = replay_sets["impactCalculation"]
     reconciled = all(row["codeReconciliation"]["matched"] for row in rules) and len(rules) == len(code_manifest)
     history = [
         {"version": rule.get("ruleVersion"), "status": "active" if selected_version == FROZEN_PUBLIC_RULE_VERSION else "frozen_baseline", "sourceSha256": rule_hash},
@@ -660,7 +715,7 @@ def build_rule_transparency(
     ]
     return {
         "schemaVersion": "c2.5-rule-transparency-v2",
-        "status": "ready" if rule_hash == EXPECTED_RULE_SHA256 and reconciled else "attention",
+        "status": "ready" if rule_hash == EXPECTED_RULE_SHA256 and reconciled and not replay_sets["approvalBlocked"] else "attention",
         "frozenBaseline": {"ruleVersion": rule.get("ruleVersion"), "sourcePath": "docs/C2.4_RULE_CONFIG.json", "sourceSha256": rule_hash, "hashMatchesFrozen": rule_hash == EXPECTED_RULE_SHA256},
         "effective": {"ruleVersion": selected_version, "codeRuleVersion": selected_version, "reconciledWithCode": reconciled, "reconciledRuleCount": sum(row["codeReconciliation"]["matched"] for row in rules), "expectedRuleCount": len(code_manifest)},
         "activeOverride": active_override,
@@ -669,6 +724,8 @@ def build_rule_transparency(
         "rules": rules,
         "replay": replay,
         "replaySets": replay_sets,
+        "governanceApprovalBlocked": replay_sets["approvalBlocked"],
+        "governanceBlockReason": replay_sets["impactCalculation"].get("reason"),
         "bayesBoundary": "贝叶斯只用于同链排序、变化和校准，不控制资格或凸性线索。",
         "observedAt": iso_time(observed_at),
     }

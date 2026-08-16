@@ -248,6 +248,20 @@ class C25ControlService:
             raise ControlError("规则透明度当前不可用，不能执行规则治理。", code="rules_unavailable", status_code=409)
         return payload
 
+    @staticmethod
+    def _require_complete_rule_impact(replay_evidence: dict[str, Any]) -> None:
+        calculation = replay_evidence.get("impactCalculation") if isinstance(replay_evidence, dict) else None
+        if (
+            not isinstance(calculation, dict)
+            or calculation.get("complete") is not True
+            or calculation.get("approvalBlocked") is not False
+        ):
+            raise ControlError(
+                "影响无法完整计算，已阻断规则批准与回滚。",
+                code="rule_impact_incomplete",
+                status_code=409,
+            )
+
     def _validate_rule_control(self, action: str, parameters: dict[str, Any]) -> dict[str, Any]:
         payload = self._rules_payload()
         state = self.rule_governance.state()
@@ -267,6 +281,7 @@ class C25ControlService:
                 raise ControlError("规则草案必须选择已冻结版本，并填写原因、范围和结束条件。")
             if target == state["activeVersion"]:
                 raise ControlError("规则草案必须指向不同于当前有效版本的已冻结版本。", code="rule_draft_target_rejected", status_code=409)
+            self._require_complete_rule_impact(replay_evidence)
             proposed["parameters"] = normalized
         elif action in {"rule_approve_draft", "rule_reject_draft"}:
             draft_id = str(parameters.get("draftId") or "").strip()
@@ -274,6 +289,9 @@ class C25ControlService:
             if draft is None:
                 raise ControlError("规则草案不存在或已经完成审批。", code="rule_draft_unavailable", status_code=409)
             normalized = {"draftId": draft_id, "replayEvidence": draft.get("replayEvidence") or {}}
+            if action == "rule_approve_draft":
+                self._require_complete_rule_impact(normalized["replayEvidence"])
+                self._require_complete_rule_impact(self.plane.rule_change_preview(str(draft.get("targetVersion") or "")))
             if action == "rule_reject_draft":
                 normalized["reason"] = str(parameters.get("reason") or "").strip()
                 if not normalized["reason"]:
@@ -286,10 +304,12 @@ class C25ControlService:
             reason = str(parameters.get("reason") or "").strip()
             if not reason:
                 raise ControlError("规则回滚必须填写原因。")
+            replay_evidence = self.plane.rule_change_preview(target)
+            self._require_complete_rule_impact(replay_evidence)
             proposed["parameters"] = {
                 "targetVersion": target,
                 "reason": reason,
-                "replayEvidence": self.plane.rule_change_preview(target),
+                "replayEvidence": replay_evidence,
                 "rollbackOf": state.get("activeActivationId") or state["activeVersion"],
             }
         else:
