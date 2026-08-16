@@ -52,6 +52,7 @@ PATH_LABELS = {
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from c2_2_tracking import build_bayes_evidence, build_tracking_cohort_index, load_tracking_catalog  # noqa: E402
 from c2_1_observation_state import confirmed_trade_block, latest_effective_market_rows  # noqa: E402
+from c2_4_rule_replay import build_rule_replay_inputs  # noqa: E402
 from c2_4_rules import (  # noqa: E402
     age_band,
     determine_public_state,
@@ -620,7 +621,7 @@ def _build(
 ) -> dict[str, dict[str, Any]]:
     generated_at = _now()
     config = load_config()
-    active_rule_version = load_active_rule_version()
+    active_rule_version = load_active_rule_version(PROJECT_ROOT / "runtime" / "c2.5" / "rule-governance" / "current.json")
     base_rows = [dict(row) for row in connection.execute(
         """SELECT p.*,c.network_id,c.token_address,c.gate0_pool_id,c.canonical_name,c.symbol,
         c.website_domain,c.official_repo,q.source_queue,q.completed_at first_gate_completed_at,
@@ -769,6 +770,9 @@ def _build(
         evidence = _evidence_summary(evidence_by_candidate.get(candidate_id, []))
         market_row = market.get(candidate_id, {})
         risk_row = risk.get(candidate_id, {})
+        risk_reason_codes = _json(risk_row.get("reason_codes_json"), []) or []
+        confirmed_block = confirmed_trade_block(risk_row)
+        risk_state = risk_row.get("source_status") or source_states.get("risk") or "no_data"
         path_cohort = _path_cohort_thresholds(
             candidate,
             candidate_id,
@@ -797,16 +801,32 @@ def _build(
             "deepTrackingState": deep_state,
             "evaluationWindowId": evaluation_window,
             "evaluationCompletedAt": tracking_record.get("completed_at"),
-            "riskState": risk_row.get("source_status") or source_states.get("risk") or "no_data",
+            "riskState": risk_state,
+            "riskSourceState": risk_state,
             "projectEvidenceQualified": evidence["qualified"],
             "projectEvidenceAttributable": evidence["attributable"],
+            "confirmedFreeze": confirmed_block and any("freeze" in str(code) for code in risk_reason_codes),
+            "confirmedBlacklist": confirmed_block and any("blacklist" in str(code) for code in risk_reason_codes),
+            "confirmedSellBlock": confirmed_block and any(
+                marker in str(code) for code in risk_reason_codes for marker in ("sell", "honeypot")
+            ),
+            "confirmedSevereAnomaly": bool(path_input.get("severeAnomaly")),
+            "riskReasonCodes": [str(code) for code in risk_reason_codes],
+            "supplyUnitScaleChanged": path_input.get("supplyUnitScaleStable") is False,
+            "supplyDecimalsChanged": path_input.get("supplyUnitScaleStable") is False,
+            "supplyUnitChanged": path_input.get("supplyUnitScaleStable") is False,
         }
         baseline = evaluate_public_baseline(baseline_input, active_version=active_rule_version)
         history = public_history.get(candidate_id, {})
         lifecycle_state = lifecycle_history.get(candidate_id, {})
         history_active = bool(history) and bool(int(history.get("public_active", 1) or 0))
         effective_public = bool(baseline["passed"] or (history_active and not lifecycle_state.get("stopped_at")))
-        paths = evaluate_strong_paths({**baseline_input, "publicEligible": effective_public}, config, active_version=active_rule_version) if deep_state == "completed" else [
+        rule_replay_values = {
+            **baseline_input,
+            "publicEligible": effective_public,
+            "strongPathEvaluationEligible": deep_state == "completed",
+        }
+        paths = evaluate_strong_paths(rule_replay_values, config, active_version=active_rule_version) if deep_state == "completed" else [
             {"pathCode": code, "status": "unavailable", "plainReason": "等待新的完整首轮基础跟踪结果。", "independentSourceTypes": [], "metrics": {}}
             for code in PATH_LABELS
         ]
@@ -864,6 +884,10 @@ def _build(
             "publicBaselinePassedThisWindow": baseline["passed"],
             "publicRetentionState": "current_window_passed" if baseline["passed"] else "retained_by_hysteresis" if effective_public else "not_public",
             "publicBaseline": baseline,
+            "ruleReplayInputs": build_rule_replay_inputs(
+                rule_replay_values,
+                active_rule_version=active_rule_version,
+            ),
             "market": {key: path_input.get(key) for key in ("liquidityUsd", "volumeUsd", "transactionCount", "observedBuys", "observedSells", "volumeLiquidityRatio", "sellQuoteState", "sellQuoteLossPct", "liquidityDropPct")},
             "recentQualifyingRepositoryActivity": evidence["recentRepositoryActivity"],
             "newVerifiedProductUsage": evidence["newProductUsage"],
@@ -884,7 +908,11 @@ def _build(
         item.update(state)
         tracking_items.append(item)
 
-    public_items = [dict(item) for item in tracking_items if item.get("publicEligible") and item.get("publicState")]
+    public_items = [
+        {key: value for key, value in item.items() if key != "ruleReplayInputs"}
+        for item in tracking_items
+        if item.get("publicEligible") and item.get("publicState")
+    ]
     home_by_chain = rank_home_by_chain(public_items, maximum=10)
     for item in public_items:
         item.update(_plain_public_fields(item))

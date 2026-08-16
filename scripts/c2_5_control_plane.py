@@ -1014,7 +1014,11 @@ class C25ControlPlane:
             merged.update(item["record"])
         governance = self.rule_governance.state()
         rule_payload = build_rule_transparency([merged], rule_path=self.project_root / "docs" / "C2.4_RULE_CONFIG.json", trial_path=self.project_root / "docs" / "C2.4_RULE_RELAXATION_TRIAL_20260813.json", active_version=governance["activeVersion"], governance=governance, now=now)
-        replay_row = (rule_payload.get("replay") or {}).get("rows", [{}])[0]
+        replay_rows = (rule_payload.get("replay") or {}).get("rows") or []
+        replay_row = replay_rows[0] if replay_rows else {
+            "status": "unavailable",
+            "reason": rule_payload.get("governanceBlockReason") or "当前快照缺少完整规则重放输入。",
+        }
         evidence = merged.get("evidence") or merged.get("evidenceIds") or merged.get("keyEvidence") or []
         if not isinstance(evidence, list):
             evidence = [evidence]

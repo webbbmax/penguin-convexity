@@ -31,6 +31,8 @@ from c2_4_tracking import (  # noqa: E402
     record_first_gate_history,
     reconcile_existing_tracking_history,
 )
+from c2_4_rule_replay import load_rule_replay_inputs  # noqa: E402
+from c2_4_rules import evaluate_public_baseline_version, evaluate_strong_paths  # noqa: E402
 
 
 NOW = "2026-08-13T00:00:00Z"
@@ -246,6 +248,43 @@ class C24TrackingDatabaseTests(unittest.TestCase):
             "trackedNotFirstGateHistory": [],
             "continuedMissingHistory": [],
         })
+
+    def test_tracking_snapshot_persists_exact_versioned_rule_replay_inputs(self):
+        candidate_id = self.add_candidate("rule-replay", "A", 10)
+        record_first_gate_history(self.connection, [candidate_id])
+        self.set_completed_window(candidate_id, "window-rule-replay", 7, 8)
+        test_root = Path(self.temp.name) / "rule-replay-project"
+        (test_root / "data").mkdir(parents=True)
+        (test_root / "docs").mkdir()
+        (test_root / "data" / "convexity.db").write_bytes(b"")
+        (test_root / "docs" / "C2.4_INHERITANCE_MANIFEST.json").write_text(
+            (SCRIPT_ROOT.parent / "docs" / "C2.4_INHERITANCE_MANIFEST.json").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        with patch.object(build_c2_4_snapshots, "PROJECT_ROOT", test_root):
+            payloads = build_c24_snapshots(
+                db_path=self.database,
+                output_dir=Path(self.temp.name) / "rule-replay-app",
+                write=False,
+            )
+        item = next(row for row in payloads["tracking"]["items"] if row["assetId"] == "asset-rule-replay")
+        replay_input = load_rule_replay_inputs(item, require=True)
+        self.assertEqual(item["ruleReplayInputs"]["activeRuleVersion"], item["publicBaseline"]["ruleVersion"])
+        self.assertEqual(len(item["ruleReplayInputs"]["inputSha256"]), 64)
+        self.assertEqual(replay_input["supplyHistoryState"], "no_data")
+        self.assertIn("supplyUnitScaleStable", replay_input)
+        self.assertIn("ohlcvSuccessCount", replay_input)
+        self.assertIn("materialCrossSourceConflict", replay_input)
+        self.assertIn("sellTaxPct", replay_input)
+        self.assertIn("confirmedSellBlock", replay_input)
+        public = evaluate_public_baseline_version(replay_input, item["publicBaseline"]["ruleVersion"])
+        paths = evaluate_strong_paths(replay_input, active_version=item["publicBaseline"]["ruleVersion"])
+        self.assertEqual(public["passed"], item["publicBaselinePassedThisWindow"])
+        self.assertEqual(
+            {row["pathCode"]: row["status"] for row in paths},
+            {row["pathCode"]: row["status"] for row in item["strongPaths"]},
+        )
+        self.assertNotIn("ruleReplayInputs", next(row for row in payloads["front"]["items"] if row["assetId"] == "asset-rule-replay"))
 
     def test_expensive_structure_layer_requires_public_baseline_prerequisites(self):
         eligible = self.add_candidate("eligible", "A")

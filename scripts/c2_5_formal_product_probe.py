@@ -17,6 +17,7 @@ if str(SCRIPT_ROOT) not in sys.path:
 
 from c2_5_control_plane import C25ControlPlane
 from c2_5_rules import normalize_rule_replay_item
+from c2_4_rule_replay import RuleReplayInputError
 from c2_4_rules import evaluate_strong_paths, load_config
 
 
@@ -28,30 +29,78 @@ STRONG_PATH_RULES = {
 }
 
 
+def impact_calculation_is_j05_ready(calculation: dict) -> bool:
+    return bool(
+        calculation.get("verificationRequired") is True
+        and calculation.get("complete") is True
+        and calculation.get("approvalBlocked") is False
+        and not calculation.get("executorMismatchAssetIds")
+        and not calculation.get("executorMissingEvidenceAssetIds")
+        and not calculation.get("calculationErrors")
+    )
+
+
 def direct_strong_path_executor_truth(
     items: list[dict],
     *,
     source_version: str,
     target_version: str,
     rule_path: Path,
-) -> dict[str, dict]:
+) -> dict:
     config = load_config(rule_path)
     rows = {rule_id: [] for rule_id in STRONG_PATH_RULES}
+    errors = []
     for raw in items:
         asset_id = str(raw.get("assetId") or raw.get("asset_id") or "").strip()
         if not asset_id:
             continue
-        item = normalize_rule_replay_item(raw)
-        source = {row["pathCode"]: row["status"] for row in evaluate_strong_paths(item, config=config, active_version=source_version)}
-        target = {row["pathCode"]: row["status"] for row in evaluate_strong_paths(item, config=config, active_version=target_version)}
+        try:
+            item = normalize_rule_replay_item(raw, require_replay_inputs=True)
+        except RuleReplayInputError as error:
+            errors.append({"assetId": asset_id, "code": error.code, "error": str(error)})
+            continue
+        eligible = item.get("strongPathEvaluationEligible") is True
+        source = {row["pathCode"]: row["status"] for row in evaluate_strong_paths(item, config=config, active_version=source_version)} if eligible else {
+            path_code: "unavailable" for path_code in STRONG_PATH_RULES.values()
+        }
+        target = {row["pathCode"]: row["status"] for row in evaluate_strong_paths(item, config=config, active_version=target_version)} if eligible else {
+            path_code: "unavailable" for path_code in STRONG_PATH_RULES.values()
+        }
         for rule_id, path_code in STRONG_PATH_RULES.items():
             rows[rule_id].append({"assetId": asset_id, "sourceState": source[path_code], "targetState": target[path_code]})
     return {
-        rule_id: {
+        "rules": {rule_id: {
             "stateChangedAssetIds": sorted(row["assetId"] for row in values if row["sourceState"] != row["targetState"]),
             "executorStateDigest": hashlib.sha256(json.dumps(values, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest(),
         }
-        for rule_id, values in rows.items()
+        for rule_id, values in rows.items()},
+        "errors": errors,
+    }
+
+
+def candidate_rebuilt_tracking_sample(root: Path) -> dict:
+    """Build the candidate tracking snapshot in memory from the formal DB without writing it."""
+
+    import build_c2_4_snapshots as builder
+
+    original_root = builder.PROJECT_ROOT
+    try:
+        builder.PROJECT_ROOT = root
+        tracking = builder.build_snapshots(
+            db_path=root / "data" / "c2.1-pipeline.db",
+            output_dir=root / "app",
+            write=False,
+        )["tracking"]
+    finally:
+        builder.PROJECT_ROOT = original_root
+    return {
+        "sourcePath": "candidate-read-only-rebuild:data/c2.1-pipeline.db",
+        "sourceSha256": tracking.get("contentSha256"),
+        "snapshotId": tracking.get("buildId"),
+        "dataAsOf": tracking.get("dataCutoffAt"),
+        "readOnly": True,
+        "sampleSourceKind": "candidate_read_only_rebuild_from_formal_db",
+        "items": tracking.get("items") or [],
     }
 
 
@@ -90,10 +139,11 @@ def compact_rule(row: dict) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description="C2.5 formal product read-only probe")
     parser.add_argument("--project-root", required=True)
+    parser.add_argument("--candidate-rebuild", action="store_true")
     args = parser.parse_args()
     root = Path(args.project_root).resolve()
     plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
-    current_sample = plane._tracking_rule_sample()
+    current_sample = candidate_rebuilt_tracking_sample(root) if args.candidate_rebuild else plane._tracking_rule_sample()
     rules = plane.rules_payload(current_sample=current_sample)
     governance = rules.get("governance") or {}
     rollback_target = next(
@@ -184,18 +234,20 @@ def main() -> int:
         for row in (rollback_preview.get("currentReadOnly") or {}).get("ruleImpacts") or []
         for asset_id in row.get("stateChangedAssetIds") or []
     })
-    current_truth = direct_strong_path_executor_truth(
+    current_truth_result = direct_strong_path_executor_truth(
         current_sample["items"],
         source_version=replay_sets.get("sourceVersion"),
         target_version=replay_sets.get("targetVersion"),
         rule_path=root / "docs" / "C2.4_RULE_CONFIG.json",
     )
-    rollback_truth = direct_strong_path_executor_truth(
+    rollback_truth_result = direct_strong_path_executor_truth(
         current_sample["items"],
         source_version=rollback_preview.get("sourceVersion"),
         target_version=rollback_preview.get("targetVersion"),
         rule_path=root / "docs" / "C2.4_RULE_CONFIG.json",
-    ) if rollback_target else {}
+    ) if rollback_target else {"rules": {}, "errors": []}
+    current_truth = current_truth_result["rules"]
+    rollback_truth = rollback_truth_result["rules"]
     current_impacts = {row.get("ruleId"): row for row in current_replay.get("ruleImpacts") or []}
     rollback_impacts = {row.get("ruleId"): row for row in (rollback_preview.get("currentReadOnly") or {}).get("ruleImpacts") or []}
     current_executor_matches = all(
@@ -211,20 +263,8 @@ def main() -> int:
     current_calculation = (current_replay.get("replay") or {}).get("impactCalculation") or {}
     rollback_calculation = ((rollback_preview.get("currentReadOnly") or {}).get("replay") or {}).get("impactCalculation") or {}
 
-    def calculation_is_honest(calculation: dict) -> bool:
-        has_gap = bool(
-            calculation.get("executorMismatchAssetIds")
-            or calculation.get("executorMissingEvidenceAssetIds")
-            or calculation.get("calculationErrors")
-        )
-        return bool(
-            calculation.get("verificationRequired") is True
-            and calculation.get("complete") is (not has_gap)
-            and calculation.get("approvalBlocked") is has_gap
-        )
-
     passed = bool(
-        rules.get("status") in {"ready", "attention"}
+        rules.get("status") == "ready"
         and required_rules == observed_rules
         and rules.get("effective", {}).get("reconciledRuleCount") == len(required_rules)
         and rules.get("effective", {}).get("expectedRuleCount") == len(required_rules)
@@ -240,15 +280,17 @@ def main() -> int:
         and current_replay.get("replay", {}).get("unionMatchesPerRule") is True
         and current_replay.get("replay", {}).get("affectedAssetIds") == current_rule_union
         and current_executor_matches
-        and calculation_is_honest(current_calculation)
-        and rules.get("governanceApprovalBlocked") is current_calculation.get("approvalBlocked")
+        and not current_truth_result["errors"]
+        and impact_calculation_is_j05_ready(current_calculation)
+        and rules.get("governanceApprovalBlocked") is False
         and rollback_preview.get("fixedHistorical", {}).get("sampleKind") == "fixed_historical"
         and rollback_preview.get("currentReadOnly", {}).get("sampleKind") == "current_read_only"
         and rollback_preview.get("currentReadOnly", {}).get("replay", {}).get("unionMatchesPerRule") is True
         and rollback_preview.get("affectedAssetIds") == rollback_rule_union
         and rollback_executor_matches
-        and calculation_is_honest(rollback_calculation)
-        and rollback_preview.get("approvalBlocked") is rollback_calculation.get("approvalBlocked")
+        and not rollback_truth_result["errors"]
+        and impact_calculation_is_j05_ready(rollback_calculation)
+        and rollback_preview.get("approvalBlocked") is False
         and set(rollback_preview.get("affectedTaskIds") or []) == {"c22.screening", "c22.convexity_tracking"}
         and len(rollback_preview.get("affectedSnapshots") or []) == 3
         and all(row.get("snapshotId") for row in rollback_preview.get("affectedSnapshots") or [])
@@ -263,6 +305,8 @@ def main() -> int:
         "status": "passed" if passed else "failed",
         "observedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "projectRoot": str(root),
+        "sampleSourceKind": current_sample.get("sampleSourceKind") or "installed_formal_tracking_snapshot",
+        "j05Ready": passed,
         "rules": {
             "status": rules.get("status"),
             "frozenBaseline": rules.get("frozenBaseline"),
@@ -298,6 +342,8 @@ def main() -> int:
                 "currentImpactCalculation": current_calculation,
                 "rollbackImpactCalculation": rollback_calculation,
                 "strongPathChangedCounts": {rule_id: len(row["stateChangedAssetIds"]) for rule_id, row in current_truth.items()},
+                "currentDirectExecutorErrors": current_truth_result["errors"],
+                "rollbackDirectExecutorErrors": rollback_truth_result["errors"],
             },
             "bayesBoundary": rules.get("bayesBoundary"),
         },

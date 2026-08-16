@@ -19,6 +19,7 @@ from c2_4_rules import (
     load_config,
     number,
 )
+from c2_4_rule_replay import RuleReplayInputError, load_rule_replay_inputs
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -102,43 +103,10 @@ def evaluate_frozen_public_baseline(item: dict[str, Any]) -> dict[str, Any]:
     return evaluate_public_baseline_version(item, FROZEN_PUBLIC_RULE_VERSION)
 
 
-def normalize_rule_replay_item(item: dict[str, Any]) -> dict[str, Any]:
-    """Expand the read-only C2.4 tracking projection back to evaluator fields."""
+def normalize_rule_replay_item(item: dict[str, Any], *, require_replay_inputs: bool = False) -> dict[str, Any]:
+    """Read exact persisted evaluator inputs; never infer them from snapshot summaries."""
 
-    source_states = item.get("sourceStates") if isinstance(item.get("sourceStates"), dict) else {}
-    baseline = item.get("publicBaseline") if isinstance(item.get("publicBaseline"), dict) else {}
-    baseline_checks = {
-        row.get("code"): row.get("passed")
-        for row in baseline.get("checks", [])
-        if isinstance(row, dict) and row.get("code")
-    }
-    first_gate_checks = {
-        row.get("code"): row.get("passed")
-        for row in item.get("firstGateChecks", [])
-        if isinstance(row, dict) and row.get("code")
-    }
-    market = item.get("market") if isinstance(item.get("market"), dict) else {}
-    path_metrics: dict[str, Any] = {}
-    for path in item.get("strongPaths", []):
-        if isinstance(path, dict) and isinstance(path.get("metrics"), dict):
-            path_metrics.update({key: value for key, value in path["metrics"].items() if value is not None})
-    project_evidence = item.get("projectEvidenceState") == "success" or baseline_checks.get("project_evidence") is True
-    return {
-        **item,
-        **path_metrics,
-        **{key: value for key, value in market.items() if value is not None},
-        "contractAddress": item.get("contractAddress") or item.get("tokenAddress"),
-        "pairAddress": item.get("pairAddress") or item.get("poolId"),
-        "tokenSide": item.get("tokenSide") or item.get("assetDirection"),
-        "riskSourceState": item.get("riskSourceState") or source_states.get("risk") or item.get("riskState"),
-        "projectEvidenceQualified": item.get("projectEvidenceQualified") if item.get("projectEvidenceQualified") is not None else project_evidence,
-        "projectEvidenceAttributable": item.get("projectEvidenceAttributable") if item.get("projectEvidenceAttributable") is not None else project_evidence,
-        "confirmedHardBlock": item.get("confirmedHardBlock") if item.get("confirmedHardBlock") is not None else first_gate_checks.get("no_confirmed_trade_block") is False,
-        "confirmedSevereAnomaly": item.get("confirmedSevereAnomaly") if item.get("confirmedSevereAnomaly") is not None else bool(item.get("severeAnomaly")),
-        "supplyHistoryState": item.get("supplyHistoryState") or source_states.get("supply"),
-        "poolHistoryState": item.get("poolHistoryState") or source_states.get("path4"),
-        "sellQuoteIndependent": item.get("sellQuoteIndependent") if item.get("sellQuoteIndependent") is not None else "sell_quote_or_verified_route" in (item.get("independentSourceTypes") or []),
-    }
+    return load_rule_replay_inputs(item, require=require_replay_inputs)
 
 
 STRONG_PATH_RULES = {
@@ -172,10 +140,13 @@ def evaluate_governed_rule_states(item: dict[str, Any], version: str, config: di
     severe = bool(item.get("confirmedSevereAnomaly") or item.get("severeAnomaly"))
     states["public_no_confirmed_severe_anomaly"] = _binary_state(applicable=True, passed=trial or not severe)
 
+    path_eligible = item.get("strongPathEvaluationEligible")
+    if path_eligible is None:
+        path_eligible = item.get("deepTrackingState") == "completed"
     computed_paths = {
         row["pathCode"]: row["status"]
         for row in evaluate_strong_paths(item, config=config, active_version=version)
-    }
+    } if path_eligible else {path_code: "unavailable" for path_code in STRONG_PATH_RULES.values()}
     for rule_id, path_code in STRONG_PATH_RULES.items():
         status, comparable = computed_paths[path_code], True
         states[rule_id] = {
@@ -204,15 +175,21 @@ def replay_version_change(
     *,
     source_version: str,
     target_version: str,
+    require_replay_inputs: bool = False,
 ) -> dict[str, Any]:
     source_passed: list[str] = []
     target_passed: list[str] = []
     rows: list[dict[str, Any]] = []
+    calculation_errors: list[dict[str, str]] = []
     for item in items:
         asset_id = str(item.get("assetId") or item.get("asset_id") or "").strip()
         if not asset_id:
             continue
-        replay_item = normalize_rule_replay_item(item)
+        try:
+            replay_item = normalize_rule_replay_item(item, require_replay_inputs=require_replay_inputs)
+        except RuleReplayInputError as error:
+            calculation_errors.append({"assetId": asset_id, "code": error.code, "error": str(error)})
+            continue
         source = evaluate_public_baseline_version(replay_item, source_version)
         target = evaluate_public_baseline_version(replay_item, target_version)
         if source["passed"]:
@@ -244,6 +221,7 @@ def replay_version_change(
         "rows": rows,
         "sameInput": True,
         "assetIdSetRecomputed": True,
+        "calculationErrors": calculation_errors,
     }
 
 
@@ -254,10 +232,15 @@ def replay_rules(
     governed_replay: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     effective_version = TRIAL_PUBLIC_RULE_VERSION if override_active else FROZEN_PUBLIC_RULE_VERSION
+    require_replay_inputs = bool(
+        governed_replay
+        and (governed_replay.get("impactCalculation") or {}).get("verificationRequired") is True
+    )
     replay = replay_version_change(
         items,
         source_version=FROZEN_PUBLIC_RULE_VERSION,
         target_version=effective_version,
+        require_replay_inputs=require_replay_inputs,
     )
     governed = governed_replay or replay_governed_rules(
         items,
@@ -326,6 +309,7 @@ def build_dual_replay_evidence(
             sample_items,
             source_version=source_version,
             target_version=target_version,
+            require_replay_inputs=verify_stored_executor,
         )
         replay.pop("rows", None)
         governed = replay_governed_rules(
@@ -402,11 +386,22 @@ def replay_governed_rules(
         asset_id = str(item.get("assetId") or item.get("asset_id") or "").strip()
         if not asset_id:
             continue
-        replay_item = normalize_rule_replay_item(item)
         evaluation_failed = False
         try:
+            replay_item = normalize_rule_replay_item(item, require_replay_inputs=verify_stored_executor)
             source_states = evaluate_governed_rule_states(replay_item, source_version, config)
             target_states = evaluate_governed_rule_states(replay_item, target_version, config)
+        except RuleReplayInputError as error:
+            evaluation_failed = True
+            if error.code == "missing":
+                for rule_id in STRONG_PATH_RULES:
+                    executor_missing[rule_id].add(asset_id)
+            else:
+                calculation_errors.append({"assetId": asset_id, "error": f"{type(error).__name__}: {error}"[:500]})
+            source_states = target_states = {
+                rule_id: {"applicable": True, "comparable": False, "passed": None, "state": "unavailable"}
+                for rule_id in rule_ids
+            }
         except Exception as error:
             evaluation_failed = True
             calculation_errors.append({"assetId": asset_id, "error": f"{type(error).__name__}: {error}"[:500]})

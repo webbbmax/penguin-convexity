@@ -21,6 +21,8 @@ from c2_5_control_plane import C25ControlPlane, compose_authoritative_job_state,
 from c2_4_rules import evaluate_public_baseline, evaluate_strong_paths, normal_exit_decision
 from c2_5_rule_governance import RuleGovernanceStore
 from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, reconcile_rule_values, replay_governed_rules, replay_rules, validate_active_override
+from c2_4_rule_replay import build_rule_replay_inputs
+from c2_5_formal_product_probe import impact_calculation_is_j05_ready
 
 
 def read_fixture(name: str) -> dict:
@@ -132,7 +134,7 @@ class RegistryTests(unittest.TestCase):
 
 
 def complete_item(asset_id: str, loss: float, risk_state: str = "success", hard_block: bool = False) -> dict:
-    return {
+    item = {
         "assetId": asset_id,
         "chainId": "solana-mainnet",
         "contractAddress": f"contract-{asset_id}",
@@ -172,12 +174,36 @@ def complete_item(asset_id: str, loss: float, risk_state: str = "success", hard_
             {"pathCode": "indexed_pool_activity_vs_supply_adjusted_valuation", "status": "unavailable", "metrics": {}},
         ],
     }
+    item["ruleReplayInputs"] = build_rule_replay_inputs(
+        item,
+        active_rule_version="c2.4-public-baseline-quote-success-trial-v1",
+    )
+    return item
 
 
 class RuleTransparencyTests(unittest.TestCase):
+    def test_j05_probe_requires_complete_unblocked_zero_difference_impact(self):
+        complete = {
+            "verificationRequired": True,
+            "complete": True,
+            "approvalBlocked": False,
+            "executorMismatchAssetIds": [],
+            "executorMissingEvidenceAssetIds": [],
+            "calculationErrors": [],
+        }
+        self.assertTrue(impact_calculation_is_j05_ready(complete))
+        self.assertFalse(impact_calculation_is_j05_ready({
+            **complete,
+            "complete": False,
+            "approvalBlocked": True,
+            "executorMismatchAssetIds": ["asset-mismatch"],
+        }))
+
     def test_current_baseline_override_and_disabled_gates_are_separate(self):
         payload = build_rule_transparency([complete_item("pass", 8), complete_item("added", 18, "no_data")])
         self.assertEqual(payload["status"], "ready")
+        self.assertFalse(payload["governanceApprovalBlocked"])
+        self.assertTrue(payload["replay"]["impactCalculation"]["complete"])
         self.assertTrue(payload["frozenBaseline"]["hashMatchesFrozen"])
         self.assertTrue(payload["activeOverride"]["active"])
         values = {row["ruleId"]: row for row in payload["rules"]}
@@ -195,7 +221,7 @@ class RuleTransparencyTests(unittest.TestCase):
         self.assertTrue(replay["sameInput"])
         self.assertTrue(replay["assetIdSetRecomputed"])
 
-    def test_current_tracking_projection_is_expanded_before_replay(self):
+    def test_current_tracking_projection_is_not_inferred_from_summary_fields(self):
         compact = {
             "assetId": "compact-current",
             "chainId": "base-mainnet",
@@ -215,9 +241,29 @@ class RuleTransparencyTests(unittest.TestCase):
             "publicBaseline": {"checks": [{"code": "project_evidence", "passed": True}]},
             "severeAnomaly": False,
         }
-        replay = replay_rules([compact], override_active=True)
-        self.assertEqual(replay["effectivePassedCount"], 1)
-        self.assertEqual(replay["addedAssetIds"], ["compact-current"])
+        evidence = build_dual_replay_evidence(
+            [compact],
+            source_version="c2.4-rules-v1",
+            target_version="c2.4-public-baseline-quote-success-trial-v1",
+            current_source={"sourcePath": "compact-current", "snapshotId": "compact-current", "readOnly": True},
+        )
+        self.assertTrue(evidence["approvalBlocked"])
+        self.assertFalse(evidence["impactCalculation"]["complete"])
+        self.assertEqual(evidence["impactCalculation"]["executorMissingEvidenceAssetIds"], ["compact-current"])
+
+    def test_tampered_rule_replay_input_hash_blocks_governance(self):
+        item = complete_item("tampered-replay-input", 8)
+        item["ruleReplayInputs"]["values"]["supplyHistoryState"] = "success"
+        evidence = build_dual_replay_evidence(
+            [item],
+            source_version="c2.4-rules-v1",
+            target_version="c2.4-public-baseline-quote-success-trial-v1",
+            current_source={"sourcePath": "tampered-current", "snapshotId": "tampered-current", "readOnly": True},
+        )
+        self.assertTrue(evidence["approvalBlocked"])
+        self.assertFalse(evidence["impactCalculation"]["complete"])
+        self.assertEqual(evidence["impactCalculation"]["executorMissingEvidenceAssetIds"], [])
+        self.assertEqual(evidence["impactCalculation"]["calculationErrors"][0]["assetId"], "tampered-replay-input")
 
     def test_fixed_historical_and_current_readonly_samples_replay_separately(self):
         payload = build_rule_transparency(
@@ -269,6 +315,14 @@ class RuleTransparencyTests(unittest.TestCase):
             "supplyUnitScaleStable": None,
             "top10ShareChangePercentagePoints": -3,
         }
+        item["ruleReplayInputs"] = build_rule_replay_inputs(
+            item,
+            active_rule_version="c2.4-public-baseline-quote-success-trial-v1",
+        )
+        item["strongPaths"] = [
+            *[row for row in item["strongPaths"] if row["pathCode"] != "supply_holder_improvement"],
+            {"pathCode": "supply_holder_improvement", "status": "unavailable", "metrics": {}},
+        ]
         evidence = build_dual_replay_evidence(
             [item],
             source_version="c2.4-rules-v1",
@@ -310,13 +364,17 @@ class RuleTransparencyTests(unittest.TestCase):
     def test_counterexample_only_changes_the_rule_whose_input_changed(self):
         fixture = read_fixture("rule-replay-counterexamples.json")
         case = fixture["cases"][0]
-        payload = build_rule_transparency([case["item"]])
-        changed = sorted(row["ruleId"] for row in payload["rules"] if row["counts"]["changed"])
+        replay = replay_governed_rules(
+            [case["item"]],
+            source_version="c2.4-rules-v1",
+            target_version="c2.4-public-baseline-quote-success-trial-v1",
+        )
+        changed = sorted(row["ruleId"] for row in replay["rules"] if row["counts"]["changed"])
         expected = set(case["expectedChangedRuleIds"])
         self.assertEqual(changed, sorted(expected))
         self.assertEqual(
-            {row["ruleId"]: row["counts"]["changed"] for row in payload["rules"] if row["ruleId"] not in expected},
-            {row["ruleId"]: 0 for row in payload["rules"] if row["ruleId"] not in expected},
+            {row["ruleId"]: row["counts"]["changed"] for row in replay["rules"] if row["ruleId"] not in expected},
+            {row["ruleId"]: 0 for row in replay["rules"] if row["ruleId"] not in expected},
         )
 
     def test_code_reconciliation_is_per_rule_and_detects_one_field_mismatch(self):

@@ -197,6 +197,10 @@ class ApiContractTests(unittest.TestCase):
         self.assertNotIn("C25ControlService", product_probe)
         self.assertIn("direct_strong_path_executor_truth", product_probe)
         self.assertIn("executorStateDigest", product_probe)
+        self.assertIn("--candidate-rebuild", product_probe)
+        self.assertIn("impact_calculation_is_j05_ready", product_probe)
+        self.assertIn('rules.get("status") == "ready"', product_probe)
+        self.assertNotIn("calculation_is_honest", product_probe)
 
 
 if __name__ == "__main__":
