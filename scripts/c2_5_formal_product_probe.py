@@ -78,32 +78,6 @@ def direct_strong_path_executor_truth(
     }
 
 
-def candidate_rebuilt_tracking_sample(root: Path) -> dict:
-    """Build the candidate tracking snapshot in memory from the formal DB without writing it."""
-
-    import build_c2_4_snapshots as builder
-
-    original_root = builder.PROJECT_ROOT
-    try:
-        builder.PROJECT_ROOT = root
-        tracking = builder.build_snapshots(
-            db_path=root / "data" / "c2.1-pipeline.db",
-            output_dir=root / "app",
-            write=False,
-        )["tracking"]
-    finally:
-        builder.PROJECT_ROOT = original_root
-    return {
-        "sourcePath": "candidate-read-only-rebuild:data/c2.1-pipeline.db",
-        "sourceSha256": tracking.get("contentSha256"),
-        "snapshotId": tracking.get("buildId"),
-        "dataAsOf": tracking.get("dataCutoffAt"),
-        "readOnly": True,
-        "sampleSourceKind": "candidate_read_only_rebuild_from_formal_db",
-        "items": tracking.get("items") or [],
-    }
-
-
 def compact_rule(row: dict) -> dict:
     return {
         key: row.get(key)
@@ -139,11 +113,10 @@ def compact_rule(row: dict) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description="C2.5 formal product read-only probe")
     parser.add_argument("--project-root", required=True)
-    parser.add_argument("--candidate-rebuild", action="store_true")
     args = parser.parse_args()
     root = Path(args.project_root).resolve()
     plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
-    current_sample = candidate_rebuilt_tracking_sample(root) if args.candidate_rebuild else plane._tracking_rule_sample()
+    current_sample = plane._tracking_rule_sample()
     rules = plane.rules_payload(current_sample=current_sample)
     governance = rules.get("governance") or {}
     rollback_target = next(
@@ -306,6 +279,7 @@ def main() -> int:
         "observedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "projectRoot": str(root),
         "sampleSourceKind": current_sample.get("sampleSourceKind") or "installed_formal_tracking_snapshot",
+        "candidateProductState": plane.candidate_product_state,
         "j05Ready": passed,
         "rules": {
             "status": rules.get("status"),

@@ -110,6 +110,56 @@ def load_js_payload(path: Path) -> dict[str, Any]:
     return value
 
 
+def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any], Path | None, Path | None]:
+    binding_path = project_root / "runtime" / "c2.5" / "candidate-product-state.json"
+    if not binding_path.is_file():
+        return {"status": "not_configured", "bindingPath": str(binding_path)}, None, None
+    try:
+        binding = json.loads(binding_path.read_text(encoding="utf-8"))
+        if binding.get("schemaVersion") != "c2.5-candidate-product-state-v1":
+            raise ValueError("候选产品状态版本无效")
+        managed_root = (project_root / "runtime" / "temp-artifacts").resolve()
+        snapshot_root = (project_root / str(binding["snapshotRoot"])).resolve()
+        relative_snapshot = snapshot_root.relative_to(managed_root)
+        if len(relative_snapshot.parts) < 3 or relative_snapshot.parts[1:] != ("product-state", "app"):
+            raise ValueError("候选快照不在已登记临时产物内")
+        artifact_root = managed_root / relative_snapshot.parts[0]
+        marker = load_json(artifact_root / ".retention.json", {})
+        if marker.get("state") != "sealed":
+            raise ValueError("候选产品状态尚未封存")
+        manifest_path = (project_root / str(binding["manifestPath"])).resolve()
+        if manifest_path.parent != snapshot_root.parent:
+            raise ValueError("候选产品清单位置无效")
+        manifest = load_json(manifest_path, {})
+        if manifest.get("schemaVersion") != "c2.5-candidate-product-manifest-v1":
+            raise ValueError("候选产品清单版本无效")
+        snapshot_files = binding.get("snapshotFiles")
+        if not isinstance(snapshot_files, dict) or "c2-4-tracking-snapshot.js" not in snapshot_files:
+            raise ValueError("候选产品快照登记不完整")
+        if manifest.get("snapshotFiles") != snapshot_files:
+            raise ValueError("候选产品绑定与清单不一致")
+        for name, expected_hash in snapshot_files.items():
+            if Path(name).name != name or canonical_sha256(snapshot_root / name) != expected_hash:
+                raise ValueError(f"候选产品快照校验失败：{name}")
+        data_root = Path(str(binding["readOnlyDataRoot"])).resolve()
+        for name in ("convexity.db", "c2.1-pipeline.db"):
+            if not (data_root / name).is_file():
+                raise ValueError(f"只读业务数据库不可用：{name}")
+        return {
+            **binding,
+            "status": "ready",
+            "bindingPath": str(binding_path),
+            "snapshotRootResolved": str(snapshot_root),
+            "readOnlyDataRootResolved": str(data_root),
+        }, snapshot_root, data_root
+    except (KeyError, OSError, ValueError, json.JSONDecodeError) as error:
+        return {
+            "status": "invalid",
+            "bindingPath": str(binding_path),
+            "reason": str(error),
+        }, project_root / "runtime" / "c2.5" / "invalid-candidate-product-state", None
+
+
 def normalize_source_state(value: Any) -> str:
     raw = str(value or "").strip().lower()
     aliases = {
@@ -332,9 +382,10 @@ class C25ControlPlane:
         startup_state_provider: Callable[[], dict[str, Any]] | None = None,
     ) -> None:
         self.project_root = Path(project_root).resolve()
-        self.app_root = self.project_root / "app"
         self.runtime_root = self.project_root / "runtime"
-        self.data_root = self.project_root / "data"
+        self.candidate_product_state, candidate_app_root, candidate_data_root = _resolve_candidate_product_state(self.project_root)
+        self.app_root = candidate_app_root or self.project_root / "app"
+        self.data_root = candidate_data_root or self.project_root / "data"
         self.windows_reader = windows_reader
         self.clock = clock
         self.startup_state_provider = startup_state_provider or (lambda: {})
@@ -893,6 +944,7 @@ class C25ControlPlane:
             if isinstance(items, list):
                 return {
                     "sampleKind": "current_read_only",
+                    "sampleSourceKind": "prepared_candidate_product_snapshot" if self.candidate_product_state.get("status") == "ready" else "installed_formal_tracking_snapshot",
                     "sourcePath": f"app/{name}",
                     "sourceSha256": canonical_sha256(path),
                     "snapshotId": data.get("buildId") or name,
@@ -902,6 +954,7 @@ class C25ControlPlane:
                 }
         return {
             "sampleKind": "current_read_only",
+            "sampleSourceKind": "invalid_candidate_product_state" if self.candidate_product_state.get("status") == "invalid" else "installed_formal_tracking_snapshot",
             "sourcePath": "app/c2-4-tracking-snapshot.js",
             "sourceSha256": None,
             "snapshotId": None,
@@ -1129,6 +1182,7 @@ class C25ControlPlane:
             "databases": [self._database_integrity(self.data_root / "convexity.db"), self._database_integrity(self.data_root / "c2.1-pipeline.db")],
             "stateBoundary": {"lifecycle": "lifecyclePool/lifecycleState", "convexityTracking": "trackingState", "separate": True},
             "managerCompositionWritesBusinessDatabases": False,
+            "candidateProductState": self.candidate_product_state,
             "observedAt": iso_time(now),
         }
 

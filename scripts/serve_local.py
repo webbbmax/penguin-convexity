@@ -95,11 +95,12 @@ from candidate_production_runtime import (
     retry_partition as retry_candidate_partition,
 )
 from c2_5_control import C25ControlService, ControlError
-from c2_5_control_plane import C25ControlPlane
+from c2_5_control_plane import C25ControlPlane, _resolve_candidate_product_state
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-APP_ROOT = PROJECT_ROOT / "app"
+C25_CANDIDATE_PRODUCT_STATE, C25_CANDIDATE_APP_ROOT, C25_CANDIDATE_DATA_ROOT = _resolve_candidate_product_state(PROJECT_ROOT)
+APP_ROOT = C25_CANDIDATE_APP_ROOT or PROJECT_ROOT / "app"
 DESKTOP_ROOT = PROJECT_ROOT / "desktop"
 RUNTIME_ROOT = PROJECT_ROOT / "runtime"
 CACHE_ROOT = RUNTIME_ROOT / "cache"
@@ -141,8 +142,9 @@ def iso_now():
 
 
 def open_main_database_readonly():
+    database_path = (C25_CANDIDATE_DATA_ROOT / "convexity.db") if C25_CANDIDATE_DATA_ROOT else DEFAULT_DB_PATH
     connection = sqlite3.connect(
-        f"file:{DEFAULT_DB_PATH.as_posix()}?mode=ro",
+        f"file:{database_path.as_posix()}?mode=ro",
         uri=True,
     )
     connection.row_factory = sqlite3.Row
@@ -804,11 +806,19 @@ def main():
     handler = partial(QuietHandler, directory=str(APP_ROOT))
     server = ThreadingHTTPServer((args.host, args.port), handler)
     print(f"企鹅投研-凸性：http://{args.host}:{args.port}/desktop/index.html", flush=True)
-    threading.Thread(
-        target=rebuild_startup_snapshots,
-        name="convexity-startup-rebuild",
-        daemon=True,
-    ).start()
+    if C25_CANDIDATE_PRODUCT_STATE.get("status") == "ready":
+        set_startup_rebuild_state(
+            state="completed",
+            finishedAt=iso_now(),
+            source="sealed_candidate_product_state",
+        )
+        print("企鹅投研凸性：已读取封存候选产品快照；未触发正式业务重建。", flush=True)
+    else:
+        threading.Thread(
+            target=rebuild_startup_snapshots,
+            name="convexity-startup-rebuild",
+            daemon=True,
+        ).start()
     server.serve_forever()
 
 

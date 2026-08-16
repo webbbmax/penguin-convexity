@@ -168,7 +168,8 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(calculation["approvalBlocked"], has_gap)
         if rules["replay"]["inputCount"]:
             supply = next(row for row in rules["rules"] if row["ruleId"] == "strong_path_supply_holder_state")
-            self.assertGreater(supply["counts"]["changed"], 0)
+            self.assertEqual(supply["counts"]["changed"], len(supply["stateChangedAssetIds"]))
+            self.assertEqual(supply["executorMismatchAssetIds"], [])
         snapshots = self.plane.snapshots_payload()
         self.assertTrue(snapshots["stateBoundary"]["separate"])
         self.assertFalse(snapshots["managerCompositionWritesBusinessDatabases"])
@@ -197,10 +198,14 @@ class ApiContractTests(unittest.TestCase):
         self.assertNotIn("C25ControlService", product_probe)
         self.assertIn("direct_strong_path_executor_truth", product_probe)
         self.assertIn("executorStateDigest", product_probe)
-        self.assertIn("--candidate-rebuild", product_probe)
+        self.assertNotIn("--candidate-rebuild", product_probe)
+        self.assertNotIn("candidate_rebuilt_tracking_sample", product_probe)
         self.assertIn("impact_calculation_is_j05_ready", product_probe)
         self.assertIn('rules.get("status") == "ready"', product_probe)
         self.assertNotIn("calculation_is_honest", product_probe)
+        product_server = (PROJECT_ROOT / "scripts" / "serve_local.py").read_text(encoding="utf-8")
+        self.assertIn("_resolve_candidate_product_state", product_server)
+        self.assertIn("sealed_candidate_product_state", product_server)
 
 
 if __name__ == "__main__":

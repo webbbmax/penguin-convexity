@@ -7,6 +7,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -17,12 +18,13 @@ if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
 from c2_5_control import C25ControlService, ControlError
-from c2_5_control_plane import C25ControlPlane, compose_authoritative_job_state, progress_payload
+from c2_5_control_plane import C25ControlPlane, canonical_sha256, compose_authoritative_job_state, progress_payload
 from c2_4_rules import evaluate_public_baseline, evaluate_strong_paths, normal_exit_decision
 from c2_5_rule_governance import RuleGovernanceStore
 from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, reconcile_rule_values, replay_governed_rules, replay_rules, validate_active_override
 from c2_4_rule_replay import build_rule_replay_inputs
 from c2_5_formal_product_probe import impact_calculation_is_j05_ready
+from c2_5_prepare_candidate_product import prepare_candidate_product
 
 
 def read_fixture(name: str) -> dict:
@@ -845,6 +847,113 @@ class ControlSafetyTests(unittest.TestCase):
 
 
 class DataBoundaryTests(unittest.TestCase):
+    def test_candidate_product_preparation_persists_then_binds_normal_read_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = root / "candidate"
+            source = root / "formal"
+            (candidate / "docs").mkdir(parents=True)
+            (candidate / "docs" / "C2.5_REQUIREMENTS_LOCK.json").write_text("{}", encoding="utf-8")
+            (source / "data").mkdir(parents=True)
+            (source / "app").mkdir()
+            for name in ("convexity.db", "c2.1-pipeline.db"):
+                (source / "data" / name).write_bytes(b"")
+            (source / "app" / "c2-2-admin-snapshot.js").write_text(
+                'window.PENGUIN_CONVEXITY_C22_ADMIN = {"schemaVersion":"c2.2-admin","items":[]};\n',
+                encoding="utf-8",
+            )
+            payloads = {
+                "candidate": {"schemaVersion": "candidate", "buildId": "candidate-1"},
+                "tracking": {"schemaVersion": "tracking", "buildId": "tracking-1", "dataCutoffAt": "2026-08-16T00:00:00Z", "items": [{"assetId": "a", "ruleReplayInputs": {"inputSha256": "x"}}]},
+                "front": {"schemaVersion": "front", "buildId": "front-1", "items": []},
+                "admin": {"schemaVersion": "admin", "buildId": "admin-1", "items": []},
+            }
+
+            with patch("c2_5_prepare_candidate_product.builder.build_snapshots", return_value=payloads):
+                result = prepare_candidate_product(candidate, source, retention_hours=24)
+
+            binding = json.loads(Path(result["bindingPath"]).read_text(encoding="utf-8"))
+            marker = Path(result["artifactRoot"]) / ".retention.json"
+            self.assertEqual(json.loads(marker.read_text(encoding="utf-8"))["state"], "sealed")
+            self.assertEqual(result["manifest"]["ruleReplayInputCount"], 1)
+            self.assertEqual(binding["sourceProjectRoot"], str(source.resolve()))
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
+            self.assertEqual(plane.candidate_product_state["status"], "ready")
+            self.assertEqual(plane._tracking_rule_sample()["snapshotId"], "tracking-1")
+
+    def test_sealed_candidate_product_state_is_the_default_snapshot_source(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            artifact = root / "runtime" / "temp-artifacts" / "candidate-state-1"
+            snapshot_root = artifact / "product-state" / "app"
+            snapshot_root.mkdir(parents=True)
+            (root / "runtime" / "c2.5").mkdir(parents=True)
+            (root / "docs").mkdir()
+            (root / "app").mkdir()
+            (root / "data").mkdir()
+            for name in ("convexity.db", "c2.1-pipeline.db"):
+                (root / "data" / name).write_bytes(b"")
+            (artifact / ".retention.json").write_text(json.dumps({"state": "sealed"}), encoding="utf-8")
+            payload = {"schemaVersion": "c2.4-tracking-snapshot-v1", "buildId": "prepared-tracking", "items": []}
+            snapshot = snapshot_root / "c2-4-tracking-snapshot.js"
+            snapshot.write_text("window.PENGUIN_CONVEXITY_C24_TRACKING = " + json.dumps(payload) + ";\n", encoding="utf-8")
+            digest = canonical_sha256(snapshot)
+            manifest = artifact / "product-state" / "candidate-product-manifest.json"
+            manifest.write_text(json.dumps({
+                "schemaVersion": "c2.5-candidate-product-manifest-v1",
+                "snapshotFiles": {"c2-4-tracking-snapshot.js": digest},
+            }), encoding="utf-8")
+            (root / "runtime" / "c2.5" / "candidate-product-state.json").write_text(json.dumps({
+                "schemaVersion": "c2.5-candidate-product-state-v1",
+                "snapshotRoot": snapshot_root.relative_to(root).as_posix(),
+                "manifestPath": manifest.relative_to(root).as_posix(),
+                "readOnlyDataRoot": str(root / "data"),
+                "snapshotFiles": {"c2-4-tracking-snapshot.js": digest},
+            }), encoding="utf-8")
+
+            plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
+
+            self.assertEqual(plane.app_root, snapshot_root.resolve())
+            self.assertEqual(plane._tracking_rule_sample()["snapshotId"], "prepared-tracking")
+            self.assertEqual(plane._tracking_rule_sample()["sampleSourceKind"], "prepared_candidate_product_snapshot")
+            self.assertEqual(plane.candidate_product_state["status"], "ready")
+
+    def test_corrupt_candidate_product_state_never_falls_back_to_an_old_snapshot(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            artifact = root / "runtime" / "temp-artifacts" / "candidate-state-1"
+            snapshot_root = artifact / "product-state" / "app"
+            snapshot_root.mkdir(parents=True)
+            (root / "runtime" / "c2.5").mkdir(parents=True)
+            (root / "docs").mkdir()
+            (root / "app").mkdir()
+            (root / "data").mkdir()
+            (artifact / ".retention.json").write_text(json.dumps({"state": "sealed"}), encoding="utf-8")
+            old = root / "app" / "c2-4-tracking-snapshot.js"
+            old.write_text('window.PENGUIN_CONVEXITY_C24_TRACKING = {"buildId":"old","items":[]};\n', encoding="utf-8")
+            snapshot = snapshot_root / "c2-4-tracking-snapshot.js"
+            snapshot.write_text('window.PENGUIN_CONVEXITY_C24_TRACKING = {"buildId":"corrupt","items":[]};\n', encoding="utf-8")
+            manifest = artifact / "product-state" / "candidate-product-manifest.json"
+            manifest.write_text(json.dumps({
+                "schemaVersion": "c2.5-candidate-product-manifest-v1",
+                "snapshotFiles": {"c2-4-tracking-snapshot.js": "0" * 64},
+            }), encoding="utf-8")
+            (root / "runtime" / "c2.5" / "candidate-product-state.json").write_text(json.dumps({
+                "schemaVersion": "c2.5-candidate-product-state-v1",
+                "snapshotRoot": snapshot_root.relative_to(root).as_posix(),
+                "manifestPath": manifest.relative_to(root).as_posix(),
+                "readOnlyDataRoot": str(root / "data"),
+                "snapshotFiles": {"c2-4-tracking-snapshot.js": "0" * 64},
+            }), encoding="utf-8")
+
+            plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
+            sample = plane._tracking_rule_sample()
+
+            self.assertEqual(plane.candidate_product_state["status"], "invalid")
+            self.assertIsNone(sample["snapshotId"])
+            self.assertEqual(sample["items"], [])
+            self.assertNotEqual(plane.app_root, root / "app")
+
     def test_database_integrity_checks_are_read_only(self):
         with tempfile.TemporaryDirectory() as temp:
             db_path = Path(temp) / "fixture.db"
