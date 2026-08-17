@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -23,7 +25,7 @@ from c2_4_rules import evaluate_public_baseline, evaluate_strong_paths, normal_e
 from c2_5_rule_governance import RuleGovernanceStore
 from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, reconcile_rule_values, replay_governed_rules, replay_rules, validate_active_override
 from c2_4_rule_replay import build_rule_replay_inputs
-from c2_5_formal_product_probe import impact_calculation_is_j05_ready
+from c2_5_formal_product_probe import impact_calculation_is_j05_ready, reconcile_authoritative_tasks
 from c2_5_prepare_candidate_product import prepare_candidate_product
 
 
@@ -89,7 +91,8 @@ class RegistryTests(unittest.TestCase):
         self.assertIn("PenguinConvexity-C1.8-Scheduler", scheduler["machineNames"])
         self.assertEqual(scheduler["liveState"], "waiting")
         self.assertEqual(scheduler["schedulerNextTriggerAt"], "2026-08-14T12:15:00Z")
-        self.assertIsNone(tasks["c22.screening"]["nextDueAt"])
+        screening_state = json.loads((self.plane.authoritative_runtime_root / "c2.2" / "jobs" / "screening.json").read_text(encoding="utf-8"))
+        self.assertEqual(tasks["c22.screening"]["nextDueAt"], screening_state.get("nextDueAt"))
         hidden = tasks["windows.hidden_runner"]
         self.assertEqual(len(hidden["downstreamResolved"]), 2)
         gate0 = tasks["gate0.backfill.disabled"]
@@ -103,9 +106,11 @@ class RegistryTests(unittest.TestCase):
         fixture = read_fixture("windows-scheduler-matrix.json")
         fixture["rows"][0]["lastTaskResult"] = 267009
         plane = C25ControlPlane(project_root=PROJECT_ROOT, windows_reader=lambda: fixture["rows"], clock=self.plane.clock)
-        tasks = {row["taskId"]: row for row in plane.tasks_payload()["tasks"]}
-        self.assertEqual(tasks["windows.scheduler.primary"]["liveState"], "running")
-        self.assertNotEqual(tasks["c22.screening"]["liveState"], "running")
+        with tempfile.TemporaryDirectory() as temp:
+            plane.authoritative_runtime_root = Path(temp)
+            tasks = {row["taskId"]: row for row in plane.tasks_payload()["tasks"]}
+            self.assertEqual(tasks["windows.scheduler.primary"]["liveState"], "running")
+            self.assertEqual(tasks["c22.screening"]["liveState"], "unknown")
 
     def test_completed_history_has_no_resume_or_restart_control(self):
         tasks = {row["taskId"]: row for row in self.plane.tasks_payload()["tasks"]}
@@ -126,13 +131,15 @@ class RegistryTests(unittest.TestCase):
         self.assertIn("没有可重试", reasons["retry_partition"])
 
     def test_unknown_authoritative_state_disables_high_impact_controls(self):
-        tasks = {row["taskId"]: row for row in self.plane.tasks_payload()["tasks"]}
-        for task_id in ("c22.screening", "c22.convexity_tracking"):
-            task = tasks[task_id]
-            self.assertEqual(task["liveState"], "unknown")
-            self.assertEqual(task["controls"], [])
-            self.assertTrue(task["disabledControls"])
-            self.assertTrue(all("权威状态不可用" in row["reason"] for row in task["disabledControls"]))
+        with tempfile.TemporaryDirectory() as temp:
+            self.plane.authoritative_runtime_root = Path(temp)
+            tasks = {row["taskId"]: row for row in self.plane.tasks_payload()["tasks"]}
+            for task_id in ("c22.screening", "c22.convexity_tracking"):
+                task = tasks[task_id]
+                self.assertEqual(task["liveState"], "unknown")
+                self.assertEqual(task["controls"], [])
+                self.assertTrue(task["disabledControls"])
+                self.assertTrue(all("权威状态不可用" in row["reason"] for row in task["disabledControls"]))
 
 
 def complete_item(asset_id: str, loss: float, risk_state: str = "success", hard_block: bool = False) -> dict:
@@ -847,112 +854,148 @@ class ControlSafetyTests(unittest.TestCase):
 
 
 class DataBoundaryTests(unittest.TestCase):
+    def _prepare_fixture(self, root: Path) -> tuple[Path, Path, dict]:
+        candidate = root / "candidate"
+        source = root / "formal"
+        (candidate / "docs").mkdir(parents=True)
+        (candidate / "app").mkdir()
+        (candidate / "scripts").mkdir()
+        for name in (
+            "C2.5_REQUIREMENTS_LOCK.json",
+            "C2.5_TASK_INVENTORY.json",
+            "C2.5_TASK_INVENTORY_SUPPLEMENT.json",
+            "C2.5_INHERITANCE_MANIFEST.json",
+            "C2.4_RULE_CONFIG.json",
+            "C2.4_RULE_RELAXATION_TRIAL_20260813.json",
+        ):
+            shutil.copy2(PROJECT_ROOT / "docs" / name, candidate / "docs" / name)
+        shutil.copy2(PROJECT_ROOT / "scripts" / "serve_local.py", candidate / "scripts" / "serve_local.py")
+        (candidate / "app" / "c2-5-admin.js").write_text("window.C25_MANAGER = true;\n", encoding="utf-8")
+        subprocess.run(["git", "init", "-b", "main"], cwd=candidate, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "c25-test@example.invalid"], cwd=candidate, check=True)
+        subprocess.run(["git", "config", "user.name", "C2.5 Test"], cwd=candidate, check=True)
+        subprocess.run(["git", "add", "docs", "app", "scripts"], cwd=candidate, check=True)
+        subprocess.run(["git", "commit", "-m", "fixture"], cwd=candidate, check=True, capture_output=True)
+
+        (source / "data").mkdir(parents=True)
+        (source / "app").mkdir()
+        (source / "runtime" / "c2.2" / "jobs").mkdir(parents=True)
+        for name in ("convexity.db", "c2.1-pipeline.db"):
+            (source / "data" / name).write_bytes(b"")
+        (source / "app" / "c2-2-admin-snapshot.js").write_text(
+            'window.PENGUIN_CONVEXITY_C22_ADMIN = {"schemaVersion":"c2.2-admin","items":[]};\n',
+            encoding="utf-8",
+        )
+        (source / "runtime" / "c2.2" / "update-config.json").write_text(json.dumps({
+            "timezone": "Asia/Shanghai",
+            "jobs": {
+                "screening": {"mode": "automatic", "intervalHours": 12, "paused": False},
+                "convexity_tracking": {"mode": "automatic", "intervalHours": 12, "paused": False},
+            },
+        }), encoding="utf-8")
+        (source / "runtime" / "c2.2" / "jobs" / "screening.json").write_text(json.dumps({
+            "state": "completed",
+            "progress": {"completed": 6, "total": 6},
+            "stage": "snapshot_published",
+        }), encoding="utf-8")
+        (source / "runtime" / "c2.2" / "jobs" / "convexity_tracking.json").write_text(json.dumps({
+            "state": "partial",
+            "progress": {"completed": 18059, "total": 18573},
+            "stage": "snapshot_published",
+            "checkpoint": {"queue": {"completed": 18059, "total": 18573, "remaining": 514}},
+        }), encoding="utf-8")
+        payloads = {
+            "candidate": {"schemaVersion": "candidate", "buildId": "candidate-1"},
+            "tracking": {"schemaVersion": "tracking", "buildId": "tracking-1", "dataCutoffAt": "2026-08-16T00:00:00Z", "items": [{"assetId": "a", "ruleReplayInputs": {"inputSha256": "x"}}]},
+            "front": {"schemaVersion": "front", "buildId": "front-1", "items": []},
+            "admin": {"schemaVersion": "admin", "buildId": "admin-1", "items": []},
+        }
+        with patch("c2_5_prepare_candidate_product.builder.build_snapshots", return_value=payloads):
+            result = prepare_candidate_product(candidate, source, retention_hours=24)
+        return candidate, source, result
+
     def test_candidate_product_preparation_persists_then_binds_normal_read_path(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            candidate = root / "candidate"
-            source = root / "formal"
-            (candidate / "docs").mkdir(parents=True)
-            (candidate / "docs" / "C2.5_REQUIREMENTS_LOCK.json").write_text("{}", encoding="utf-8")
-            (source / "data").mkdir(parents=True)
-            (source / "app").mkdir()
-            for name in ("convexity.db", "c2.1-pipeline.db"):
-                (source / "data" / name).write_bytes(b"")
-            (source / "app" / "c2-2-admin-snapshot.js").write_text(
-                'window.PENGUIN_CONVEXITY_C22_ADMIN = {"schemaVersion":"c2.2-admin","items":[]};\n',
-                encoding="utf-8",
-            )
-            payloads = {
-                "candidate": {"schemaVersion": "candidate", "buildId": "candidate-1"},
-                "tracking": {"schemaVersion": "tracking", "buildId": "tracking-1", "dataCutoffAt": "2026-08-16T00:00:00Z", "items": [{"assetId": "a", "ruleReplayInputs": {"inputSha256": "x"}}]},
-                "front": {"schemaVersion": "front", "buildId": "front-1", "items": []},
-                "admin": {"schemaVersion": "admin", "buildId": "admin-1", "items": []},
-            }
-
-            with patch("c2_5_prepare_candidate_product.builder.build_snapshots", return_value=payloads):
-                result = prepare_candidate_product(candidate, source, retention_hours=24)
+            candidate, source, result = self._prepare_fixture(root)
 
             binding = json.loads(Path(result["bindingPath"]).read_text(encoding="utf-8"))
             marker = Path(result["artifactRoot"]) / ".retention.json"
             self.assertEqual(json.loads(marker.read_text(encoding="utf-8"))["state"], "sealed")
             self.assertEqual(result["manifest"]["ruleReplayInputCount"], 1)
             self.assertEqual(binding["sourceProjectRoot"], str(source.resolve()))
+            self.assertEqual(binding["readOnlyRuntimeRoot"], str((source / "runtime").resolve()))
+            self.assertEqual(binding["serviceFileCount"], len(result["manifest"]["serviceFiles"]))
             plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
             self.assertEqual(plane.candidate_product_state["status"], "ready")
             self.assertEqual(plane._tracking_rule_sample()["snapshotId"], "tracking-1")
+            tasks = {row["taskId"]: row for row in plane.tasks_payload()["tasks"]}
+            self.assertEqual(tasks["c22.screening"]["liveState"], "completed")
+            self.assertEqual(tasks["c22.convexity_tracking"]["liveState"], "partial")
+            self.assertEqual(tasks["c22.convexity_tracking"]["progress"]["completed"], 18059)
+            self.assertEqual(tasks["c22.convexity_tracking"]["progress"]["total"], 18573)
+            self.assertEqual(tasks["c22.convexity_tracking"]["checkpoint"]["queue"]["remaining"], 514)
+            self.assertEqual(plane.authoritative_runtime_root, (source / "runtime").resolve())
+            reconciliation = reconcile_authoritative_tasks(plane)
+            self.assertTrue(reconciliation["rootsSeparated"])
+            self.assertTrue(reconciliation["exact"])
+            service = C25ControlService(plane)
+            self.assertEqual(service.runtime_root, (candidate / "runtime" / "c2.5").resolve())
+            self.assertFalse(str(service.runtime_root).startswith(str((source / "runtime").resolve())))
 
     def test_sealed_candidate_product_state_is_the_default_snapshot_source(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            artifact = root / "runtime" / "temp-artifacts" / "candidate-state-1"
-            snapshot_root = artifact / "product-state" / "app"
-            snapshot_root.mkdir(parents=True)
-            (root / "runtime" / "c2.5").mkdir(parents=True)
-            (root / "docs").mkdir()
-            (root / "app").mkdir()
-            (root / "data").mkdir()
-            for name in ("convexity.db", "c2.1-pipeline.db"):
-                (root / "data" / name).write_bytes(b"")
-            (artifact / ".retention.json").write_text(json.dumps({"state": "sealed"}), encoding="utf-8")
-            payload = {"schemaVersion": "c2.4-tracking-snapshot-v1", "buildId": "prepared-tracking", "items": []}
-            snapshot = snapshot_root / "c2-4-tracking-snapshot.js"
-            snapshot.write_text("window.PENGUIN_CONVEXITY_C24_TRACKING = " + json.dumps(payload) + ";\n", encoding="utf-8")
-            digest = canonical_sha256(snapshot)
-            manifest = artifact / "product-state" / "candidate-product-manifest.json"
-            manifest.write_text(json.dumps({
-                "schemaVersion": "c2.5-candidate-product-manifest-v1",
-                "snapshotFiles": {"c2-4-tracking-snapshot.js": digest},
-            }), encoding="utf-8")
-            (root / "runtime" / "c2.5" / "candidate-product-state.json").write_text(json.dumps({
-                "schemaVersion": "c2.5-candidate-product-state-v1",
-                "snapshotRoot": snapshot_root.relative_to(root).as_posix(),
-                "manifestPath": manifest.relative_to(root).as_posix(),
-                "readOnlyDataRoot": str(root / "data"),
-                "snapshotFiles": {"c2-4-tracking-snapshot.js": digest},
-            }), encoding="utf-8")
+            candidate, _source, result = self._prepare_fixture(root)
+            snapshot_root = Path(result["artifactRoot"]) / "product-state" / "app"
 
-            plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
 
             self.assertEqual(plane.app_root, snapshot_root.resolve())
-            self.assertEqual(plane._tracking_rule_sample()["snapshotId"], "prepared-tracking")
+            self.assertEqual(plane._tracking_rule_sample()["snapshotId"], "tracking-1")
             self.assertEqual(plane._tracking_rule_sample()["sampleSourceKind"], "prepared_candidate_product_snapshot")
             self.assertEqual(plane.candidate_product_state["status"], "ready")
 
-    def test_corrupt_candidate_product_state_never_falls_back_to_an_old_snapshot(self):
+    def test_tampered_manager_js_invalidates_candidate_product_state(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            artifact = root / "runtime" / "temp-artifacts" / "candidate-state-1"
-            snapshot_root = artifact / "product-state" / "app"
-            snapshot_root.mkdir(parents=True)
-            (root / "runtime" / "c2.5").mkdir(parents=True)
-            (root / "docs").mkdir()
-            (root / "app").mkdir()
-            (root / "data").mkdir()
-            (artifact / ".retention.json").write_text(json.dumps({"state": "sealed"}), encoding="utf-8")
-            old = root / "app" / "c2-4-tracking-snapshot.js"
-            old.write_text('window.PENGUIN_CONVEXITY_C24_TRACKING = {"buildId":"old","items":[]};\n', encoding="utf-8")
-            snapshot = snapshot_root / "c2-4-tracking-snapshot.js"
-            snapshot.write_text('window.PENGUIN_CONVEXITY_C24_TRACKING = {"buildId":"corrupt","items":[]};\n', encoding="utf-8")
-            manifest = artifact / "product-state" / "candidate-product-manifest.json"
-            manifest.write_text(json.dumps({
-                "schemaVersion": "c2.5-candidate-product-manifest-v1",
-                "snapshotFiles": {"c2-4-tracking-snapshot.js": "0" * 64},
-            }), encoding="utf-8")
-            (root / "runtime" / "c2.5" / "candidate-product-state.json").write_text(json.dumps({
-                "schemaVersion": "c2.5-candidate-product-state-v1",
-                "snapshotRoot": snapshot_root.relative_to(root).as_posix(),
-                "manifestPath": manifest.relative_to(root).as_posix(),
-                "readOnlyDataRoot": str(root / "data"),
-                "snapshotFiles": {"c2-4-tracking-snapshot.js": "0" * 64},
-            }), encoding="utf-8")
+            candidate, _source, result = self._prepare_fixture(root)
+            snapshot_root = Path(result["artifactRoot"]) / "product-state" / "app"
+            (snapshot_root / "c2-5-admin.js").write_text("window.C25_MANAGER = false;\n", encoding="utf-8")
 
-            plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
             sample = plane._tracking_rule_sample()
 
             self.assertEqual(plane.candidate_product_state["status"], "invalid")
             self.assertIsNone(sample["snapshotId"])
             self.assertEqual(sample["items"], [])
-            self.assertNotEqual(plane.app_root, root / "app")
+            self.assertNotEqual(plane.app_root, candidate / "app")
+
+    def test_unlisted_service_file_invalidates_candidate_product_state(self):
+        with tempfile.TemporaryDirectory() as temp:
+            candidate, _source, result = self._prepare_fixture(Path(temp))
+            snapshot_root = Path(result["artifactRoot"]) / "product-state" / "app"
+            (snapshot_root / "injected.js").write_text("window.INJECTED = true;\n", encoding="utf-8")
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
+            self.assertEqual(plane.candidate_product_state["status"], "invalid")
+
+    def test_dirty_tracked_candidate_checkout_invalidates_candidate_product_state(self):
+        with tempfile.TemporaryDirectory() as temp:
+            candidate, _source, _result = self._prepare_fixture(Path(temp))
+            (candidate / "app" / "c2-5-admin.js").write_text("window.C25_MANAGER = false;\n", encoding="utf-8")
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
+            self.assertEqual(plane.candidate_product_state["status"], "invalid")
+            self.assertIn("未提交", plane.candidate_product_state["reason"])
+
+    def test_git_head_must_equal_binding_and_manifest_commit(self):
+        with tempfile.TemporaryDirectory() as temp:
+            candidate, _source, _result = self._prepare_fixture(Path(temp))
+            (candidate / "app" / "after-binding.js").write_text("window.AFTER_BINDING = true;\n", encoding="utf-8")
+            subprocess.run(["git", "add", "app/after-binding.js"], cwd=candidate, check=True)
+            subprocess.run(["git", "commit", "-m", "move head"], cwd=candidate, check=True, capture_output=True)
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
+            self.assertEqual(plane.candidate_product_state["status"], "invalid")
+            self.assertIn("Git HEAD", plane.candidate_product_state["reason"])
 
     def test_database_integrity_checks_are_read_only(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -1001,7 +1044,7 @@ class DataBoundaryTests(unittest.TestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps({"lastStatus": "running", "lastStartedAt": "2026-08-01T00:00:00Z"}), encoding="utf-8")
             plane = C25ControlPlane(project_root=PROJECT_ROOT, windows_reader=lambda: [])
-            plane.runtime_root = runtime_root
+            plane.authoritative_runtime_root = runtime_root
             rows = [row for row in plane.runs_audit_payload()["runs"] if row["legacy"]]
             self.assertEqual({row["sourceVersion"] for row in rows}, {"C1.8", "C2.1"})
             self.assertTrue(all(row["stale"] for row in rows))

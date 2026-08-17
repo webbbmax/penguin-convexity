@@ -95,6 +95,10 @@ def canonical_sha256(path: Path) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
 def stable_digest(value: Any) -> str:
     payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -110,14 +114,42 @@ def load_js_payload(path: Path) -> dict[str, Any]:
     return value
 
 
-def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any], Path | None, Path | None]:
+def _git_head(project_root: Path) -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=project_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    value = result.stdout.strip()
+    if result.returncode != 0 or len(value) != 40:
+        raise ValueError("候选工作区Git HEAD不可用")
+    return value
+
+
+def _git_tracked_worktree_is_clean(project_root: Path) -> bool:
+    result = subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=no"],
+        cwd=project_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return result.returncode == 0 and not result.stdout.strip()
+
+
+def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any], Path | None, Path | None, Path | None]:
     binding_path = project_root / "runtime" / "c2.5" / "candidate-product-state.json"
     if not binding_path.is_file():
-        return {"status": "not_configured", "bindingPath": str(binding_path)}, None, None
+        return {"status": "not_configured", "bindingPath": str(binding_path)}, None, None, None
     try:
         binding = json.loads(binding_path.read_text(encoding="utf-8"))
-        if binding.get("schemaVersion") != "c2.5-candidate-product-state-v1":
+        if binding.get("schemaVersion") != "c2.5-candidate-product-state-v2":
             raise ValueError("候选产品状态版本无效")
+        head = _git_head(project_root)
+        if not _git_tracked_worktree_is_clean(project_root):
+            raise ValueError("候选Git工作区存在未提交的跟踪文件变更")
         managed_root = (project_root / "runtime" / "temp-artifacts").resolve()
         snapshot_root = (project_root / str(binding["snapshotRoot"])).resolve()
         relative_snapshot = snapshot_root.relative_to(managed_root)
@@ -130,9 +162,14 @@ def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any]
         manifest_path = (project_root / str(binding["manifestPath"])).resolve()
         if manifest_path.parent != snapshot_root.parent:
             raise ValueError("候选产品清单位置无效")
+        if file_sha256(manifest_path) != binding.get("manifestSha256"):
+            raise ValueError("候选产品清单哈希校验失败")
         manifest = load_json(manifest_path, {})
-        if manifest.get("schemaVersion") != "c2.5-candidate-product-manifest-v1":
+        if manifest.get("schemaVersion") != "c2.5-candidate-product-manifest-v2":
             raise ValueError("候选产品清单版本无效")
+        commits = {head, str(binding.get("candidateCommit") or ""), str(manifest.get("candidateCommit") or "")}
+        if len(commits) != 1:
+            raise ValueError("Git HEAD、候选绑定提交与产品清单提交不一致")
         snapshot_files = binding.get("snapshotFiles")
         if not isinstance(snapshot_files, dict) or "c2-4-tracking-snapshot.js" not in snapshot_files:
             raise ValueError("候选产品快照登记不完整")
@@ -141,23 +178,55 @@ def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any]
         for name, expected_hash in snapshot_files.items():
             if Path(name).name != name or canonical_sha256(snapshot_root / name) != expected_hash:
                 raise ValueError(f"候选产品快照校验失败：{name}")
+        service_files = manifest.get("serviceFiles")
+        if not isinstance(service_files, dict) or not service_files:
+            raise ValueError("候选服务文件登记为空")
+        if manifest.get("serviceFileCount") != len(service_files):
+            raise ValueError("候选服务文件数量与清单不一致")
+        if binding.get("serviceFileCount") != len(service_files):
+            raise ValueError("候选服务文件数量与绑定不一致")
+        service_tree_sha256 = stable_digest(service_files)
+        if manifest.get("serviceTreeSha256") != service_tree_sha256 or binding.get("serviceTreeSha256") != service_tree_sha256:
+            raise ValueError("候选服务文件树哈希不一致")
+        actual_files = {
+            path.relative_to(snapshot_root).as_posix(): file_sha256(path)
+            for path in sorted(snapshot_root.rglob("*"))
+            if path.is_file()
+        }
+        if actual_files.keys() != service_files.keys():
+            raise ValueError("候选服务文件集与清单不一致")
+        mismatched = [name for name, expected_hash in service_files.items() if actual_files.get(name) != expected_hash]
+        if mismatched:
+            raise ValueError(f"候选服务文件校验失败：{mismatched[0]}")
+        source_root = Path(str(binding["sourceProjectRoot"])).resolve()
+        if source_root != Path(str(manifest.get("sourceProjectRoot") or "")).resolve():
+            raise ValueError("候选绑定与产品清单的正式来源不一致")
         data_root = Path(str(binding["readOnlyDataRoot"])).resolve()
+        runtime_root = Path(str(binding["readOnlyRuntimeRoot"])).resolve()
+        if data_root != source_root / "data" or runtime_root != source_root / "runtime":
+            raise ValueError("只读数据或运行状态根目录与正式来源不一致")
         for name in ("convexity.db", "c2.1-pipeline.db"):
             if not (data_root / name).is_file():
                 raise ValueError(f"只读业务数据库不可用：{name}")
+        if not (runtime_root / "c2.2" / "jobs").is_dir():
+            raise ValueError("正式只读任务状态不可用")
         return {
             **binding,
             "status": "ready",
             "bindingPath": str(binding_path),
             "snapshotRootResolved": str(snapshot_root),
             "readOnlyDataRootResolved": str(data_root),
-        }, snapshot_root, data_root
+            "readOnlyRuntimeRootResolved": str(runtime_root),
+            "verifiedGitHead": head,
+            "verifiedTrackedWorktreeClean": True,
+            "verifiedServiceFileCount": len(service_files),
+        }, snapshot_root, data_root, runtime_root
     except (KeyError, OSError, ValueError, json.JSONDecodeError) as error:
         return {
             "status": "invalid",
             "bindingPath": str(binding_path),
             "reason": str(error),
-        }, project_root / "runtime" / "c2.5" / "invalid-candidate-product-state", None
+        }, project_root / "runtime" / "c2.5" / "invalid-candidate-product-state", None, None
 
 
 def normalize_source_state(value: Any) -> str:
@@ -383,9 +452,10 @@ class C25ControlPlane:
     ) -> None:
         self.project_root = Path(project_root).resolve()
         self.runtime_root = self.project_root / "runtime"
-        self.candidate_product_state, candidate_app_root, candidate_data_root = _resolve_candidate_product_state(self.project_root)
+        self.candidate_product_state, candidate_app_root, candidate_data_root, candidate_runtime_root = _resolve_candidate_product_state(self.project_root)
         self.app_root = candidate_app_root or self.project_root / "app"
         self.data_root = candidate_data_root or self.project_root / "data"
+        self.authoritative_runtime_root = candidate_runtime_root or self.runtime_root
         self.windows_reader = windows_reader
         self.clock = clock
         self.startup_state_provider = startup_state_provider or (lambda: {})
@@ -419,7 +489,7 @@ class C25ControlPlane:
         return None
 
     def _runtime_bundle(self) -> dict[str, Any]:
-        c22_root = self.runtime_root / "c2.2"
+        c22_root = self.authoritative_runtime_root / "c2.2"
         config = load_json(c22_root / "update-config.json", {})
         scheduler = load_json(c22_root / "scheduler-state.json", {})
         pause = load_json(c22_root / "pause-current.json", {})
@@ -627,7 +697,7 @@ class C25ControlPlane:
                 }
             )
         elif task_id == "maintenance.temp_artifact_retention":
-            state = load_json(self.runtime_root / "maintenance" / "temp-artifact-sweep.json", {})
+            state = load_json(self.authoritative_runtime_root / "maintenance" / "temp-artifact-sweep.json", {})
             last = state.get("lastResult") or {}
             overlay.update(
                 {
@@ -1226,7 +1296,7 @@ class C25ControlPlane:
                     "stale": False,
                 }
             )
-        for version, path in (("C1.8", self.runtime_root / "c1.8" / "scheduler-state.json"), ("C2.1", self.runtime_root / "c2.1" / "scheduler-state.json")):
+        for version, path in (("C1.8", self.authoritative_runtime_root / "c1.8" / "scheduler-state.json"), ("C2.1", self.authoritative_runtime_root / "c2.1" / "scheduler-state.json")):
             row = load_json(path, {})
             if row:
                 runs.append(

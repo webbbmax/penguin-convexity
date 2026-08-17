@@ -41,6 +41,15 @@ def _canonical_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _stable_digest(value: Any) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -126,10 +135,19 @@ def prepare_candidate_product(candidate_root: Path, source_root: Path, *, retent
             _write_snapshot(snapshot_root / name, prefix, payloads[key])
         governed_snapshot_names = [name for name, _prefix in SNAPSHOT_SPECS.values()] + [INHERITED_SNAPSHOT]
         snapshot_files = {name: _canonical_sha256(snapshot_root / name) for name in governed_snapshot_names}
+        candidate_commit = _git_head(candidate_root)
+        if not candidate_commit or len(candidate_commit) != 40:
+            raise ValueError("候选工作区没有可锁定的Git HEAD")
+        service_files = {
+            path.relative_to(snapshot_root).as_posix(): _file_sha256(path)
+            for path in sorted(snapshot_root.rglob("*"))
+            if path.is_file()
+        }
+        service_tree_sha256 = _stable_digest(service_files)
         manifest = {
-            "schemaVersion": "c2.5-candidate-product-manifest-v1",
+            "schemaVersion": "c2.5-candidate-product-manifest-v2",
             "preparedAt": _iso_now(),
-            "candidateCommit": _git_head(candidate_root),
+            "candidateCommit": candidate_commit,
             "sourceProjectRoot": str(source_root),
             "sourceDatabaseMode": "sqlite_mode_ro_transaction",
             "sourceSnapshotBuildId": payloads["tracking"].get("buildId"),
@@ -138,19 +156,27 @@ def prepare_candidate_product(candidate_root: Path, source_root: Path, *, retent
             "ruleReplayInputCount": sum(bool(row.get("ruleReplayInputs")) for row in payloads["tracking"].get("items") or []),
             "inheritedSnapshotCount": inherited_snapshot_count,
             "snapshotFiles": snapshot_files,
+            "serviceFileCount": len(service_files),
+            "serviceTreeSha256": service_tree_sha256,
+            "serviceFiles": service_files,
         }
         manifest_path = product_root / "candidate-product-manifest.json"
         _atomic_json(manifest_path, manifest)
+        manifest_sha256 = _file_sha256(manifest_path)
         manager.seal(artifact_root, retention_hours=retention_hours)
         binding = {
-            "schemaVersion": "c2.5-candidate-product-state-v1",
+            "schemaVersion": "c2.5-candidate-product-state-v2",
             "preparedAt": manifest["preparedAt"],
             "candidateCommit": manifest["candidateCommit"],
             "snapshotRoot": snapshot_root.relative_to(candidate_root).as_posix(),
             "manifestPath": manifest_path.relative_to(candidate_root).as_posix(),
+            "manifestSha256": manifest_sha256,
             "readOnlyDataRoot": str(source_root / "data"),
+            "readOnlyRuntimeRoot": str(source_root / "runtime"),
             "sourceProjectRoot": str(source_root),
             "snapshotFiles": snapshot_files,
+            "serviceFileCount": len(service_files),
+            "serviceTreeSha256": service_tree_sha256,
         }
         binding_path = candidate_root / "runtime" / "c2.5" / "candidate-product-state.json"
         _atomic_json(binding_path, binding)

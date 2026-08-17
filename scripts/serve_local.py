@@ -99,7 +99,7 @@ from c2_5_control_plane import C25ControlPlane, _resolve_candidate_product_state
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-C25_CANDIDATE_PRODUCT_STATE, C25_CANDIDATE_APP_ROOT, C25_CANDIDATE_DATA_ROOT = _resolve_candidate_product_state(PROJECT_ROOT)
+C25_CANDIDATE_PRODUCT_STATE, C25_CANDIDATE_APP_ROOT, C25_CANDIDATE_DATA_ROOT, C25_CANDIDATE_RUNTIME_ROOT = _resolve_candidate_product_state(PROJECT_ROOT)
 APP_ROOT = C25_CANDIDATE_APP_ROOT or PROJECT_ROOT / "app"
 DESKTOP_ROOT = PROJECT_ROOT / "desktop"
 RUNTIME_ROOT = PROJECT_ROOT / "runtime"

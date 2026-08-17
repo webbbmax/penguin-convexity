@@ -15,7 +15,7 @@ SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
-from c2_5_control_plane import C25ControlPlane
+from c2_5_control_plane import C25ControlPlane, _read_lock, compose_authoritative_job_state, load_json, progress_payload
 from c2_5_rules import normalize_rule_replay_item
 from c2_4_rule_replay import RuleReplayInputError
 from c2_4_rules import evaluate_strong_paths, load_config
@@ -27,6 +27,51 @@ STRONG_PATH_RULES = {
     "strong_path_supply_holder_state": "supply_holder_improvement",
     "strong_path_indexed_pool_state": "indexed_pool_activity_vs_supply_adjusted_valuation",
 }
+
+
+def reconcile_authoritative_tasks(plane: C25ControlPlane) -> dict:
+    tasks = {row["taskId"]: row for row in plane.tasks_payload().get("tasks") or []}
+    runtime_root = plane.authoritative_runtime_root
+    c22_root = runtime_root / "c2.2"
+    pause = load_json(c22_root / "pause-current.json", {})
+    lock = _read_lock(c22_root / "pipeline.lock")
+    rows = []
+    for task_id, job_code in (("c22.screening", "screening"), ("c22.convexity_tracking", "convexity_tracking")):
+        raw = load_json(c22_root / "jobs" / f"{job_code}.json", {})
+        requested = bool(pause.get("requested")) and pause.get("jobCode") in {None, "", job_code}
+        expected_state, _basis = compose_authoritative_job_state(
+            raw,
+            lock=lock,
+            pause_requested=requested,
+            now=plane.clock(),
+        )
+        expected_progress = progress_payload({**(raw.get("progress") or {}), "stage": raw.get("stage"), "message": raw.get("message")})
+        observed = tasks.get(task_id) or {}
+        checks = {
+            "state": observed.get("liveState") == expected_state,
+            "progress": observed.get("progress") == expected_progress,
+            "checkpoint": observed.get("checkpoint") == (raw.get("checkpoint") or raw.get("currentItem")),
+            "heartbeat": observed.get("lastHeartbeatAt") == (raw.get("lastHeartbeatAt") or raw.get("updatedAt")),
+        }
+        rows.append({
+            "taskId": task_id,
+            "statusPath": str(c22_root / "jobs" / f"{job_code}.json"),
+            "expectedState": expected_state,
+            "observedState": observed.get("liveState"),
+            "expectedProgress": expected_progress,
+            "observedProgress": observed.get("progress"),
+            "expectedCheckpoint": raw.get("checkpoint") or raw.get("currentItem"),
+            "observedCheckpoint": observed.get("checkpoint"),
+            "checks": checks,
+            "exact": all(checks.values()),
+        })
+    return {
+        "authoritativeReadRoot": str(runtime_root),
+        "isolatedControlWriteRoot": str((plane.runtime_root / "c2.5").resolve()),
+        "rootsSeparated": runtime_root.resolve() != plane.runtime_root.resolve(),
+        "rows": rows,
+        "exact": bool(rows) and all(row["exact"] for row in rows),
+    }
 
 
 def impact_calculation_is_j05_ready(calculation: dict) -> bool:
@@ -116,6 +161,7 @@ def main() -> int:
     args = parser.parse_args()
     root = Path(args.project_root).resolve()
     plane = C25ControlPlane(project_root=root, windows_reader=lambda: [])
+    task_reconciliation = reconcile_authoritative_tasks(plane)
     current_sample = plane._tracking_rule_sample()
     rules = plane.rules_payload(current_sample=current_sample)
     governance = rules.get("governance") or {}
@@ -238,6 +284,9 @@ def main() -> int:
 
     passed = bool(
         rules.get("status") == "ready"
+        and plane.candidate_product_state.get("status") == "ready"
+        and task_reconciliation.get("rootsSeparated") is True
+        and task_reconciliation.get("exact") is True
         and required_rules == observed_rules
         and rules.get("effective", {}).get("reconciledRuleCount") == len(required_rules)
         and rules.get("effective", {}).get("expectedRuleCount") == len(required_rules)
@@ -281,6 +330,7 @@ def main() -> int:
         "sampleSourceKind": current_sample.get("sampleSourceKind") or "installed_formal_tracking_snapshot",
         "candidateProductState": plane.candidate_product_state,
         "j05Ready": passed,
+        "taskStateReconciliation": task_reconciliation,
         "rules": {
             "status": rules.get("status"),
             "frozenBaseline": rules.get("frozenBaseline"),
