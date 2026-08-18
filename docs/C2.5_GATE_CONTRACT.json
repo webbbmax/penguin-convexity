@@ -10,8 +10,8 @@
     {"path":"docs/C2.5_DEVELOPMENT_READINESS_BASELINE.json","sha256":"9cbd857e3aec2f6ce191933116fe986a112255bf70a357181d486c155d71671e"},
     {"path":"docs/C2.5_TASK_INVENTORY_SUPPLEMENT.json","sha256":"3de78f827dc832e04ad4dcfb2006f383694e1424b4ff6dda845bfcb05c93ccc3"},
     {"path":"docs/C2.5_FIXTURE_DESIGN.json","sha256":"9ab57b55a9ab28b88daaf837ff3e3fe90563638f0aef4653bb6fb03cdaacb8db"},
-    {"path":"scripts/d0_gate.py","sha256":"fa426cde4567f82225b9efadcfa24a1efd6983a2b59f912f9b47ffde2a29f4ae"},
-    {"path":"scripts/test_d0_gate.py","sha256":"79cd3eccfcac1017a836d91e0691328ba27abbb6de0c5b402ff2bd0747af4402"},
+    {"path":"scripts/d0_gate.py","sha256":"0cc26897b8f759225d4bc2d3faed536e167d643fe81adc08df11c76e528c688a"},
+    {"path":"scripts/test_d0_gate.py","sha256":"6f0ee82ec514f697d9617904cd8335af751cd5c6bcc49cc770e96d46f0f59c28"},
     {"path":"scripts/test_c2_5_readiness.py","sha256":"7f5a68bcad1ff1cdebf6ee871d21e3d9651ff18804e71dfb84ca997721f30544"}
   ],
   "inheritedDependencyHashCompatibility": [

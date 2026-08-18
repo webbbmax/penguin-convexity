@@ -266,6 +266,14 @@ class D0GateTests(unittest.TestCase):
         config["candidateCommit"] = self.fixture.rollback
         self.assert_failed(evaluate(config), "CANDIDATE_FIXED")
 
+    def test_c25_acceptance_fails_closed_without_verified_candidate_product(self) -> None:
+        source = self.fixture.worktree / "docs/D0_REQUIREMENTS_LOCK.json"
+        c25_lock = self.fixture.worktree / "docs/C2.5_REQUIREMENTS_LOCK.json"
+        self.fixture.write(c25_lock, source.read_text(encoding="utf-8"))
+        config = self.fixture.config("acceptance")
+        config["requirementsLock"] = {"path": "docs/C2.5_REQUIREMENTS_LOCK.json", "sha256": sha256(c25_lock)}
+        self.assert_failed(evaluate(config), "CANDIDATE_PRODUCT_INTEGRITY")
+
     def test_f06_missing_desktop_rollback_and_authorization_block_release(self) -> None:
         config = self.fixture.config("release_preflight")
         config["desktopEvidence"] = "docs/missing-desktop.json"

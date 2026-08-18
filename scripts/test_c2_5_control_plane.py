@@ -27,6 +27,7 @@ from c2_5_rules import build_dual_replay_evidence, build_rule_transparency, reco
 from c2_4_rule_replay import build_rule_replay_inputs
 from c2_5_formal_product_probe import impact_calculation_is_j05_ready, reconcile_authoritative_tasks
 from c2_5_prepare_candidate_product import prepare_candidate_product
+from d0_gate import validate_candidate_product_integrity
 
 
 def read_fixture(name: str) -> dict:
@@ -854,6 +855,15 @@ class ControlSafetyTests(unittest.TestCase):
 
 
 class DataBoundaryTests(unittest.TestCase):
+    @staticmethod
+    def _snapshot_payloads() -> dict:
+        return {
+            "candidate": {"schemaVersion": "candidate", "buildId": "candidate-1"},
+            "tracking": {"schemaVersion": "tracking", "buildId": "tracking-1", "dataCutoffAt": "2026-08-16T00:00:00Z", "items": [{"assetId": "a", "ruleReplayInputs": {"inputSha256": "x"}}]},
+            "front": {"schemaVersion": "front", "buildId": "front-1", "items": []},
+            "admin": {"schemaVersion": "admin", "buildId": "admin-1", "items": []},
+        }
+
     def _prepare_fixture(self, root: Path) -> tuple[Path, Path, dict]:
         candidate = root / "candidate"
         source = root / "formal"
@@ -904,13 +914,7 @@ class DataBoundaryTests(unittest.TestCase):
             "stage": "snapshot_published",
             "checkpoint": {"queue": {"completed": 18059, "total": 18573, "remaining": 514}},
         }), encoding="utf-8")
-        payloads = {
-            "candidate": {"schemaVersion": "candidate", "buildId": "candidate-1"},
-            "tracking": {"schemaVersion": "tracking", "buildId": "tracking-1", "dataCutoffAt": "2026-08-16T00:00:00Z", "items": [{"assetId": "a", "ruleReplayInputs": {"inputSha256": "x"}}]},
-            "front": {"schemaVersion": "front", "buildId": "front-1", "items": []},
-            "admin": {"schemaVersion": "admin", "buildId": "admin-1", "items": []},
-        }
-        with patch("c2_5_prepare_candidate_product.builder.build_snapshots", return_value=payloads):
+        with patch("c2_5_prepare_candidate_product.builder.build_snapshots", return_value=self._snapshot_payloads()):
             result = prepare_candidate_product(candidate, source, retention_hours=24)
         return candidate, source, result
 
@@ -929,6 +933,9 @@ class DataBoundaryTests(unittest.TestCase):
             plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
             self.assertEqual(plane.candidate_product_state["status"], "ready")
             self.assertEqual(plane._tracking_rule_sample()["snapshotId"], "tracking-1")
+            gate_checks = []
+            validate_candidate_product_integrity(candidate, "runtime/c2.5/candidate-product-state.json", gate_checks)
+            self.assertTrue(gate_checks[-1]["passed"], gate_checks[-1])
             tasks = {row["taskId"]: row for row in plane.tasks_payload()["tasks"]}
             self.assertEqual(tasks["c22.screening"]["liveState"], "completed")
             self.assertEqual(tasks["c22.convexity_tracking"]["liveState"], "partial")
@@ -970,6 +977,9 @@ class DataBoundaryTests(unittest.TestCase):
             self.assertIsNone(sample["snapshotId"])
             self.assertEqual(sample["items"], [])
             self.assertNotEqual(plane.app_root, candidate / "app")
+            gate_checks = []
+            validate_candidate_product_integrity(candidate, "runtime/c2.5/candidate-product-state.json", gate_checks)
+            self.assertFalse(gate_checks[-1]["passed"])
 
     def test_unlisted_service_file_invalidates_candidate_product_state(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -986,6 +996,37 @@ class DataBoundaryTests(unittest.TestCase):
             plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
             self.assertEqual(plane.candidate_product_state["status"], "invalid")
             self.assertIn("未提交", plane.candidate_product_state["reason"])
+
+    def test_dirty_tracked_code_cannot_prepare_a_candidate_then_be_restored(self):
+        with tempfile.TemporaryDirectory() as temp:
+            candidate, source, _result = self._prepare_fixture(Path(temp))
+            manager_js = candidate / "app" / "c2-5-admin.js"
+            original = manager_js.read_text(encoding="utf-8")
+            manager_js.write_text("window.C25_MANAGER = 'dirty-before-prepare';\n", encoding="utf-8")
+            with patch("c2_5_prepare_candidate_product.builder.build_snapshots", return_value=self._snapshot_payloads()):
+                with self.assertRaisesRegex(ValueError, "未提交"):
+                    prepare_candidate_product(candidate, source, retention_hours=24)
+            manager_js.write_text(original, encoding="utf-8")
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
+            self.assertEqual(plane.candidate_product_state["status"], "ready")
+
+    def test_prepared_static_tree_comes_from_bound_commit_even_if_clean_guard_is_bypassed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            candidate, source, _result = self._prepare_fixture(Path(temp))
+            manager_js = candidate / "app" / "c2-5-admin.js"
+            worktree_bytes = manager_js.read_bytes()
+            committed = subprocess.check_output(["git", "cat-file", "blob", "HEAD:app/c2-5-admin.js"], cwd=candidate)
+            manager_js.write_text("window.C25_MANAGER = 'dirty-before-prepare';\n", encoding="utf-8")
+            with (
+                patch("c2_5_prepare_candidate_product._git_tracked_worktree_is_clean", return_value=True),
+                patch("c2_5_prepare_candidate_product.builder.build_snapshots", return_value=self._snapshot_payloads()),
+            ):
+                result = prepare_candidate_product(candidate, source, retention_hours=24)
+            manager_js.write_bytes(worktree_bytes)
+            staged = Path(result["artifactRoot"]) / "product-state" / "app" / "c2-5-admin.js"
+            self.assertEqual(staged.read_bytes(), committed)
+            plane = C25ControlPlane(project_root=candidate, windows_reader=lambda: [])
+            self.assertEqual(plane.candidate_product_state["status"], "ready")
 
     def test_git_head_must_equal_binding_and_manifest_commit(self):
         with tempfile.TemporaryDirectory() as temp:

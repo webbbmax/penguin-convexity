@@ -335,6 +335,26 @@ def validate_release_manifest(
     )
 
 
+def validate_candidate_product_integrity(repo: Path, declared: Any, checks: list[dict[str, object]]) -> None:
+    expected = (repo / "runtime" / "c2.5" / "candidate-product-state.json").resolve()
+    try:
+        declared_path = (repo / str(declared or "")).resolve()
+        if declared_path != expected or not declared_path.is_file():
+            raise ValueError("候选产品绑定路径缺失或越界")
+        from c2_5_control_plane import _resolve_candidate_product_state
+
+        state, _app_root, _data_root, _runtime_root = _resolve_candidate_product_state(repo)
+        if state.get("status") != "ready":
+            raise ValueError(str(state.get("reason") or state.get("status") or "invalid"))
+        detail = (
+            f"候选产品完整性通过：commit={state.get('verifiedGitHead')} "
+            f"gitBlobFiles={state.get('verifiedCommitAppFileCount')} serviceFiles={state.get('verifiedServiceFileCount')}"
+        )
+        add_check(checks, "CANDIDATE_PRODUCT_INTEGRITY", True, detail)
+    except (ImportError, OSError, ValueError) as error:
+        add_check(checks, "CANDIDATE_PRODUCT_INTEGRITY", False, f"候选产品完整性失败：{error}")
+
+
 def run_secret_scan(repo: Path, checks: list[dict[str, object]]) -> None:
     scanner = Path(__file__).with_name("d0_secret_scan.py")
     result = subprocess.run(
@@ -408,6 +428,9 @@ def evaluate(config: dict[str, Any]) -> dict[str, Any]:
         add_check(checks, "CANDIDATE_FIXED", matches, "验收与发布候选提交一致" if matches else "候选、验收或发布提交不一致")
         clean = not git(repo, "status", "--porcelain=v1").stdout.strip()
         add_check(checks, "CANDIDATE_CLEAN", clean, "候选工作区干净" if clean else "候选工作区存在未提交变化")
+        requirements_lock_path = str((config.get("requirementsLock") or {}).get("path") or "")
+        if Path(requirements_lock_path).name == "C2.5_REQUIREMENTS_LOCK.json":
+            validate_candidate_product_integrity(repo, config.get("candidateProductState"), checks)
         validate_evidence(repo, config.get("tier0Evidence"), "TIER0", "Tier 0 证据", checks)
         validate_traceability(
             repo,

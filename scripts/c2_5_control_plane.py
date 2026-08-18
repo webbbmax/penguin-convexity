@@ -14,7 +14,7 @@ import sqlite3
 import subprocess
 from collections import Counter
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Iterable
 
 from c2_2_runtime import pid_is_running
@@ -139,13 +139,53 @@ def _git_tracked_worktree_is_clean(project_root: Path) -> bool:
     return result.returncode == 0 and not result.stdout.strip()
 
 
+def _git_committed_app_hashes(project_root: Path, commit: str) -> dict[str, str]:
+    result = subprocess.run(
+        ["git", "ls-tree", "-r", "-z", "--full-tree", commit, "--", "app"],
+        cwd=project_root,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise ValueError("无法从绑定提交枚举app Git tree")
+    files: dict[str, str] = {}
+    for record in result.stdout.split(b"\0"):
+        if not record:
+            continue
+        try:
+            metadata, raw_path = record.split(b"\t", 1)
+            mode, object_type, object_id = metadata.split(b" ", 2)
+            name = PurePosixPath(raw_path.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError) as error:
+            raise ValueError("候选Git tree记录无法解析") from error
+        if not name.parts or name.parts[0] != "app" or object_type != b"blob" or mode not in {b"100644", b"100755"}:
+            raise ValueError(f"候选Git tree包含非普通app文件：{name.as_posix()}")
+        relative = PurePosixPath(*name.parts[1:])
+        if not relative.parts or relative.is_absolute() or any(part in {"", ".", ".."} for part in relative.parts):
+            raise ValueError(f"候选Git tree路径无效：{relative.as_posix()}")
+        if relative.name.endswith("-snapshot.js"):
+            continue
+        blob = subprocess.run(
+            ["git", "cat-file", "blob", object_id.decode("ascii")],
+            cwd=project_root,
+            capture_output=True,
+            check=False,
+        )
+        if blob.returncode != 0:
+            raise ValueError(f"无法读取候选Git blob：{relative.as_posix()}")
+        files[relative.as_posix()] = hashlib.sha256(blob.stdout).hexdigest()
+    if not files:
+        raise ValueError("绑定提交中没有可服务的app文件")
+    return files
+
+
 def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any], Path | None, Path | None, Path | None]:
     binding_path = project_root / "runtime" / "c2.5" / "candidate-product-state.json"
     if not binding_path.is_file():
         return {"status": "not_configured", "bindingPath": str(binding_path)}, None, None, None
     try:
         binding = json.loads(binding_path.read_text(encoding="utf-8"))
-        if binding.get("schemaVersion") != "c2.5-candidate-product-state-v2":
+        if binding.get("schemaVersion") != "c2.5-candidate-product-state-v3":
             raise ValueError("候选产品状态版本无效")
         head = _git_head(project_root)
         if not _git_tracked_worktree_is_clean(project_root):
@@ -165,7 +205,7 @@ def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any]
         if file_sha256(manifest_path) != binding.get("manifestSha256"):
             raise ValueError("候选产品清单哈希校验失败")
         manifest = load_json(manifest_path, {})
-        if manifest.get("schemaVersion") != "c2.5-candidate-product-manifest-v2":
+        if manifest.get("schemaVersion") != "c2.5-candidate-product-manifest-v3":
             raise ValueError("候选产品清单版本无效")
         commits = {head, str(binding.get("candidateCommit") or ""), str(manifest.get("candidateCommit") or "")}
         if len(commits) != 1:
@@ -198,6 +238,17 @@ def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any]
         mismatched = [name for name, expected_hash in service_files.items() if actual_files.get(name) != expected_hash]
         if mismatched:
             raise ValueError(f"候选服务文件校验失败：{mismatched[0]}")
+        committed_app_hashes = _git_committed_app_hashes(project_root, head)
+        commit_app_tree_sha256 = stable_digest(committed_app_hashes)
+        if manifest.get("commitAppFiles") != committed_app_hashes:
+            raise ValueError("候选非快照服务树与绑定提交Git blob不一致")
+        if manifest.get("commitAppFileCount") != len(committed_app_hashes) or binding.get("commitAppFileCount") != len(committed_app_hashes):
+            raise ValueError("候选Git blob文件数量不一致")
+        if manifest.get("commitAppTreeSha256") != commit_app_tree_sha256 or binding.get("commitAppTreeSha256") != commit_app_tree_sha256:
+            raise ValueError("候选Git blob文件树哈希不一致")
+        actual_non_snapshot = {name: digest for name, digest in actual_files.items() if not PurePosixPath(name).name.endswith("-snapshot.js")}
+        if actual_non_snapshot != committed_app_hashes:
+            raise ValueError("候选实际服务文件与绑定提交Git blob不一致")
         source_root = Path(str(binding["sourceProjectRoot"])).resolve()
         if source_root != Path(str(manifest.get("sourceProjectRoot") or "")).resolve():
             raise ValueError("候选绑定与产品清单的正式来源不一致")
@@ -220,6 +271,8 @@ def _resolve_candidate_product_state(project_root: Path) -> tuple[dict[str, Any]
             "verifiedGitHead": head,
             "verifiedTrackedWorktreeClean": True,
             "verifiedServiceFileCount": len(service_files),
+            "verifiedCommitAppFileCount": len(committed_app_hashes),
+            "verifiedCommitAppTreeSha256": commit_app_tree_sha256,
         }, snapshot_root, data_root, runtime_root
     except (KeyError, OSError, ValueError, json.JSONDecodeError) as error:
         return {
