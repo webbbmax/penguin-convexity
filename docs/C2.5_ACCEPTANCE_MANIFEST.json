@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "c2.5-independent-acceptance-manifest-v1",
+  "release": "C2.5",
+  "name": "管理者控制面",
+  "status": "passed",
+  "acceptedAt": "2026-08-18T13:03:00+08:00",
+  "acceptedCandidateCommit": "887bdaf35e3c93c05b688745264d9cc1c68874d6",
+  "baselineCommit": "becd256b170b0a3a1a45de0b8c4f4a426eb9065a",
+  "requirements": {
+    "total": 92,
+    "passed": 92,
+    "failed": 0,
+    "tier0Failures": 0,
+    "tier1Failures": 0
+  },
+  "candidateProduct": {
+    "gitBlobFiles": 89,
+    "serviceFiles": 127,
+    "trackingObjects": 18574,
+    "ruleReplayInputs": 18574,
+    "currentAndRollbackExecutorDifferences": 0,
+    "snapshotsComplete": "5/5"
+  },
+  "verification": {
+    "d0AcceptanceGate": "13/13 passed",
+    "affectedAutomation": "147/147 passed",
+    "highRiskRecoveryRollbackAndJ05": "8/8 passed",
+    "routes": "40/40 passed",
+    "c25GetApis": "8/8 passed",
+    "managementPostExecuted": false,
+    "databaseQuickCheck": "2/2 ok",
+    "foreignKeyErrors": 0,
+    "formalDatabaseWrites": 0,
+    "slowRenderOwnership": "c25_only_no_legacy_renderer",
+    "desktopLifecycle": "passed",
+    "singleInstance": "passed",
+    "windowAndInput": "passed",
+    "dpi": "100_125_150_passed",
+    "reducedMotion": "passed"
+  },
+  "productTreesAtAcceptedCandidate": {
+    "app": "c56aa911d53d5bfa2b7b59a9fa4bc28c43e872ac",
+    "scripts": "70940750a24e158fcb3c81d0143d35741801f1e7",
+    "fixtures": "cdf28f12acb3bdbc41a68f84a61622cd8f710596",
+    "desktopHost": "e98a16ec0d8a7fed32029b4e3f9ae98fe45a6170"
+  },
+  "sealedRuntimeEvidence": {
+    "path": "runtime/temp-artifacts/c2-5-independent-final-acceptance-887bdaf-20260818T041825Z-710f2257",
+    "desktopEvidenceSha256": "ef4e25781a71dc46eae5d93cbd031db604f827d2ebea4a11c6ff1a354e7972ea",
+    "browserSlowRenderEvidenceSha256": "fbf73599da8ca32a1163f4cf6215afae62c202432d49a0a4c13a8830ae487fc8",
+    "finalSummarySha256": "27c019f3916b30ca9df47b1a162ee469037ce655f1fe079d3236503bf71a2b77"
+  },
+  "restoration": {
+    "displayScale": "restored_to_original_100_percent",
+    "animationEffects": "restored_to_original_on",
+    "candidateWindowState": "restored",
+    "desktopHostsRemaining": 0,
+    "port8766ListenersRemaining": 0,
+    "port8877ListenersRemaining": 0
+  },
+  "releaseBoundary": "Independent acceptance did not merge, tag, push, switch the formal entry, execute management POST, or write formal business databases."
+}

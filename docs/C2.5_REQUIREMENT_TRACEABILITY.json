@@ -45,8 +45,8 @@
         "C2.5-A03"
       ],
       "evidenceExpected": "候选完整提交哈希和git status",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "A04",
@@ -1182,8 +1182,8 @@
         "C2.5-I01"
       ],
       "evidenceExpected": "真实桌面录像截图和路径日志",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "I02",
@@ -1194,8 +1194,8 @@
         "C2.5-I02"
       ],
       "evidenceExpected": "真实桌面截图和路径日志",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "I03",
@@ -1206,8 +1206,8 @@
         "C2.5-I03"
       ],
       "evidenceExpected": "三档系统缩放截图",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "I04",
@@ -1218,8 +1218,8 @@
         "C2.5-I04"
       ],
       "evidenceExpected": "真实鼠标交互记录",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "I05",
@@ -1230,8 +1230,8 @@
         "C2.5-I05"
       ],
       "evidenceExpected": "真实键盘路径记录",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "I06",
@@ -1242,8 +1242,8 @@
         "C2.5-I06"
       ],
       "evidenceExpected": "Windows窗口行为记录",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "I07",
@@ -1254,8 +1254,8 @@
         "C2.5-I07"
       ],
       "evidenceExpected": "真实桌面生命周期记录",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "I08",
@@ -1266,8 +1266,8 @@
         "C2.5-I08"
       ],
       "evidenceExpected": "减少动画系统设置下的路径证据",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "J01",
@@ -1323,7 +1323,7 @@
         "C2.5-J04"
       ],
       "evidenceExpected": "固定候选上的回滚测试",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "scripts/test_c2_5_control_plane.py::ControlSafetyTests.test_frequency_and_future_pause_rollback_restore_explicit_audit_before_value",
         "docs/C2.5_FIXED_CANDIDATE_PRE_REVIEW.md"
@@ -1338,7 +1338,7 @@
         "C2.5-J05"
       ],
       "evidenceExpected": "规则版本回滚和历史保留测试",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_rule_approval_and_explicit_version_rollback_preserve_history",
         "scripts/test_c2_5_control_plane.py::RuleTransparencyTests.test_overall_affected_set_is_exact_union_of_every_registered_rule",
@@ -1363,8 +1363,8 @@
         "C2.5-J06"
       ],
       "evidenceExpected": "故障与重启恢复测试",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     },
     {
       "id": "J07",
@@ -1375,8 +1375,8 @@
         "C2.5-J07"
       ],
       "evidenceExpected": "临时产物保留策略报告",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["docs/C2.5_ACCEPTANCE_MANIFEST.json", "docs/C2.5_FINAL_ACCEPTANCE.md"]
     }
   ]
 }

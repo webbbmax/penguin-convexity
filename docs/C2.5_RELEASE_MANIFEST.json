@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "c2.5-release-manifest-v1",
+  "release": "C2.5",
+  "name": "管理者控制面",
+  "status": "released",
+  "releasedAt": "2026-08-18T13:13:39+08:00",
+  "userAuthorization": "授权创建 C2.5 元数据收口候选并定点复验后发布",
+  "releaseTag": "c2.5-manager-control-plane-20260818",
+  "formalBranch": "main",
+  "remote": {
+    "name": "origin",
+    "branch": "main",
+    "url": "https://github.com/webbbmax/penguin-convexity.git"
+  },
+  "git": {
+    "baselineCommit": "becd256b170b0a3a1a45de0b8c4f4a426eb9065a",
+    "acceptedImplementationCandidate": "887bdaf35e3c93c05b688745264d9cc1c68874d6",
+    "releaseCommitBinding": "the Git commit containing this manifest",
+    "productTreesMustEqualAcceptedCandidate": true
+  },
+  "acceptance": {
+    "requirements": "92/92 passed",
+    "d0AcceptanceGate": "13/13 passed",
+    "affectedAutomation": "147/147 passed",
+    "highRiskRecoveryRollbackAndJ05": "8/8 passed",
+    "routes": "40/40 passed",
+    "c25GetApis": "8/8 passed",
+    "realDesktop": "passed",
+    "dpiAndReducedMotion": "passed",
+    "formalDatabaseWrites": 0,
+    "managementPostExecuted": false
+  },
+  "productTreesAtAcceptedCandidate": {
+    "app": "c56aa911d53d5bfa2b7b59a9fa4bc28c43e872ac",
+    "scripts": "70940750a24e158fcb3c81d0143d35741801f1e7",
+    "fixtures": "cdf28f12acb3bdbc41a68f84a61622cd8f710596",
+    "desktopHost": "e98a16ec0d8a7fed32029b4e3f9ae98fe45a6170"
+  },
+  "coreArtifacts": [
+    {"path":"docs/C2.5_REQUIREMENTS_LOCK.json","bytes":9774,"sha256":"5b92ebb9107b240de73417957e79d22405bbdb2817356c252f9a14c9e5eea8ae"},
+    {"path":"docs/C2.5_ACCEPTANCE_MANIFEST.json","bytes":2389,"sha256":"3ee3fc31288f74b99027989ff5052a29c3e06d6243ea8bf7829a455235fc52d1"},
+    {"path":"docs/C2.5_FINAL_ACCEPTANCE.md","bytes":2888,"sha256":"9332cc438b54edac33bd12e96cf00fdea35c3df5022e812265021fbf7552f6be"},
+    {"path":"docs/C2.5_REQUIREMENT_TRACEABILITY.json","bytes":46920,"sha256":"e55b6c654ee7031d597ded8892cab90741cf9f295b67dde9d2ace29d1ac91245"},
+    {"path":"docs/C2.5_PHASE.json","bytes":3637,"sha256":"544015c19fd9d978a3837089142e1fa17ce437bc745f893aa7967e9796737d8c"},
+    {"path":"docs/CURRENT_STATE.md","bytes":3864,"sha256":"b143ebd71d8f08002d7fa2c3081fefab205a4c762edb09d0d8cdedbb36f85f5d"},
+    {"path":"docs/STATUS.md","bytes":50188,"sha256":"b34e4b3422340b3bd286293e6674a42bdd5a4f597c2736e457ada5c2da34edb6"},
+    {"path":"docs/MIGRATION_MANIFEST.json","bytes":35720,"sha256":"94e4c55238f61dfc51bca2813dd0c49b41a5ca7a9f7525db942ada73d5edaeaa"},
+    {"path":"app/c2-5-admin.js","bytes":57534,"sha256":"ff72af1ffe2286ca1752a35482a04f18f1b73e1c47cf488f995bdc69e38a5db0"},
+    {"path":"app/c2-5.css","bytes":16959,"sha256":"417519989ff569c2c2bf6da6bcd296b0cf1224972d43a16191f721812040a2cb"},
+    {"path":"app/workbench-nav.js","bytes":10136,"sha256":"0a47bbd76a52e48e9e7b194f78ea56bfc1124454bc05cda5a9d3093a424c4079"},
+    {"path":"scripts/c2_5_control_plane.py","bytes":74523,"sha256":"79a623d3cd9f3758b4c827749b8dba363ebc5d3bf855508e8d9eaba8f41300ea"},
+    {"path":"scripts/c2_5_control.py","bytes":42587,"sha256":"f17c3e44d40344ccccded6a41dffedc759e8bc2cde89b00e23be9b96e73e9552"},
+    {"path":"scripts/c2_5_rules.py","bytes":36761,"sha256":"f63e1981d629b12c77389b2c2d93d89fe3d7b0bd6b5b0d773d1c2724e7c4846d"},
+    {"path":"scripts/c2_5_rule_governance.py","bytes":15293,"sha256":"8a598eb6162096cc5f6edc10d8eda5d660ed3bc041a7f8ef17f2f99f330e0cbf"},
+    {"path":"scripts/c2_5_prepare_candidate_product.py","bytes":11644,"sha256":"b2a1c2ad1ba8ce0b223813b8ec810dc328675f32ad30e1d7fa779efef96bcb29"},
+    {"path":"scripts/serve_local.py","bytes":34279,"sha256":"5847649d22d3040055ff00bec376950e24aa25f72728616115157ef02298174a"},
+    {"path":"desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe","bytes":433152,"sha256":"6b4783121c8671ba3b2a021dbdc0268c0646de2c99fcb503741e6c9ad60bf868"}
+  ],
+  "inheritance": {
+    "c24Routes": 29,
+    "approvedRouteDeletions": 0,
+    "newManagerRoutes": 11,
+    "singleScheduler": true,
+    "schedulerChanged": false,
+    "databaseSchemaChanged": false,
+    "businessRulesChanged": false,
+    "secondBusinessDatabaseCreated": false,
+    "secondCSharpBusinessChannelCreated": false
+  },
+  "officialDesktopEntry": {
+    "path": "C:/Users/Donutfi/Desktop/企鹅投研-凸性.lnk",
+    "target": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "containerInheritedFrom": "C2.3",
+    "experienceRelease": "C2.5"
+  },
+  "rollback": {
+    "codeOnly": true,
+    "target": "becd256b170b0a3a1a45de0b8c4f4a426eb9065a",
+    "databaseRollback": false,
+    "schedulerSettingRollback": false,
+    "requiresUserAuthorization": true
+  },
+  "knownBoundary": "C2.5 is a single-user, single-directory desktop release. Runtime data continues to change under the existing scheduler; this release does not certify complete six-chain discovery coverage or investment correctness."
+}
