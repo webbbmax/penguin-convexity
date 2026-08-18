@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "c2.5-f01-hotfix-release-manifest-v1",
+  "release": "C2.5",
+  "maintenance": "F01 manager overview latency and failure feedback",
+  "status": "released",
+  "releasedAt": "2026-08-18T14:52:39+08:00",
+  "userAuthorization": "授权对 5b0cac9 执行 C2.5 F01 独立终验并发布",
+  "releaseTag": "c2.5-f01-manager-overview-hotfix-20260818",
+  "formalBranch": "main",
+  "remote": {
+    "name": "origin",
+    "branch": "main",
+    "url": "https://github.com/webbbmax/penguin-convexity.git"
+  },
+  "git": {
+    "releaseBaselineCommit": "c979fba77028ee694042ebcbe0740d1fbb2c8234",
+    "acceptedProductCandidate": "5b0cac9a7fe3a26be9d9d9b8951e2a1e84ac83ca",
+    "releaseCommitBinding": "the Git commit containing this manifest",
+    "productFilesMustEqualAcceptedCandidate": true
+  },
+  "acceptance": {
+    "d0AcceptanceGate": "passed",
+    "c25DirectAffected": "67/67 passed",
+    "c24DirectDependencies": "49/49 passed",
+    "routes": "40/40 passed",
+    "realDesktopOverviewReadyMs": 1570,
+    "forcedTimeoutFeedbackMs": 8546,
+    "safeRetryReadyMs": 1322,
+    "databaseQuickCheck": "2/2 ok",
+    "foreignKeyErrors": 0,
+    "formalManagementPostExecuted": false
+  },
+  "coreArtifacts": [
+    {"path":"app/c2-5-admin.js","bytes":58343,"sha256":"eead760cce97998294a5fa72adb2c514e588821342613b78214dde4152e2388f"},
+    {"path":"scripts/c2_5_control_plane.py","bytes":78658,"sha256":"811cb6a36f2c4455fbc0e3bd2fbcc7c004ae3e958f58ddb86bd1dca77ba0c2d6"},
+    {"path":"scripts/test_c2_5_experience.py","bytes":15688,"sha256":"bb7b2834a42bb9261d379ba4ba039183552bc4281e0805f747aed1b0622bebd3"},
+    {"path":"docs/C2.5_F01_HOTFIX_ACCEPTANCE_MANIFEST_20260818.json","bytes":1873,"sha256":"9341bace9edc088d637159227f177ba9b551f8f770c43f8ce084a7a1b6396fc1"},
+    {"path":"docs/C2.5_F01_HOTFIX_FINAL_ACCEPTANCE_20260818.md","bytes":2412,"sha256":"c8522d5930f8f6b05c915de1b53378f223c9146317908c0e335475fd3aa8e8cb"},
+    {"path":"docs/C2.5_PHASE.json","bytes":4336,"sha256":"47725c367bc075fd9905e1de4f55b9b2f23122bc182e8895f66d9a9b4e7816fb"},
+    {"path":"docs/CURRENT_STATE.md","bytes":4423,"sha256":"e14019dc2ae308a2fe680fbd46aa45962c9c11b4d8d5ba61ead586d260478487"},
+    {"path":"docs/STATUS.md","bytes":51347,"sha256":"292f058993deae354b72ac00dd2212b867b65e127e6f2ea4773f4364c03e4b89"},
+    {"path":"docs/MIGRATION_MANIFEST.json","bytes":36375,"sha256":"9e7dcb0cb055267fbfef9a8ca43abd6b61641eee1f33e06f57d900799708ff12"},
+    {"path":"docs/HISTORY_INDEX.md","bytes":2566,"sha256":"4d7e3f5771330a8980ada1c56f781ad1f05ad0885f7f085e5ae8af49f83f91fd"}
+  ],
+  "inheritance": {
+    "c24Routes": 29,
+    "newManagerRoutes": 11,
+    "approvedRouteDeletions": 0,
+    "schedulerChanged": false,
+    "databaseSchemaChanged": false,
+    "businessRulesChanged": false,
+    "desktopContainerBinaryChanged": false
+  },
+  "officialDesktopEntry": {
+    "path": "C:/Users/Donutfi/Desktop/企鹅投研-凸性.lnk",
+    "target": "desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "experienceRelease": "C2.5 F01 hotfix"
+  },
+  "rollback": {
+    "codeOnly": true,
+    "target": "c979fba77028ee694042ebcbe0740d1fbb2c8234",
+    "databaseRollback": false,
+    "schedulerSettingRollback": false,
+    "requiresUserAuthorization": true
+  },
+  "knownBoundary": "This maintenance release fixes manager overview latency and failure feedback only. It does not certify six-chain discovery coverage or investment correctness."
+}

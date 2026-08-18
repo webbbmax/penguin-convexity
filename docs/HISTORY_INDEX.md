@@ -12,6 +12,7 @@
 | 当前产品冻结 | `docs/C2.5_REQUIREMENTS_LOCK.json` | C2.5 管理者控制面唯一正式范围 |
 | 当前产品发布 | `docs/C2.5_RELEASE_MANIFEST.json` | C2.5 发布证据 |
 | 当前产品终验 | `docs/C2.5_ACCEPTANCE_MANIFEST.json`、`docs/C2.5_FINAL_ACCEPTANCE.md` | C2.5 92/92 独立终验证据 |
+| C2.5 F01 热修 | `docs/C2.5_F01_HOTFIX_ACCEPTANCE_MANIFEST_20260818.json`、`docs/C2.5_F01_HOTFIX_FINAL_ACCEPTANCE_20260818.md`、`docs/C2.5_F01_HOTFIX_RELEASE_MANIFEST_20260818.json` | 管理者总览十秒要求、超时失败反馈与安全重试 |
 | 当前产品继承 | `docs/C2.4_INHERITANCE_MANIFEST.json` | 29 个角色路由零删除基线 |
 | 上一产品发布 | `docs/C2.4_RELEASE_MANIFEST.json` | C2.4 发布与回滚基线 |
 | C2.5任务清单 | `docs/C2.5_TASK_INVENTORY.json` | 现役、旧版、隐藏和按需入口登记 |

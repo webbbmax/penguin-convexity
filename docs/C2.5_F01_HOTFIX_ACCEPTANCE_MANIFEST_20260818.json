@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "c2.5-f01-hotfix-independent-acceptance-v1",
+  "release": "C2.5",
+  "maintenance": "F01 manager overview latency and failure feedback",
+  "status": "passed",
+  "acceptedAt": "2026-08-18T14:52:39+08:00",
+  "acceptedProductCandidateCommit": "5b0cac9a7fe3a26be9d9d9b8951e2a1e84ac83ca",
+  "releaseBaselineCommit": "c979fba77028ee694042ebcbe0740d1fbb2c8234",
+  "scope": {
+    "changedFiles": [
+      "app/c2-5-admin.js",
+      "scripts/c2_5_control_plane.py",
+      "scripts/test_c2_5_experience.py"
+    ],
+    "businessRulesChanged": false,
+    "schedulerChanged": false,
+    "databaseSchemaChanged": false,
+    "managementPostExecuted": false
+  },
+  "verification": {
+    "c25DirectAffected": "67/67 passed",
+    "c24DirectDependencies": "49/49 passed",
+    "routes": "40/40 passed",
+    "databaseQuickCheck": "2/2 ok",
+    "foreignKeyErrors": 0,
+    "d0AcceptanceGate": "passed",
+    "controlPlaneColdMs": 3832,
+    "controlPlaneWarmMs": [882, 848, 886],
+    "realDesktopOverviewReadyMs": 1570,
+    "forcedTimeoutFeedbackMs": 8546,
+    "safeRetryReadyMs": 1322,
+    "singleInstance": "passed",
+    "cleanup": "desktop 0, port 8766 listeners 0, port 8877 listeners 0"
+  },
+  "legacyTestDisposition": {
+    "status": "not_applicable_not_product_failure",
+    "explanation": "旧C2.4快照与真实样本套件依赖D0明确禁止复制到代码worktree的正式数据库和历史报告；另一个旧断言固定七组导航，已被C2.5冻结的八类管理信息域替代。当前合同、正式库mode=ro检查、40路由和真实桌面作为替代证据。"
+  },
+  "sealedEvidence": "runtime/temp-artifacts/c2-5-f01-independent-acceptance-20260818T063816Z-ff37b963",
+  "releaseBoundary": "本清单确认固定产品候选通过独立终验；元数据收口提交只能增加本次验收和发布证据，不得改变三个已验收产品文件。"
+}

@@ -53,6 +53,17 @@
   "finalAcceptanceReport": "docs/C2.5_FINAL_ACCEPTANCE.md",
   "releaseManifest": "docs/C2.5_RELEASE_MANIFEST.json",
   "userReleaseAuthorization": "授权创建 C2.5 元数据收口候选并定点复验后发布",
+  "latestMaintenance": {
+    "name": "F01 manager overview latency and failure feedback",
+    "status": "independent_acceptance_passed_release_authorized",
+    "acceptedProductCandidateCommit": "5b0cac9a7fe3a26be9d9d9b8951e2a1e84ac83ca",
+    "rollbackCommit": "c979fba77028ee694042ebcbe0740d1fbb2c8234",
+    "releaseTag": "c2.5-f01-manager-overview-hotfix-20260818",
+    "acceptanceManifest": "docs/C2.5_F01_HOTFIX_ACCEPTANCE_MANIFEST_20260818.json",
+    "finalAcceptanceReport": "docs/C2.5_F01_HOTFIX_FINAL_ACCEPTANCE_20260818.md",
+    "releaseManifest": "docs/C2.5_F01_HOTFIX_RELEASE_MANIFEST_20260818.json",
+    "userAuthorization": "授权对 5b0cac9 执行 C2.5 F01 独立终验并发布"
+  },
   "allowedNextAction": "只允许C2.5冻结范围内维护；下一产品版本、六链修复或规则变化须重新规划、冻结和授权。",
   "forbiddenNextActions": [
     "在未获开发授权时创建C2.5实现worktree或修改产品代码",
