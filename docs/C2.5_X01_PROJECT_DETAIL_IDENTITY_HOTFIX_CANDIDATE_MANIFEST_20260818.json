@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "c2.5-x01-project-detail-identity-hotfix-candidate-v1",
+  "status": "development_self_test_passed_waiting_independent_acceptance",
+  "release": "C2.5",
+  "issueId": "X01",
+  "preparedDate": "2026-08-18",
+  "releasedBaseline": {
+    "commit": "36c974061d616628b1a10e27670f207d29e51f79",
+    "tag": "c2.5-f01-manager-overview-hotfix-20260818"
+  },
+  "candidate": {
+    "branch": "codex/c2-5-x01-project-detail-hotfix-20260818",
+    "implementationCommit": "8c7cb6a282577100a122a2145497665cb73ca2bb",
+    "handoffCommitResolution": "git rev-parse HEAD at handoff; must equal runtime/c2.5/candidate-product-state.json.candidateCommit",
+    "fixedProductAssetSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+    "fixedProductAssetPath": "c2-4-front.js",
+    "published": false,
+    "merged": false,
+    "tagged": false
+  },
+  "rootCause": {
+    "path": "app/c2-4-front.js",
+    "function": "renderDetail",
+    "class": "null_legacy_id_matches_first_null_project_id_before_asset_id_target",
+    "firstWrongMatch": "OpenServ",
+    "potentiallyAffectedPublicItems": 69,
+    "totalPublicItems": 70,
+    "cacheOrSnapshotRootCause": false
+  },
+  "identityCases": [
+    {
+      "canonicalName": "Wrapped Gonka",
+      "assetId": "candidate-asset-bd53294c98f8c37a197742fb"
+    },
+    {
+      "canonicalName": "cap",
+      "assetId": "project-asset-a4eb1921402d669b"
+    },
+    {
+      "canonicalName": "OpenServ",
+      "assetId": "candidate-asset-362fd5497aca71340196d64b"
+    },
+    {
+      "canonicalName": "HALO",
+      "assetId": "candidate-asset-d2457f4c38c621199e1502c9"
+    }
+  ],
+  "changedFiles": [
+    {
+      "path": "app/c2-4-front.js",
+      "role": "assetId-exclusive detail identity lookup with explicit legacy id fallback",
+      "workingTreeSha256": "7d4450ff87224b60ca9b3cd5b2fffbd27e4c0af1cccdeaa922aa75d65a0cd5bc"
+    },
+    {
+      "path": "scripts/test_c2_5_x01_project_detail_identity.js",
+      "role": "70-item card-navigation-detail identity regression",
+      "workingTreeSha256": "a0c9cd8b80f0b8eb05e802db78b688f152287e6e8f5236bb7f196ef590afd3d2"
+    },
+    {
+      "path": "docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_DEVELOPMENT_20260818.md",
+      "role": "independent hotfix development evidence"
+    },
+    {
+      "path": "docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_CANDIDATE_MANIFEST_20260818.json",
+      "role": "candidate scope and acceptance handoff"
+    }
+  ],
+  "verification": {
+    "x01Identity": "70/70 passed",
+    "requiredVisibleCases": "4/4 passed",
+    "c2_5Direct": "66/66 passed",
+    "c2_4RulesAndTracking": "41/41 passed",
+    "c2_4InheritedStatic": "12/12 passed",
+    "c2_5Routes": "40/40 HTTP 200",
+    "desktopHost": "12/12 passed",
+    "d0GateUnit": "15/15 passed",
+    "candidateProductReadonlyProbe": "passed",
+    "formalDatabaseReadonlyProbe": "passed; 2/2 quick_check ok; foreign-key violations 0; bytes and mtime unchanged",
+    "manualWpfWebView2": "passed before and after desktop refresh; return filter, page and scroll context restored"
+  },
+  "evidenceRoot": "runtime/temp-artifacts/C2-5-X01-20260818-20260818T090830Z-6ca03f47",
+  "rollbackCommit": "36c974061d616628b1a10e27670f207d29e51f79",
+  "scopeExclusions": [
+    "business rules",
+    "scores",
+    "actions",
+    "L0-L5",
+    "databases",
+    "tasks",
+    "scheduler",
+    "other chain results",
+    "40-route inventory",
+    "C2.6 planning",
+    "published C2.5 locks and evidence",
+    "formal main, runtime, entry and shortcuts"
+  ],
+  "nextGate": "independent_acceptance_then_separate_user_release_authorization"
+}
