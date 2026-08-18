@@ -15,6 +15,13 @@
   if (!topbar) return;
   window.PENGUIN_CONVEXITY_C24_TAKEOVER_PENDING = true;
   const currentPage = location.pathname.split("/").pop() || "workbench.html";
+  const c25OwnedPages = new Set([
+    "workbench.html", "task-ledger.html", "task-detail.html", "new-token-update.html", "update-center.html",
+    "candidate-production.html", "maintenance-jobs.html", "legacy-jobs.html", "on-demand-tools.html",
+    "chain-source-health.html", "rule-transparency.html", "decision-trace.html", "snapshot-handoffs.html", "run-audit.html",
+  ]);
+  const c25OwnsCurrentPage = c25OwnedPages.has(currentPage);
+  document.documentElement.dataset.adminRendererOwner = c25OwnsCurrentPage ? "c25" : "c24";
   const groups = [
     {
       label: "管理者总览",
@@ -107,6 +114,7 @@
   });
 
   const loadC24 = () => {
+    if (c25OwnsCurrentPage) return;
     if (document.querySelector('script[data-c24-admin-app]')) return;
     const c24Style = document.createElement("link");
     c24Style.rel = "stylesheet";

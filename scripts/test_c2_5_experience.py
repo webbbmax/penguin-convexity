@@ -70,6 +70,34 @@ class RouteAndShellTests(unittest.TestCase):
         self.assertIn("savedReturn.url", source)
         self.assertIn("scrollY", source)
 
+    def test_c25_pages_have_one_renderer_during_slow_reads(self):
+        nav = (PROJECT_ROOT / "app" / "workbench-nav.js").read_text(encoding="utf-8")
+        c24 = (PROJECT_ROOT / "app" / "c2-4-admin.js").read_text(encoding="utf-8")
+        c25 = (PROJECT_ROOT / "app" / "c2-5-admin.js").read_text(encoding="utf-8")
+        match = re.search(r"const c25OwnedPages = new Set\(\[(.*?)\]\);", nav, re.S)
+        self.assertIsNotNone(match)
+        owned = set(re.findall(r'"([^"]+\.html)"', match.group(1)))
+        self.assertEqual(owned, {
+            "workbench.html", "task-ledger.html", "task-detail.html", "new-token-update.html",
+            "update-center.html", "candidate-production.html", "maintenance-jobs.html",
+            "legacy-jobs.html", "on-demand-tools.html", "chain-source-health.html",
+            "rule-transparency.html", "decision-trace.html", "snapshot-handoffs.html", "run-audit.html",
+        })
+        self.assertIn('document.documentElement.dataset.adminRendererOwner = c25OwnsCurrentPage ? "c25" : "c24"', nav)
+        self.assertIn("if (c25OwnsCurrentPage) return;", nav)
+        self.assertIn('if (document.documentElement.dataset.adminRendererOwner === "c25") return;', c24)
+        self.assertIn('showLoading("规则透明中心"', c25)
+        self.assertIn('showLoading("数据快照与交接"', c25)
+        self.assertIn("正在读取判定链。", c25)
+        for name, loading_copy in {
+            "rule-transparency.html": "正在分开读取冻结基线、当前有效规则、活动覆盖和历史版本。",
+            "decision-trace.html": "输入稳定 assetId 后读取完整判定链。",
+            "snapshot-handoffs.html": "正在读取生产者、消费者、对象数、数据时间与校验。",
+        }.items():
+            html = (PROJECT_ROOT / "app" / name).read_text(encoding="utf-8")
+            self.assertIn(loading_copy, html, name)
+            self.assertNotIn("现役主干功能", html, name)
+
 
 class DesignSystemTests(unittest.TestCase):
     def setUp(self):

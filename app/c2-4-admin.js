@@ -16,6 +16,7 @@
     return "已保存到最近一个安全断点";
   };
   const page = location.pathname.split("/").pop() || "workbench.html";
+  if (document.documentElement.dataset.adminRendererOwner === "c25") return;
   const main = $("main");
   if (!main) return;
   main.className = "c24-admin-main";

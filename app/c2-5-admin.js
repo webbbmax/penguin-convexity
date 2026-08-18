@@ -120,6 +120,10 @@
     return main;
   }
 
+  function showLoading(title, intro, message) {
+    setMain(`${pageHeader(title, intro, null, new Date().toISOString())}<section class="c25-empty" role="status" aria-live="polite">${esc(message)}</section>`);
+  }
+
   function errorPage(title, error) {
     setMain(`${pageHeader(title, "页面只读取权威状态；读取失败时不会回退为乐观状态。", null, new Date().toISOString())}<section class="c25-error" role="alert"><strong>管理状态加载失败</strong><p>发生了什么：${esc(error.message || error)}</p><p>影响什么：当前页面无法证明系统真实状态，所有高影响操作保持不可用。</p><p>下一步：检查本地服务与任务状态后刷新页面。</p></section>`);
   }
@@ -288,6 +292,7 @@
   }
 
   async function renderRules() {
+    showLoading("规则透明中心", "冻结基线、当前有效规则、活动覆盖和历史版本分开读取。", "正在读取规则、版本与逐资产影响；加载期间不显示旧版通用结论。");
     const data = await requestJson("/rules");
     const replay = data.replay || {};
     const replaySets = data.replaySets || {};
@@ -324,6 +329,7 @@
   }
 
   async function renderSnapshots() {
+    showLoading("数据快照与交接", "生产者、消费者、对象数、数据时间和校验逐项读取。", "正在读取快照交接；加载期间保留当前页面责任，不显示旧版通用结论。");
     const data = await requestJson("/snapshots");
     const flow = data.snapshots.map((row) => `<article data-complete="${row.complete}"><span class="c25-eyebrow">${esc(row.producerTaskId)}</span><h3>${esc(row.snapshotId)}</h3><p>${row.complete ? "完整原子快照" : "交接失败，保留上一份完整快照"}</p><p>${esc(fmtTime(row.dataAsOf))} · ${esc(fmtValue(row.objectCount, "对象数未知"))}</p></article>`).join("");
     setMain(`${pageHeader("数据快照与交接", "生产者、消费者、对象数、数据时间和校验逐项显示；失败不覆盖上一份完整快照。", Math.max(...data.snapshots.map((row) => new Date(row.dataAsOf || 0).getTime())) ? new Date(Math.max(...data.snapshots.map((row) => new Date(row.dataAsOf || 0).getTime()))).toISOString() : null, data.observedAt)}<section class="c25-panel"><div class="c25-panel-header"><div><h2>现役交接路径</h2><p>候选生产 → 筛选 → 跟踪 → 公开快照 → 前台；阻断节点不会显示为完成。</p></div></div><div class="c25-flow">${flow}</div></section><section class="c25-panel"><div class="c25-panel-header"><div><h2>精确快照表</h2><p>生命周期状态与凸性跟踪状态分列，不合并。</p></div></div><div class="c25-table-wrap"><table class="c25-table"><thead><tr><th>快照 / 生产者</th><th>完整 / 陈旧</th><th data-number>对象数</th><th>数据时间</th><th>校验</th><th>消费者</th></tr></thead><tbody>${data.snapshots.map((row) => `<tr><td><strong>${esc(row.snapshotId)}</strong><small class="c25-machine">${esc(row.producerTaskId)} · ${esc(row.path)}</small></td><td>${status(row.complete ? row.stale ? "stale" : "completed" : "failed")}</td><td data-number>${esc(fmtValue(row.objectCount))}</td><td>${esc(fmtTime(row.dataAsOf))}</td><td class="c25-machine">${esc(fmtValue(row.validation))}</td><td>${esc((row.consumerPages || []).join(" · ") || "不适用")}</td></tr>`).join("")}</tbody></table></div></section><section class="c25-panel"><div class="c25-panel-header"><div><h2>两库只读完整性</h2><p>管理组合读取不写业务数据库。</p></div></div><div class="c25-table-wrap"><table class="c25-table"><thead><tr><th>数据库</th><th>可用</th><th>quick_check</th><th>外键异常</th><th>模式</th></tr></thead><tbody>${data.databases.map((row) => `<tr><td class="c25-machine">${esc(row.path)}</td><td>${row.available ? "是" : "当前工作区未提供"}</td><td>${esc(fmtValue(row.quickCheck))}</td><td>${esc(fmtValue(row.foreignKeyViolations))}</td><td>${row.readOnly ? "只读" : "未知"}</td></tr>`).join("")}</tbody></table></div></section>`);
