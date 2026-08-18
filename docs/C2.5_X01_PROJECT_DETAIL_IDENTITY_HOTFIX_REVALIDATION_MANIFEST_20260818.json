@@ -1,0 +1,275 @@
+{
+  "schemaVersion": "c2.5-x01-independent-acceptance-revalidation-v1",
+  "generatedAt": "2026-08-18T19:01:49+08:00",
+  "status": "independent_acceptance_revalidation_passed_waiting_separate_release_authorization_within_candidate_retention_window",
+  "conclusion": "PASS",
+  "authorization": {
+    "scope": "按现有24小时候选合同定点复验",
+    "source": "产品路线审核复核原NO-GO并取得用户明确授权",
+    "notSelfRelaxedByAcceptance": true,
+    "contractCorrections": [
+      "精确候选在现行24小时封存窗口内可作为发布候选；不要求X01建立永久候选体系",
+      "数据库门槛判断候选、隔离服务、隔离WPF和终验操作是否造成正式写入；既有唯一调度器可独立归因的变化不单独判定候选失败"
+    ]
+  },
+  "originalNoGoHistory": {
+    "preserved": true,
+    "report": "docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_FINAL_ACCEPTANCE_20260818.md",
+    "reportSha256": "f5f8d03b1b0745c2cb3c88f87ff298b09d93f133a2ddfb2a98ab6ceb8e9b24c2",
+    "manifest": "docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_ACCEPTANCE_MANIFEST_20260818.json",
+    "manifestSha256": "6f7da6ba56016f92f58cd27ee0fad1440d9ac3b353d3d9f07aa51e1a53612751",
+    "conclusion": "NO-GO",
+    "status": "no_go_candidate_handoff_and_formal_database_immutability_gates_failed"
+  },
+  "candidate": {
+    "candidateCommit": "8f02eb76e70cd9c82dea7188096532a5533f29ab",
+    "candidateBranch": "codex/c2-5-x01-project-detail-hotfix-20260818",
+    "acceptanceHead": "8f02eb76e70cd9c82dea7188096532a5533f29ab",
+    "releaseBaseline": "36c974061d616628b1a10e27670f207d29e51f79",
+    "formalTag": "c2.5-f01-manager-overview-hotfix-20260818",
+    "formalTagObject": "7a7706b6231c4b6bacab48a61d23bc8a7f7319ed",
+    "formalTagPeeledCommit": "36c974061d616628b1a10e27670f207d29e51f79",
+    "diff": [
+      "M app/c2-4-front.js",
+      "A docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_CANDIDATE_MANIFEST_20260818.json",
+      "A docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_DEVELOPMENT_20260818.md",
+      "A scripts/test_c2_5_x01_project_detail_identity.js"
+    ],
+    "extraProductDiff": false,
+    "artifact": "runtime/temp-artifacts/c2-5-pre-release-candidate-product-20260818T095723Z-0d8be7ca",
+    "retention": {
+      "state": "sealed",
+      "registeredAt": "2026-08-18T09:57:23.671153Z",
+      "sealedAt": "2026-08-18T09:59:17.732964Z",
+      "deleteAfter": "2026-08-19T09:59:17.732964Z",
+      "deleteAfterLocal": "2026-08-19T17:59:17.732964+08:00",
+      "remainingSecondsAtCheck": 82648,
+      "logicalBytesAtSeal": 470307759,
+      "actualLogicalBytes": 470307759,
+      "sealedPayloadMtimeNs": 1787047157727963400,
+      "actualLatestPayloadMtimeNs": 1787047157727963400,
+      "unchanged": true,
+      "notExpired": true,
+      "ownerPid": null,
+      "blocked": false
+    },
+    "candidateProductState": {
+      "path": "runtime/c2.5/candidate-product-state.json",
+      "sha256": "da78896a4a5d0baef3caa4313545ccc8b93608228e67b17fc4ce25cc8779ca0b"
+    },
+    "candidateProductManifest": {
+      "path": "runtime/temp-artifacts/c2-5-pre-release-candidate-product-20260818T095723Z-0d8be7ca/product-state/candidate-product-manifest.json",
+      "sha256": "81527f243eba1b5160a3cebef7001e885fa8551bc0ec8ce8b2b8cd86c5b6b76d"
+    },
+    "serviceFileCount": 127,
+    "serviceTreeSha256": "5c7d261e6ae022e9ca46631f4eb7c75c64b745e6bbab0f272b73adc4e0513d57",
+    "commitAppFileCount": 89,
+    "commitAppTreeSha256": "6096c1ececf4d4d1fc953babc72a718a58d0256549d05372fac57dcfd443ad8d",
+    "frontScript": {
+      "gitCommitSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+      "candidateServiceSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+      "actualHttpSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b"
+    },
+    "frontSnapshot": {
+      "bytes": 523756,
+      "candidateServiceSha256": "9e4b65e99462c3b2aacb5a2301635557401f4481ffd038ebd712ee819b9885e7",
+      "manifestSha256": "9e4b65e99462c3b2aacb5a2301635557401f4481ffd038ebd712ee819b9885e7",
+      "canonicalContentSha256": "12de2a7df82135a7a0f3b84417ceefb38bb80991e8372cdc9ef5f809dd6d10c7"
+    },
+    "allManifestServiceFilesMatched": true,
+    "allManifestCommitFilesMatched": true,
+    "allNonSnapshotServiceFilesMatchedGit": true,
+    "sameExactCandidateAsOriginalAcceptance": true
+  },
+  "revalidation": {
+    "identityContract": {
+      "result": "70/70 passed",
+      "requiredCases": [
+        "Wrapped Gonka",
+        "cap",
+        "OpenServ",
+        "HALO"
+      ],
+      "command": "node scripts/test_c2_5_x01_project_detail_identity.js --front-script <sealed-candidate>/product-state/app/c2-4-front.js --snapshot <sealed-candidate>/product-state/app/c2-4-front-snapshot.js"
+    },
+    "edgeContract": {
+      "result": "6/6 passed",
+      "script": "runtime/temp-artifacts/c2-5-x01-independent-acceptance-20260818-20260818T104814Z-6e8991a3/x01_identity_edge_acceptance.js",
+      "scriptSha256": "786db0b7653a0a66839aaa0e77f0943ca21b5febce5c2d740c78576316d2baea",
+      "command": "node <revalidation-artifact>/x01_identity_edge_acceptance.js <sealed-candidate>/product-state/app/c2-4-front.js <sealed-candidate>/product-state/app/c2-4-front-snapshot.js",
+      "cases": [
+        "legacy id selects cap",
+        "no parameters stays at boundary",
+        "unknown assetId stays at boundary",
+        "assetId overrides conflicting id",
+        "unknown assetId does not fall back to valid id",
+        "empty id and assetId stay at boundary"
+      ]
+    },
+    "manualWpfWebView2": {
+      "result": "passed",
+      "servicePort": 8877,
+      "candidateServiceCommand": "C:\\Python312\\python.exe scripts/serve_local.py --port 8877",
+      "hostStartedAt": "2026-08-18T18:53:06.8711728+08:00",
+      "hostExitedAt": "2026-08-18T18:55:11.4236599+08:00",
+      "hostExitCode": 0,
+      "webView2Version": "151.0.4129.86",
+      "isolatedUserDataRoot": "runtime/temp-artifacts/c2-5-x01-independent-acceptance-20260818-20260818T104814Z-6e8991a3/wpf-runtime/webview2/user-data",
+      "clicks": [
+        {
+          "card": "cap",
+          "assetId": "project-asset-a4eb1921402d669b",
+          "detailHeading": "cap",
+          "screenshot": "visual/revalidation-cap-detail.png",
+          "screenshotBytes": 299373,
+          "screenshotSha256": "66f4cc3907872f9e3b6207ccc3730519a3aab391972015d0bfedc5265b73b7e3"
+        },
+        {
+          "card": "Wrapped Gonka",
+          "assetId": "candidate-asset-bd53294c98f8c37a197742fb",
+          "detailHeading": "Wrapped Gonka",
+          "screenshot": "visual/revalidation-wrapped-gonka-detail.png",
+          "screenshotBytes": 302377,
+          "screenshotSha256": "88bc08cc30f31daf5f6e3483727060b76c23ed24bae89c7e06a8201d03d48a5e"
+        }
+      ],
+      "history": {
+        "path": "visual/WebView2-History",
+        "bytes": 212992,
+        "sha256": "e4109ec4b884375177c1ac693eb73535bd5bcb7cedf1e7e47830756f2de87498",
+        "urls": [
+          "http://127.0.0.1:8877/project-detail.html?assetId=project-asset-a4eb1921402d669b",
+          "http://127.0.0.1:8877/project-detail.html?assetId=candidate-asset-bd53294c98f8c37a197742fb"
+        ]
+      },
+      "desktopLog": {
+        "path": "wpf-runtime/logs/c2.3-desktop.log",
+        "sha256": "de4be05ac2f0b867754e4a379b9a38627b05e97815650421f76da5e0ca5dc05e"
+      },
+      "hostAndInspectableWebViewProcessesFormalDatabaseHandles": 0,
+      "candidateServiceFormalDatabaseHandles": 0,
+      "candidateServiceOpenFileCountAtIdle": 2,
+      "candidateServiceListeningEndpoint": "127.0.0.1:8877",
+      "managementPostCalled": false,
+      "writeControlClicked": false
+    },
+    "inheritedEvidence": {
+      "binding": "原终验与本复验的candidateCommit、manifest、service tree、commit app tree、front script和front snapshot均完全一致",
+      "notInvalidatedByCandidateDrift": true,
+      "referencedResults": {
+        "c2.5Direct": "66/66 passed",
+        "c2.4RulesAndTracking": "41/41 passed",
+        "c2.4StaticInheritance": "12/12 passed",
+        "httpRoutes": "40/40 passed",
+        "desktopHost": "12/12 passed",
+        "d0Unit": "15/15 passed",
+        "d0AcceptanceGate": "passed",
+        "candidateReadonlyProbe": "passed"
+      }
+    }
+  },
+  "formalDatabaseBoundary": {
+    "candidateOrAcceptanceCausedWrite": false,
+    "readonlyChecks": [
+      {
+        "path": "F:/codex项目/企鹅投研/凸性/data/convexity.db",
+        "mode": "ro",
+        "queryOnly": 1,
+        "quickCheck": "ok",
+        "foreignKeyViolations": 0,
+        "probeChangedFile": false,
+        "bytes": 568983552,
+        "mtimeUtc": "2026-08-13T11:42:51.1017849Z"
+      },
+      {
+        "path": "F:/codex项目/企鹅投研/凸性/data/c2.1-pipeline.db",
+        "mode": "ro",
+        "queryOnly": 1,
+        "quickCheck": "ok",
+        "foreignKeyViolations": 0,
+        "probeChangedFile": false,
+        "bytesAtProbe": 11102687232,
+        "mtimeUtcAtProbe": "2026-08-18T10:46:09.6406907Z"
+      }
+    ],
+    "schedulerAttribution": {
+      "taskName": "PenguinConvexity-C1.8-Scheduler",
+      "taskXmlUtf16Sha256": "c2308aa9e73b03511d497341fb408e5e8d92a789897741e59478fbcc883c9f42",
+      "action": "C:/Windows/System32/wscript.exe F:/codex项目/企鹅投研/凸性/scripts/run-c2-1-update-hidden.vbs C:/Python312/python.exe",
+      "repetition": "PT15M",
+      "observedRun": {
+        "startedAt": "2026-08-18T18:45:02.059880+08:00",
+        "pipelineDatabaseMtime": "2026-08-18T18:46:09.6406907+08:00",
+        "finishedAt": "2026-08-18T18:50:53.557500+08:00",
+        "taskSchedulerLastRun": "2026-08-18T18:45:01+08:00",
+        "taskSchedulerLastResult": 0,
+        "trigger": "automatic"
+      },
+      "postCandidateObservation": {
+        "taskSchedulerLastRun": "2026-08-18T19:00:01+08:00",
+        "taskSchedulerLastResult": 0,
+        "stateAtFinalCheck": "Ready",
+        "candidateServiceAndWpfAlreadyStopped": true
+      },
+      "manualWpfWindow": "2026-08-18T18:53:06.8711728+08:00 to 2026-08-18T18:55:11.4236599+08:00",
+      "attributionConclusion": "pipeline database mtime precedes WPF start and matches the existing automatic scheduler run; no candidate or acceptance write path was used"
+    }
+  },
+  "formalBoundary": {
+    "mainCommit": "36c974061d616628b1a10e27670f207d29e51f79",
+    "mainDirtyCount": 0,
+    "formal8766ReachableBefore": false,
+    "formal8766ReachableAfter": false,
+    "formal8766ActionTaken": false,
+    "shortcut": {
+      "path": "C:/Users/Donutfi/Desktop/企鹅投研-凸性.lnk",
+      "bytes": 1412,
+      "mtimeUtc": "2026-08-12T03:57:46.9774836Z",
+      "sha256": "034e47abf6aa4935a376e2f03016812b35895c6491ad4103e035027bf76f1e23",
+      "matchesD0DesktopAcceptance": true,
+      "target": "F:/codex项目/企鹅投研/凸性/desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe"
+    },
+    "schedulerModified": false,
+    "schedulerFinalState": "Ready; lastRun 2026-08-18T19:00:01+08:00; lastResult 0; nextRun 2026-08-18T19:15:00+08:00",
+    "c2.6InheritanceBaselineModified": false,
+    "mergePerformed": false,
+    "tagCreated": false,
+    "releasePerformed": false,
+    "formalEntryUpdated": false
+  },
+  "temporaryArtifacts": {
+    "candidateArtifact": {
+      "path": "runtime/temp-artifacts/c2-5-pre-release-candidate-product-20260818T095723Z-0d8be7ca",
+      "state": "sealed",
+      "deleteAfter": "2026-08-19T09:59:17.732964Z"
+    },
+    "originalAcceptanceArtifact": {
+      "path": "runtime/temp-artifacts/c2-5-x01-independent-acceptance-20260818-20260818T095559Z-92fdd683",
+      "state": "sealed"
+    },
+    "revalidationArtifact": {
+      "path": "runtime/temp-artifacts/c2-5-x01-independent-acceptance-20260818-20260818T104814Z-6e8991a3",
+      "state": "sealed",
+      "sealedAt": "2026-08-18T11:01:20.273394Z",
+      "deleteAfter": "2026-08-19T11:01:20.273394Z",
+      "logicalBytesAtSeal": 742904327,
+      "ownerPid": null,
+      "sealNote": "首次封存受临时WPF bin/obj深层路径长度阻断；仅清理可再生成的构建中间目录后封存成功，wpf-host-publish、截图、History、日志和脚本均保留"
+    },
+    "statusAfterSeal": {
+      "registered": 3,
+      "due": 0,
+      "inUse": 0,
+      "blocked": 0,
+      "unregistered": 0
+    }
+  },
+  "validity": {
+    "passAppliesOnlyToExactCandidate": "8f02eb76e70cd9c82dea7188096532a5533f29ab / serviceTree 5c7d261e6ae022e9ca46631f4eb7c75c64b745e6bbab0f272b73adc4e0513d57 / manifest 81527f243eba1b5160a3cebef7001e885fa8551bc0ec8ce8b2b8cd86c5b6b76d",
+    "passExpiresAt": "2026-08-19T09:59:17.732964Z",
+    "passExpiresAtLocal": "2026-08-19T17:59:17.732964+08:00",
+    "expiryEffect": "本PASS自动失效；必须重新生成候选并重新执行候选绑定、X01 70/70、6/6及必要人工定点复验",
+    "releaseAuthorizationRequired": true,
+    "rollbackPoint": "36c974061d616628b1a10e27670f207d29e51f79"
+  }
+}

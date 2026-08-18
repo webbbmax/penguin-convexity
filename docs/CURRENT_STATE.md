@@ -4,14 +4,14 @@
 
 ## 一句话结论
 
-当前正式软件是 **C2.5 管理者控制面**。原整版候选 `887bdaf35e3c93c05b688745264d9cc1c68874d6` 已完成 92/92 独立终验；F01 管理者总览延迟与失败反馈热修产品候选 `5b0cac9a7fe3a26be9d9d9b8951e2a1e84ac83ca` 已独立终验通过并获发布授权。
+当前正式软件是 **C2.5 管理者控制面**。原整版候选 `887bdaf35e3c93c05b688745264d9cc1c68874d6` 已完成 92/92 独立终验；F01 管理者总览热修已发布；X01 项目卡片—详情身份一致性精确候选 `8f02eb76e70cd9c82dea7188096532a5533f29ab` 已完成定点复验并正式发布。
 
 ## 当前版本与代码
 
 - 用户可见业务版本：C2.5 管理者控制面，完整继承 C2.4 普通用户机会中心。
 - 当前阶段：`independent_full_acceptance_complete_released`；需求集 SHA-256 为 `6cea572837fe9a9e0c77f1d3ec7604081cb6f366d3c3ad72e92f037cbd58ed60`。
 - 正式目录：`F:\codex项目\企鹅投研\凸性`。
-- 正式分支：`main`；C2.5 整版标签为 `c2.5-manager-control-plane-20260818`，F01 热修标签为 `c2.5-f01-manager-overview-hotfix-20260818`；本次代码回滚点为 `c979fba77028ee694042ebcbe0740d1fbb2c8234`。
+- 正式分支：`main`；C2.5 整版标签为 `c2.5-manager-control-plane-20260818`，F01 标签为 `c2.5-f01-manager-overview-hotfix-20260818`，X01 标签为 `c2.5-x01-project-detail-identity-hotfix-20260818`；X01 代码回滚点为 `36c974061d616628b1a10e27670f207d29e51f79`。
 - 重要事实：正式软件文件已经是 C2.4，但 D0 开始前 `main` 仍停在旧提交并混有 154 项状态；不能把该旧提交冒充完整 C2.4。
 - C2.4 重建基线提交：`2aa3c200766382b031b4cb0f9de40efafe245533`，提交说明明确包含 `reconstructed-baseline`。
 - D0 通过的代码候选为 `f061bbf717a57849e2fb9b65079fa63264784e2c`，独立终验证据提交为 `7922fd550200a73283fe5d782e89320ff6ecbce2`。
@@ -42,12 +42,14 @@
 - C2.5 已登记 41 项任务对象，展示真实运行状态、逐链与来源健康、规则基线/有效值/覆盖、assetId 判定链、快照交接和管理审计。
 - 独立终验没有点击正式高影响管理控制；控制写闭环由隔离夹具、失败反例和恢复测试验证，正式数据继续按现役调度运行。
 - F01 热修把管理者总览权威读取降至冷读 3.832 秒、热读约 0.85—0.89 秒；前端 8 秒停止等待并提供不触发任务、不修改数据的安全重试。完整规则和快照核验仍保留在详情接口。
+- X01 热修修复列表卡片复用同一闭包中的项目身份而导致多个链接导航到错误详情的问题；正式普通用户路径的 Wrapped Gonka、cap、OpenServ 真实点击、刷新与返回上下文均已通过，70/70 身份合同和 6/6 定点合同通过。
 - 完整清单见 `docs/D0_KNOWN_ISSUES.md`。
 
 ## 当前阶段与下一授权
 
 - C2.5 92/92 需求已通过，发布证据为 `docs/C2.5_ACCEPTANCE_MANIFEST.json`、`docs/C2.5_FINAL_ACCEPTANCE.md` 和 `docs/C2.5_RELEASE_MANIFEST.json`。
 - F01 热修证据为 `docs/C2.5_F01_HOTFIX_ACCEPTANCE_MANIFEST_20260818.json`、`docs/C2.5_F01_HOTFIX_FINAL_ACCEPTANCE_20260818.md` 和 `docs/C2.5_F01_HOTFIX_RELEASE_MANIFEST_20260818.json`。
+- X01 热修保留原 NO-GO、定点复验和独立发布三组证据；正式发布入口为 `docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_RELEASE_20260818.md` 与 `docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_RELEASE_MANIFEST_20260818.json`。
 - C2.5 发布不证明六链发现覆盖或投资判断全部正确，也不改变 C2.4 筛选、四路径、贝叶斯、动作或 Gate 0 历史边界。
 - C2.6、六链逐链修复、规则变化或下一产品版本仍需重新规划、冻结和授权；不得借 C2.5 发布后维护扩大范围。
 

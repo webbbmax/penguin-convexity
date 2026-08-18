@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "c2.5-x01-project-detail-identity-hotfix-release-manifest-v1",
+  "release": "C2.5",
+  "maintenance": "X01 project card to project detail identity consistency",
+  "status": "released",
+  "releasedAt": "2026-08-18T19:35:12+08:00",
+  "userAuthorization": "发布本次定点复验通过的 X01 精确候选",
+  "releaseTag": "c2.5-x01-project-detail-identity-hotfix-20260818",
+  "formalBranch": "main",
+  "remote": {
+    "name": "origin",
+    "branch": "main",
+    "url": "https://github.com/webbbmax/penguin-convexity.git"
+  },
+  "git": {
+    "releaseBaselineCommit": "36c974061d616628b1a10e27670f207d29e51f79",
+    "candidateBranch": "codex/c2-5-x01-project-detail-hotfix-20260818",
+    "acceptedProductCandidate": "8f02eb76e70cd9c82dea7188096532a5533f29ab",
+    "releaseCommitBinding": "the Git commit containing this manifest",
+    "productFilesMustEqualAcceptedCandidate": true
+  },
+  "sealedCandidate": {
+    "artifact": "C:/Users/Donutfi/.codex/worktrees/3fe3/凸性/runtime/temp-artifacts/c2-5-pre-release-candidate-product-20260818T095723Z-0d8be7ca",
+    "expiresAt": "2026-08-19T17:59:17.732964+08:00",
+    "serviceFileCount": 127,
+    "serviceTreeSha256": "5c7d261e6ae022e9ca46631f4eb7c75c64b745e6bbab0f272b73adc4e0513d57",
+    "manifestSha256": "81527f243eba1b5160a3cebef7001e885fa8551bc0ec8ce8b2b8cd86c5b6b76d",
+    "frontScriptSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+    "actualPayloadVerified": true,
+    "rebuiltOrReplaced": false
+  },
+  "acceptance": {
+    "independentRevalidation": "passed",
+    "releasePreflightGate": "15/15 passed",
+    "x01IdentityContract": "70/70 passed",
+    "specifiedAndEdgeCases": "6/6 passed",
+    "routes": "40/40 passed",
+    "realDesktopBeforeAndAfterRefresh": "passed",
+    "returnFilterAndScrollContext": "passed",
+    "databaseQuickCheck": "2/2 ok",
+    "foreignKeyErrors": 0,
+    "formalManagementPostExecuted": false
+  },
+  "formalRuntime": {
+    "port": 8766,
+    "httpFrontScriptSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+    "manualVerificationFrontSnapshotSha256": "d632a2284d1b060a03b38fcece745449547151ce14a1c4686c26088d431d74a7",
+    "postSchedulerFrontSnapshotSha256": "fc462ae5f9f1a12e6d47930d858da4f1e4d4df6a8eddf22f4a91b0900b225ca6",
+    "postSchedulerRuntimeAppFileCount": 127,
+    "postSchedulerRuntimeAppTreeSha256": "94a2006dd97013ce502095bc455119ae559e6b8a67d189e8f962c89180d02ad4",
+    "shortcutSha256": "034e47abf6aa4935a376e2f03016812b35895c6491ad4103e035027bf76f1e23",
+    "shortcutTarget": "F:/codex项目/企鹅投研/凸性/desktop-host/publish/win-x64/PenguinConvexity.Desktop.exe",
+    "servedDirectlyFromFormalMain": true
+  },
+  "coreArtifacts": [
+    {"path":"app/c2-4-front.js","bytes":32994,"sha256":"a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b"},
+    {"path":"scripts/test_c2_5_x01_project_detail_identity.js","bytes":4598,"sha256":"4420cfbc07f7147c211da178b6290ab4fb20688ed63d44f59a4eeea3a184552b"},
+    {"path":"docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_CANDIDATE_MANIFEST_20260818.json","bytes":3684,"sha256":"7f292a53d679948d420689e083b2e16d99d489526d6bdfa8442a9911bf826473"},
+    {"path":"docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_DEVELOPMENT_20260818.md","bytes":7983,"sha256":"c78a6f00d728af9e72afa5c7b71712f585040c25db52333bba3aa70dd4b0851d"},
+    {"path":"docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_ACCEPTANCE_MANIFEST_20260818.json","bytes":6865,"sha256":"6f7da6ba56016f92f58cd27ee0fad1440d9ac3b353d3d9f07aa51e1a53612751"},
+    {"path":"docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_FINAL_ACCEPTANCE_20260818.md","bytes":12110,"sha256":"f5f8d03b1b0745c2cb3c88f87ff298b09d93f133a2ddfb2a98ab6ceb8e9b24c2"},
+    {"path":"docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_REVALIDATION_20260818.md","bytes":10842,"sha256":"19d44aaded3c610265223ac139d4360ac6ce5495f499f73314113b47b7757614"},
+    {"path":"docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_REVALIDATION_MANIFEST_20260818.json","bytes":12903,"sha256":"3fe555db97c12db702e43361f495ec25e02c14cc7fce9066f0b3afaf14615d50"}
+  ],
+  "inheritance": {
+    "c24Routes": 29,
+    "newManagerRoutes": 11,
+    "approvedRouteDeletions": 0,
+    "schedulerChanged": false,
+    "databaseSchemaChanged": false,
+    "businessRulesChanged": false,
+    "desktopContainerBinaryChanged": false,
+    "c26PlanningChanged": false
+  },
+  "protectedRuntime": {
+    "schedulerTask": "PenguinConvexity-C1.8-Scheduler",
+    "schedulerConfigurationSha256Before": "dedb57bcf0bff9c4a3e456d26871188feda445072eadeb9fcabf3d10c6cc3dda",
+    "schedulerConfigurationSha256After": "dedb57bcf0bff9c4a3e456d26871188feda445072eadeb9fcabf3d10c6cc3dda",
+    "schedulerLastRunResult": 0,
+    "convexityDatabaseBytes": 568983552,
+    "pipelineDatabaseBytes": 11102736384,
+    "databaseFilesUnchangedDuringReadOnlyChecks": true,
+    "c26PlanningRef": "e617f3fff889db7d53954eba6739ad0119ed718a"
+  },
+  "backup": {
+    "manifest": "backups/c2.5-x01-project-detail-hotfix-20260818T1919/manifest.json",
+    "rollbackArchiveSha256": "bc0f3d562631688d57a3aa5e8c9050d78ec6fcae088d001b85135c6eaa16c9c9"
+  },
+  "rollback": {
+    "codeOnly": true,
+    "target": "36c974061d616628b1a10e27670f207d29e51f79",
+    "databaseRollback": false,
+    "schedulerSettingRollback": false,
+    "requiresUserAuthorization": true
+  },
+  "knownBoundary": "This maintenance release fixes X01 project-card to project-detail identity consistency only. It does not change or certify scoring, actions, L0-L5, six-chain discovery coverage, scheduler behavior, database contents, or C2.6."
+}

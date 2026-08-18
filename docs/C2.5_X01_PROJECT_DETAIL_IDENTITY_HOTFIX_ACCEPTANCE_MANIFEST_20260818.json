@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "c2.5-x01-project-detail-identity-hotfix-independent-acceptance-v1",
+  "status": "no_go_candidate_handoff_and_formal_database_immutability_gates_failed",
+  "decision": "NO-GO",
+  "acceptedAt": "2026-08-18",
+  "candidate": {
+    "commit": "8f02eb76e70cd9c82dea7188096532a5533f29ab",
+    "sourceBranch": "codex/c2-5-x01-project-detail-hotfix-20260818",
+    "acceptanceBranch": "codex/c2-5-x01-independent-acceptance-20260818",
+    "headExact": true,
+    "worktreeCleanBeforeReport": true
+  },
+  "releasedBaseline": {
+    "commit": "36c974061d616628b1a10e27670f207d29e51f79",
+    "tag": "c2.5-f01-manager-overview-hotfix-20260818",
+    "tagPeeledCommit": "36c974061d616628b1a10e27670f207d29e51f79",
+    "formalMainHead": "36c974061d616628b1a10e27670f207d29e51f79",
+    "formalMainClean": true
+  },
+  "sourceThreads": [
+    "01a01417-24ae-7551-b948-9c6e252ca125",
+    "01a013e0-f87a-7642-b638-5956fe314a44"
+  ],
+  "allowedDiff": [
+    "app/c2-4-front.js",
+    "scripts/test_c2_5_x01_project_detail_identity.js",
+    "docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_DEVELOPMENT_20260818.md",
+    "docs/C2.5_X01_PROJECT_DETAIL_IDENTITY_HOTFIX_CANDIDATE_MANIFEST_20260818.json"
+  ],
+  "unexpectedDiff": [],
+  "provenance": {
+    "candidateStateCommitMatches": true,
+    "candidateManifestCommitMatches": true,
+    "serviceFileCount": 127,
+    "serviceTreeSha256": "5c7d261e6ae022e9ca46631f4eb7c75c64b745e6bbab0f272b73adc4e0513d57",
+    "commitAppFileCount": 89,
+    "commitAppTreeSha256": "6096c1ececf4d4d1fc953babc72a718a58d0256549d05372fac57dcfd443ad8d",
+    "commitFrontSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+    "candidateServiceFrontSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+    "actualHttpFrontSha256": "a4829781db88ae3c171ba8c277f1281ac7e28a10825d50221a384e21e34d443b",
+    "candidateSnapshotSha256": "9e4b65e99462c3b2aacb5a2301635557401f4481ffd038ebd712ee819b9885e7",
+    "candidateSnapshotBytes": 523756,
+    "workingTreeFrontSha256": "7d4450ff87224b60ca9b3cd5b2fffbd27e4c0af1cccdeaa922aa75d65a0cd5bc",
+    "workingTreeDifference": "CRLF_vs_LF_only_normalized_text_equal",
+    "commitToServiceFilesMatched": "89/89",
+    "servedFromDirtyWorktree": false,
+    "durableExactRebuildAfterTempExpiry": false,
+    "durableExactRebuildFailureEvidence": {
+      "snapshotMissingFromGit": "app/c2-4-front-snapshot.js",
+      "currentFormalSnapshotBytes": 569270,
+      "currentFormalSnapshotSha256": "e36bac9e31bdbecbffc79f81f8ef27dabe3156c7026917ab8539549ae04a1d63",
+      "reason": "formal snapshot already drifted; exact candidate depends on 24-hour temporary artifact"
+    }
+  },
+  "rootCause": {
+    "class": "missing_legacy_id_null_matches_first_null_project_id_before_asset_id_target",
+    "firstItem": "OpenServ",
+    "oldLogicAffected": 69,
+    "publicItems": 70,
+    "independentlyReproduced": true
+  },
+  "verification": {
+    "x01Identity": "70/70 passed",
+    "identityEdges": "6/6 passed",
+    "requiredVisibleCases": "4/4 passed",
+    "c2_5Direct": "66/66 passed; one environment-bound case replaced by formal-root readonly product probe",
+    "c2_4RulesAndTracking": "41/41 passed",
+    "c2_4StaticInheritance": "12/12 passed",
+    "routes": "40/40 HTTP 200 on isolated 8877",
+    "desktopHost": "12/12 passed with .NET 10.0.400",
+    "d0GateUnit": "15/15 passed",
+    "d0AcceptanceGate": "passed",
+    "candidateProductReadonlyProbe": "passed",
+    "formalReadonlyQueries": "2/2 mode=ro query_only; quick_check ok; foreign key violations 0",
+    "formalDatabasesUnchanged": false,
+    "manualWpfWebView2": "functional path passed; refresh and return context passed"
+  },
+  "manualEvidence": {
+    "artifactRoot": "runtime/temp-artifacts/c2-5-x01-independent-acceptance-20260818-20260818T095559Z-92fdd683",
+    "screenshots": [
+      "visual/02-wrapped-gonka-detail.png",
+      "visual/03-cap-detail.png",
+      "visual/04-openserv-detail.png",
+      "visual/05-halo-detail.png",
+      "visual/10-cap-detail-after-refresh.png",
+      "visual/11-cap-return-context-restored.png",
+      "visual/12-wrapped-gonka-detail-after-refresh.png",
+      "visual/13-wrapped-return-context-restored.png"
+    ],
+    "history": {
+      "path": "visual/WebView2-History",
+      "sha256": "d46389dddbd57d5896ff88cc6b524764ba7b8b3b76990fd6e99eef8b40d711ab",
+      "urls": [
+        "http://127.0.0.1:8877/project-detail.html?assetId=candidate-asset-362fd5497aca71340196d64b",
+        "http://127.0.0.1:8877/project-detail.html?assetId=candidate-asset-d2457f4c38c621199e1502c9",
+        "http://127.0.0.1:8877/project-detail.html?assetId=project-asset-a4eb1921402d669b",
+        "http://127.0.0.1:8877/project-detail.html?assetId=candidate-asset-bd53294c98f8c37a197742fb",
+        "http://127.0.0.1:8877/candidate-pool.html?view=all&chain=ethereum-mainnet&lifecycle=new_0_90&relationship=C&state=convexity_clue&q=cap",
+        "http://127.0.0.1:8877/candidate-pool.html?view=all&chain=ethereum-mainnet&lifecycle=new_0_90&relationship=C&state=convexity_clue&q=Wrapped+Gonka"
+      ]
+    }
+  },
+  "formalDatabaseEvidence": {
+    "convexityDb": {
+      "beforeBytes": 568983552,
+      "afterBytes": 568983552,
+      "beforeMtimeUtc": "2026-08-13T11:42:51.1017849Z",
+      "afterMtimeUtc": "2026-08-13T11:42:51.1017849Z",
+      "beforeSha256": "c050fb047e75088f320d8e02fb032435b6c19c83e6b3174528ab44027262be71",
+      "afterSha256": "c050fb047e75088f320d8e02fb032435b6c19c83e6b3174528ab44027262be71",
+      "unchanged": true
+    },
+    "pipelineDb": {
+      "beforeBytes": 11102638080,
+      "afterObservedBytes": 11102683136,
+      "beforeMtimeUtc": "2026-08-18T09:46:12.4105644Z",
+      "afterObservedMtimeUtc": "2026-08-18T10:31:09.0066896Z",
+      "beforeSha256": "ba64771c51a9201251120b9a5daff6a67702e49bea93fcf3bcc7d098c4a50ef5",
+      "afterObservedSha256": "4178ec0e476d857a23b8fd2f4b8b7f2c2b91a87a623eda6430625d1b9338fbc5",
+      "unchanged": false,
+      "attribution": "existing PenguinConvexity-C1.8-Scheduler runs at 2026-08-18T18:15:01+08:00 and 2026-08-18T18:30:01+08:00; acceptance made no write calls"
+    }
+  },
+  "temporaryArtifacts": [
+    {
+      "path": "runtime/temp-artifacts/c2-5-pre-release-candidate-product-20260818T095723Z-0d8be7ca",
+      "state": "sealed",
+      "retentionHours": 24
+    },
+    {
+      "path": "runtime/temp-artifacts/c2-5-x01-independent-acceptance-20260818-20260818T095559Z-92fdd683",
+      "state": "sealed_at_handoff",
+      "retentionHours": 24
+    }
+  ],
+  "rollbackCommit": "36c974061d616628b1a10e27670f207d29e51f79",
+  "releaseActions": {
+    "merged": false,
+    "tagged": false,
+    "published": false,
+    "formalEntryChanged": false,
+    "shortcutChanged": false,
+    "c2_6BaselineChanged": false
+  },
+  "nextGate": "durable_exact_candidate_handoff_and_new_independent_acceptance_under_provably_stable_formal_database_window"
+}
