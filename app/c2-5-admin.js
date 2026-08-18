@@ -12,6 +12,7 @@
     .replaceAll("'", "&#39;");
   const jsonText = (value) => esc(JSON.stringify(value == null ? null : value, null, 2));
   const apiRoot = "/api/c2.5";
+  const overviewReadTimeoutMs = 8000;
   const stateLabels = {
     not_started: "尚未运行", waiting: "等待运行", launching: "正在启动", running: "运行中",
     pause_requested: "将在安全点暂停", safe_paused: "已在安全点暂停", partial: "部分完成",
@@ -108,6 +109,21 @@
     return payload;
   }
 
+  async function requestOverviewJson() {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), overviewReadTimeoutMs);
+    try {
+      return await requestJson("/control-plane", { signal: controller.signal });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new Error("读取超过8秒，已停止等待；未触发任务或写入。请重新读取，或进入对应详情页核对权威状态。");
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
   function pageHeader(title, intro, dataAsOf, readAt, eyebrow = "管理者控制面") {
     return `<header class="c25-page-header"><div><span class="c25-eyebrow">${esc(eyebrow)}</span><h1>${esc(title)}</h1><p>${esc(intro)}</p></div><div class="c25-read-times"><span>数据对应时间</span><strong>${esc(fmtTime(dataAsOf))}</strong><span>页面读取时间</span><time>${esc(fmtTime(readAt || new Date().toISOString()))}</time></div></header>`;
   }
@@ -125,7 +141,9 @@
   }
 
   function errorPage(title, error) {
-    setMain(`${pageHeader(title, "页面只读取权威状态；读取失败时不会回退为乐观状态。", null, new Date().toISOString())}<section class="c25-error" role="alert"><strong>管理状态加载失败</strong><p>发生了什么：${esc(error.message || error)}</p><p>影响什么：当前页面无法证明系统真实状态，所有高影响操作保持不可用。</p><p>下一步：检查本地服务与任务状态后刷新页面。</p></section>`);
+    setMain(`${pageHeader(title, "页面只读取权威状态；读取失败时不会回退为乐观状态。", null, new Date().toISOString())}<section class="c25-error" role="alert"><strong>管理状态加载失败</strong><p>发生了什么：${esc(error.message || error)}</p><p>影响什么：当前页面无法证明系统真实状态，所有高影响操作保持不可用。</p><p>下一步：可安全地重新读取；这不会触发任务或修改数据。</p><button class="c25-button" id="c25ReadRetry" type="button">重新读取</button></section>`);
+    const retry = $("#c25ReadRetry");
+    if (retry) retry.addEventListener("click", () => location.reload());
   }
 
   function progress(task) {
@@ -232,7 +250,7 @@
   }
 
   async function renderOverview() {
-    const data = await requestJson("/control-plane");
+    const data = await requestOverviewJson();
     const counts = data.taskCountsByLiveState || {};
     const lifecycle = data.taskCountsByLifecycleClass || {};
     const scheduler = data.windowsScheduler || {};

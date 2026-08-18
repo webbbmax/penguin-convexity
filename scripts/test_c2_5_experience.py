@@ -89,6 +89,11 @@ class RouteAndShellTests(unittest.TestCase):
         self.assertIn('showLoading("规则透明中心"', c25)
         self.assertIn('showLoading("数据快照与交接"', c25)
         self.assertIn("正在读取判定链。", c25)
+        self.assertIn("const overviewReadTimeoutMs = 8000", c25)
+        self.assertIn("new AbortController()", c25)
+        self.assertIn("读取超过8秒，已停止等待；未触发任务或写入", c25)
+        self.assertIn('id="c25ReadRetry"', c25)
+        self.assertIn("requestOverviewJson()", c25)
         for name, loading_copy in {
             "rule-transparency.html": "正在分开读取冻结基线、当前有效规则、活动覆盖和历史版本。",
             "decision-trace.html": "输入稳定 assetId 后读取完整判定链。",
@@ -178,6 +183,17 @@ class ApiContractTests(unittest.TestCase):
         scheduler = overview["windowsScheduler"]
         self.assertIn("nextDueAt", scheduler)
         self.assertIn("schedulerNextTriggerAt", scheduler)
+
+    def test_overview_does_not_run_heavy_rule_replay_or_database_checks(self):
+        def forbidden():
+            self.fail("管理者总览不应调用完整规则重放或快照数据库完整性检查")
+
+        self.plane.rules_payload = forbidden
+        self.plane.snapshots_payload = forbidden
+        overview = self.plane.control_plane_payload()
+        self.assertEqual(overview["currentRuleVersion"], "c2.4-public-baseline-quote-success-trial-v1")
+        self.assertEqual(overview["activeOverrideCount"], 1)
+        self.assertIn("latestBusinessSnapshot", overview)
 
     def test_chain_rules_snapshot_and_audit_contracts(self):
         chains = self.plane.chains_sources_payload()

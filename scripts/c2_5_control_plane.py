@@ -1166,6 +1166,35 @@ class C25ControlPlane:
             now=self.clock(),
         )
 
+    def _rule_overview_payload(self) -> dict[str, Any]:
+        """Read the authoritative selector without replaying every tracked asset."""
+
+        try:
+            governance = self.rule_governance.state()
+        except (OSError, ValueError, json.JSONDecodeError) as error:
+            return {
+                "schemaVersion": "c2.5-rule-overview-v1",
+                "status": "blocked",
+                "currentRuleVersion": None,
+                "activeOverrideCount": 0,
+                "unavailableReason": str(error),
+            }
+        active_version = governance.get("activeVersion")
+        known_version_rows = governance.get("knownVersions") or []
+        known_versions = {row.get("version") for row in known_version_rows}
+        baseline_version = next(
+            (row.get("version") for row in known_version_rows if row.get("sourcePath") == "docs/C2.4_RULE_CONFIG.json"),
+            None,
+        )
+        return {
+            "schemaVersion": "c2.5-rule-overview-v1",
+            "status": "ready" if active_version in known_versions else "blocked",
+            "currentRuleVersion": active_version,
+            "activeOverrideCount": 1 if active_version and baseline_version and active_version != baseline_version else 0,
+            "stateVersion": governance.get("stateVersion"),
+            "detailVerification": "规则逐资产重放与代码有效值对账由/api/c2.5/rules独立提供。",
+        }
+
     def decision_trace_payload(self, asset_id: str) -> dict[str, Any]:
         now = self.clock()
         asset_id = str(asset_id or "").strip()
@@ -1233,6 +1262,67 @@ class C25ControlPlane:
             return {"path": str(path), "available": True, "quickCheck": quick, "foreignKeyViolations": foreign, "readOnly": True}
         except sqlite3.Error as error:
             return {"path": str(path), "available": True, "quickCheck": "error", "foreignKeyViolations": None, "readOnly": True, "error": str(error)}
+
+    @staticmethod
+    def _snapshot_overview_metadata(path: Path) -> dict[str, Any]:
+        """Read bounded snapshot metadata without parsing large item collections."""
+
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        size = path.stat().st_size
+        with path.open("rb") as stream:
+            head = stream.read(256 * 1024)
+            tail = b""
+            if size > len(head):
+                stream.seek(max(0, size - 64 * 1024))
+                tail = stream.read(64 * 1024)
+        source = head + b"\n" + tail
+
+        def text_field(name: str) -> str | None:
+            match = re.search(rb'"' + name.encode("ascii") + rb'":"([^"\\]*(?:\\.[^"\\]*)*)"', source)
+            if not match:
+                return None
+            return json.loads(b'"' + match.group(1) + b'"')
+
+        complete_match = re.search(rb'"isComplete":(true|false)', source)
+        return {
+            "snapshotId": text_field("buildId"),
+            "builtAt": text_field("generatedAt") or text_field("builtAt"),
+            "dataAsOf": text_field("dataCutoffAt") or text_field("sourceCutoffAt"),
+            "complete": complete_match is None or complete_match.group(1) == b"true",
+        }
+
+    def _snapshots_overview_payload(self) -> dict[str, Any]:
+        specs = (
+            ("c24-candidates", "c2-4-candidate-snapshot.js"),
+            ("c24-tracking", "c2-4-tracking-snapshot.js"),
+            ("c24-front", "c2-4-front-snapshot.js"),
+            ("c24-admin", "c2-4-admin-snapshot.js"),
+            ("c22-admin", "c2-2-admin-snapshot.js"),
+        )
+        snapshots = []
+        for logical_id, name in specs:
+            try:
+                metadata = self._snapshot_overview_metadata(self.app_root / name)
+                metadata["complete"] = bool(metadata["complete"] and metadata["snapshotId"] and metadata["builtAt"])
+                snapshots.append({"logicalSnapshotId": logical_id, "path": f"app/{name}", **metadata})
+            except (OSError, ValueError, json.JSONDecodeError) as error:
+                snapshots.append(
+                    {
+                        "logicalSnapshotId": logical_id,
+                        "path": f"app/{name}",
+                        "snapshotId": None,
+                        "builtAt": None,
+                        "dataAsOf": None,
+                        "complete": False,
+                        "unavailableReason": str(error),
+                    }
+                )
+        return {
+            "schemaVersion": "c2.5-snapshot-overview-v1",
+            "snapshots": snapshots,
+            "verificationBoundary": "完整内容、对象数、哈希与数据库完整性由/api/c2.5/snapshots独立提供。",
+        }
 
     def snapshots_payload(self) -> dict[str, Any]:
         now = self.clock()
@@ -1381,9 +1471,9 @@ class C25ControlPlane:
     def control_plane_payload(self) -> dict[str, Any]:
         ledger = self.tasks_payload()
         tasks = ledger["tasks"]
-        rules = self.rules_payload()
+        rules = self._rule_overview_payload()
         chain_sources = self.chains_sources_payload()
-        snapshots = self.snapshots_payload()
+        snapshots = self._snapshots_overview_payload()
         runs_audit = self.runs_audit_payload()
         by_lifecycle = Counter(row["lifecycleClass"] for row in tasks)
         by_state = Counter(row["liveState"] for row in tasks)
@@ -1418,8 +1508,8 @@ class C25ControlPlane:
             "latestBusinessSnapshot": max((row["builtAt"] for row in complete_snapshots if row.get("builtAt")), default=None),
             "pageReadAt": ledger["observedAt"],
             "chainSourceSummary": chain_sources["summary"],
-            "currentRuleVersion": (rules.get("effective") or {}).get("ruleVersion"),
-            "activeOverrideCount": 1 if (rules.get("activeOverride") or {}).get("active") else 0,
+            "currentRuleVersion": rules.get("currentRuleVersion"),
+            "activeOverrideCount": rules.get("activeOverrideCount", 0),
             "expiringOverrideCount": 0,
             "recentIncidents": incidents[:12],
             "decisionItems": decision_items,
