@@ -293,7 +293,13 @@
   }
 
   function renderDetail() {
-    const item = data.items.find((row) => row.assetId === params.get("assetId") || row.projectId === params.get("id"));
+    const requestedAssetId = params.get("assetId");
+    const requestedProjectId = params.get("id");
+    const item = requestedAssetId
+      ? data.items.find((row) => row.assetId === requestedAssetId)
+      : requestedProjectId
+        ? data.items.find((row) => row.projectId === requestedProjectId)
+        : null;
     let back = "candidate-pool.html?view=all";
     let savedReturn = null;
     try { savedReturn = JSON.parse(sessionStorage.getItem("c24-return") || "null"); if (savedReturn && savedReturn.url) back = savedReturn.url; } catch (_) {}
